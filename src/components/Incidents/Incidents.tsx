@@ -57,9 +57,9 @@ const Incidents: React.FC = () => {
     const fetchData = async () => {
       try {
         const [clientsRes, usersRes, incidentsRes] = await Promise.all([
-          axios.get<Client[]>('http://localhost:5000/api/clients', { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get<User[]>('http://localhost:5000/api/users', { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get<Incident[]>('http://localhost:5000/api/incidents', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get<Client[]>(`${process.env.REACT_APP_API_URL}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get<User[]>(`${process.env.REACT_APP_API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get<Incident[]>(`${process.env.REACT_APP_API_URL}/api/incidents`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
         setClients(clientsRes.data);
         setUsers(usersRes.data);
@@ -93,7 +93,7 @@ const Incidents: React.FC = () => {
       assignedUserId: newIncident.assignedUserId || null,
     };
     try {
-      const res = await axios.post('http://localhost:5000/api/incidents', incidentToSend, {
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/incidents`, incidentToSend, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setIncidents([...incidents, res.data]);

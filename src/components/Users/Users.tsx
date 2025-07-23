@@ -25,7 +25,7 @@ const Users: React.FC = () => {
 
     const fetchUsers = async () => {
       try {
-        const res = await axios.get<User[]>('http://localhost:5000/api/users', {
+        const res = await axios.get<User[]>(`${process.env.REACT_APP_API_URL}/api/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUsers(res.data);
@@ -52,11 +52,11 @@ const Users: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/users/${editingUser._id}`, formData, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/api/users/${editingUser._id}`, formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const res = await axios.get<User[]>('http://localhost:5000/api/users', {
+      const res = await axios.get<User[]>(`${process.env.REACT_APP_API_URL}/api/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(res.data);
