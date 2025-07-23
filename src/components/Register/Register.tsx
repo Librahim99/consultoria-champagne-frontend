@@ -2,6 +2,7 @@ import React, { useState } from 'react';
      import axios from 'axios';
      import { useNavigate, Link } from 'react-router-dom';
      import styles from './Register.module.css';
+import { ranks } from '../../utils/enums';
 
      const Register: React.FC = () => {
        const [username, setUsername] = useState<string>('');
@@ -12,7 +13,7 @@ import React, { useState } from 'react';
        const handleSubmit = async (e: React.FormEvent) => {
          e.preventDefault();
          try {
-           const res = await axios.post<{ token: string }>(`${process.env.REACT_APP_API_URL}/api/auth/register`, { username, password });
+           const res = await axios.post<{ token: string }>(`${process.env.REACT_APP_API_URL}/api/auth/register`, { username, password, rank: ranks.GUEST });
            localStorage.setItem('token', res.data.token);
            navigate('/dashboard');
          } catch (err: any) {
