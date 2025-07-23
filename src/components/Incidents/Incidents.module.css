@@ -1,0 +1,157 @@
+.container {
+  padding: 2rem;
+  min-height: 100vh;
+  background-color: var(--background-color);
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--text-color);
+}
+
+.error {
+  color: var(--error-color);
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.groupBySelect {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.groupBySelect label {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+  color: var(--secondary-text-color);
+}
+
+.groupBySelect select {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background-color: var(--card-background);
+  color: var(--text-color);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 auto;
+  max-width: 1200px;
+}
+
+.table th, .table td {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  text-align: left;
+  background-color: var(--card-background);
+  color: var(--text-color);
+}
+
+.table th {
+  background-color: var(--button-background);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.table th:hover {
+  background-color: var(--button-hover);
+}
+
+.formContainer {
+  background-color: var(--card-background);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  max-width: 500px;
+  margin: 2rem auto;
+}
+
+.formContainer h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  font-size: 1rem;
+  color: var(--secondary-text-color);
+  margin-bottom: 0.5rem;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  background-color: var(--card-background);
+  color: var(--text-color);
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--button-background);
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.button {
+  background-color: var(--button-background);
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 0.5rem;
+}
+
+.button:hover {
+  background-color: var(--button-hover);
+}
+
+.cancelButton {
+  background-color: var(--cancel-button-background);
+}
+
+.cancelButton:hover {
+  background-color: var(--cancel-button-hover);
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .table {
+    font-size: 0.8rem;
+  }
+
+  .formContainer {
+    padding: 1rem;
+  }
+}

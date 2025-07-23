@@ -1,0 +1,41 @@
+.app {
+  position: relative;
+  min-height: 100vh;
+}
+
+.themeButton {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background-color: var(--button-background);
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  z-index: 1000;
+}
+
+.themeButton:hover {
+  background-color: var(--button-hover);
+}
+
+.backButton {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  background-color: var(--button-background);
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  z-index: 1000;
+}
+
+.backButton:hover {
+  background-color: var(--button-hover);
+}
