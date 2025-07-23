@@ -8,6 +8,7 @@ import styles from './App.module.css';
 import Incidents from './components/Incidents/Incidents';
 import Assistance from './components/Assistance/Assistance';
 import Pending from './components/Pending/Pending';
+import Register from './components/Register/Register';
 
 const BackButton: React.FC = () => {
   const location = useLocation();
@@ -47,6 +48,7 @@ const App: React.FC = () => {
         <BackButton />
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/clients" element={<Clients />} />
