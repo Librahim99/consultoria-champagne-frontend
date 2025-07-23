@@ -56,9 +56,9 @@ const PendingTask: React.FC = () => {
     const fetchData = async () => {
       try {
         const [clientsRes, usersRes, pendingsRes] = await Promise.all([
-          axios.get<Client[]>('http://localhost:5000/api/clients', { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get<User[]>('http://localhost:5000/api/users', { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get<Pending[]>('http://localhost:5000/api/pending', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get<Client[]>(`${process.env.REACT_APP_API_URL}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get<User[]>(`${process.env.REACT_APP_API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get<Pending[]>(`${process.env.REACT_APP_API_URL}/api/pending`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
         setClients(clientsRes.data);
         setUsers(usersRes.data);
@@ -113,13 +113,13 @@ const PendingTask: React.FC = () => {
 
     try {
       if (editingPending) {
-        const res = await axios.put(`http://localhost:5000/api/pending/${editingPending._id}`, { ...newPending, userId: loggedInUserId, status: statusKey }, {
+        const res = await axios.put(`${process.env.REACT_APP_API_URL}/api/pending/${editingPending._id}`, { ...newPending, userId: loggedInUserId, status: statusKey }, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setPendings(pendings.map(p => (p._id === editingPending._id ? res.data : p)));
         setEditingPending(null);
       } else {
-        const res = await axios.post('http://localhost:5000/api/pending', { ...newPending, userId: loggedInUserId, status: statusKey }, {
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/pending`, { ...newPending, userId: loggedInUserId, status: statusKey }, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setPendings([...pendings, res.data]);

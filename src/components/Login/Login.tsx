@@ -12,7 +12,7 @@ import React, { useState } from 'react';
        const handleSubmit = async (e: React.FormEvent) => {
          e.preventDefault();
          try {
-           const res = await axios.post<{ token: string }>('http://localhost:5000/api/auth/login', { username, password });
+           const res = await axios.post<{ token: string }>(`${process.env.REACT_APP_API_URL}/api/auth/login`, { username, password });
            localStorage.setItem('token', res.data.token);
            navigate('/dashboard');
          } catch (err: any) {

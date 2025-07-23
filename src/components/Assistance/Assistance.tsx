@@ -48,9 +48,9 @@ const Assistances: React.FC = () => {
     const fetchData = async () => {
       try {
         const [clientsRes, usersRes, assistancesRes] = await Promise.all([
-          axios.get<Client[]>('http://localhost:5000/api/clients', { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get<User[]>('http://localhost:5000/api/users', { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get<Assistance[]>('http://localhost:5000/api/assistances', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get<Client[]>(`${process.env.REACT_APP_API_URL}:5000/api/clients`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get<User[]>(`${process.env.REACT_APP_API_URL}:5000/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get<Assistance[]>(`${process.env.REACT_APP_API_URL}:5000/api/assistances`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
         setClients(clientsRes.data);
         setUsers(usersRes.data);
@@ -89,13 +89,13 @@ const Assistances: React.FC = () => {
 
     try {
       if (editingAssistance) {
-        const res = await axios.put(`http://localhost:5000/api/assistances/${editingAssistance._id}`, assistanceToSend, {
+        const res = await axios.put(`${process.env.REACT_APP_API_URL}/api/assistances/${editingAssistance._id}`, assistanceToSend, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setAssistances(assistances.map(a => (a._id === editingAssistance._id ? res.data : a)));
         setEditingAssistance(null);
       } else {
-        const res = await axios.post('http://localhost:5000/api/assistances', assistanceToSend, {
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/assistances`, assistanceToSend, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setAssistances([...assistances, res.data]);

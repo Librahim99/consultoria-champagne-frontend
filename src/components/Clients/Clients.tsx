@@ -24,7 +24,7 @@ const Clients: React.FC = () => {
 
     const fetchClients = async () => {
       try {
-        const res = await axios.get<Client[]>('http://localhost:5000/api/clients', {
+        const res = await axios.get<Client[]>(`${process.env.REACT_APP_API_URL}/api/clients`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setClients(res.data);
@@ -61,13 +61,13 @@ const Clients: React.FC = () => {
     const token = localStorage.getItem('token');
     try {
       if (editingClient) {
-        const res = await axios.put(`http://localhost:5000/api/clients/${editingClient._id}`, newClient, {
+        const res = await axios.put(`h${process.env.REACT_APP_API_URL}/api/clients/${editingClient._id}`, newClient, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setClients(clients.map((client) => (client._id === editingClient._id ? res.data : client)));
         setEditingClient(null);
       } else {
-        const res = await axios.post('http://localhost:5000/api/clients', newClient, {
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/clients`, newClient, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setClients([...clients, res.data]);
