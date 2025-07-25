@@ -9,6 +9,7 @@ import Incidents from './components/Incidents/Incidents';
 import Assistance from './components/Assistance/Assistance';
 import Pending from './components/Pending/Pending';
 import Register from './components/Register/Register';
+import AdminBot from './components/AdminBot/AdminBot';
 
 const BackButton: React.FC = () => {
   const location = useLocation();
@@ -55,6 +56,7 @@ const App: React.FC = () => {
           <Route path="/incidents" element={<Incidents />} />
           <Route path="/pending-tasks" element={<Pending />} />
           <Route path="/assistances" element={<Assistance />} />
+          <Route path="/admin/bot" element={<AdminBot />} />
         </Routes>
       </div>
     </Router>
