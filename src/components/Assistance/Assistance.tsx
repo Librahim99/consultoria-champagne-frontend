@@ -48,9 +48,9 @@ const Assistances: React.FC = () => {
     const fetchData = async () => {
       try {
         const [clientsRes, usersRes, assistancesRes] = await Promise.all([
-          axios.get<Client[]>(`${process.env.REACT_APP_API_URL}:5000/api/clients`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get<User[]>(`${process.env.REACT_APP_API_URL}:5000/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get<Assistance[]>(`${process.env.REACT_APP_API_URL}:5000/api/assistances`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get<Client[]>(`${process.env.REACT_APP_API_URL}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get<User[]>(`${process.env.REACT_APP_API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get<Assistance[]>(`${process.env.REACT_APP_API_URL}/api/assistances`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
         setClients(clientsRes.data);
         setUsers(usersRes.data);
