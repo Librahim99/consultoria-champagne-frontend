@@ -9,6 +9,7 @@ import Incidents from './components/Incidents/Incidents';
 import Assistance from './components/Assistance/Assistance';
 import Pending from './components/Pending/Pending';
 import Register from './components/Register/Register';
+import BotControl from './components/BotControl/BotControl'; // Nueva import
 
 const BackButton: React.FC = () => {
   const location = useLocation();
@@ -55,6 +56,7 @@ const App: React.FC = () => {
           <Route path="/incidents" element={<Incidents />} />
           <Route path="/pending-tasks" element={<Pending />} />
           <Route path="/assistances" element={<Assistance />} />
+          <Route path="/admin/bot-control" element={<BotControl />} /> {/* Nueva ruta */}
         </Routes>
       </div>
     </Router>
