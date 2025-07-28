@@ -1,19 +1,16 @@
-/* Código original + nuevos */
-.app {
-  min-height: 100vh;
-  padding: 20px;
-}
-
-.app-layout {
+.appLayout {
   display: flex;
+  position: relative; /* Para positions fixed */
+  min-height: 100vh;
 }
 
-.main-content {
+.mainContent {
   flex: 1;
-  padding-left: var(--sidebar-width, 0); /* Espacio para sidebar */
+  padding-left: var(--sidebar-width, 0); /* Dinámico, 0 por default, 200px on show */
+  transition: padding-left 0.3s ease; /* Suave al show sidebar */
 }
 
-.sidebar-wrapper {
+.sidebarWrapper {
   position: fixed;
   left: 0;
   top: 0;
@@ -23,15 +20,11 @@
   transition: width 0.3s;
 }
 
-.sidebar-wrapper:hover {
+.sidebarWrapper:hover {
   width: 200px; /* Show on hover */
 }
 
-.sidebar-wrapper:hover .sidebar {
-  left: 0; /* Show sidebar */
-}
-
-.sidebar-toggle-icon {
+.sidebarToggleIcon {
   position: fixed;
   left: 5px;
   top: 50%;
@@ -40,9 +33,10 @@
   font-size: 1.5rem;
   color: gray;
   transition: color 0.2s;
+  z-index: 1002;
 }
 
-.sidebar-toggle-icon:hover {
+.sidebarToggleIcon:hover {
   color: var(--primary);
 }
 
@@ -55,6 +49,7 @@
   cursor: pointer;
   font-size: 1.5rem;
   transition: transform 0.2s;
+  z-index: 1000; /* Por encima de todo */
 }
 
 .themeButton:hover {
@@ -62,13 +57,16 @@
 }
 
 @media (max-width: 768px) {
-  .sidebar-wrapper {
+  .sidebarWrapper {
     width: 0; /* No hover area in mobile, use click */
   }
-  .main-content {
+  .mainContent {
     padding-left: 0; /* No padding in mobile */
   }
-  .sidebar-toggle-icon {
+  .sidebarToggleIcon {
     display: block; /* Visible in mobile */
+  }
+  .sidebarWrapper:hover {
+    width: 0; /* No hover in mobile */
   }
 }

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, useContext } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { incident_status } from '../../utils/enums';
 import { AgGridReact } from 'ag-grid-react';
+import { ThemeContext } from '../../contexts/ThemeContext';
 import { ColDef, GridReadyEvent, ColumnState } from 'ag-grid-community';
 import { type Pending, Client, User, DecodedToken } from '../../utils/interfaces';
 import styles from './Pending.module.css';
@@ -16,6 +17,7 @@ const mapStatusToKey = (value: string): keyof typeof incident_status | '' => {
 const PendingTask: React.FC = () => {
   const [pendings, setPendings] = useState<Pending[]>([]);
   const [error, setError] = useState<string>('');
+  const { theme } = useContext(ThemeContext);
   const [editingPending, setEditingPending] = useState<Pending | null>(null);
   const [newPending, setNewPending] = useState<Pending>({
     _id: '',
@@ -239,7 +241,7 @@ const PendingTask: React.FC = () => {
           {showAddForm ? 'Cancelar' : 'Agregar Tarea Pendiente'}
         </button>
       )}
-      <div className={styles.gridWrapper}>
+      <div className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'} style={{ height: 400, width: '100%' }}>
         <AgGridReact
           ref={gridRef}
           rowData={pendings}
@@ -249,7 +251,7 @@ const PendingTask: React.FC = () => {
           onColumnMoved={onColumnMoved}
           animateRows={true}
           domLayout='autoHeight'
-          className={styles.agGrid}
+          className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'}
         />
       </div>
       {(showAddForm && userRank === 'Acceso Total') && (
