@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, useContext } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { AgGridReact } from 'ag-grid-react';
+import { ThemeContext } from '../../contexts/ThemeContext'; // Agregado
 import { ColDef, GridReadyEvent, ColumnState } from 'ag-grid-community';
 import { type Assistance, Client, User, DecodedToken } from '../../utils/interfaces';
 import styles from './Assistance.module.css'; // Corregido a Assistances.module.css
@@ -9,6 +10,7 @@ import styles from './Assistance.module.css'; // Corregido a Assistances.module.
 const Assistances: React.FC = () => {
   const [assistances, setAssistances] = useState<Assistance[]>([]);
   const [error, setError] = useState<string>('');
+  const { theme } = useContext(ThemeContext); // Agregado para conditional className
   const [editingAssistance, setEditingAssistance] = useState<Assistance | null>(null);
   const [newAssistance, setNewAssistance] = useState<Assistance>({
     _id: '',
@@ -173,14 +175,11 @@ const Assistances: React.FC = () => {
     },
   ], [clients, users]);
 
-  const defaultColDef = useMemo<ColDef>(
-    () => ({
-      sortable: true,
-      resizable: true,
-      filter: true,
-    }),
-    []
-  );
+  const defaultColDef = useMemo<ColDef>(() => ({
+    sortable: true,
+    resizable: true,
+    filter: true,
+  }), []);
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
     const savedColumnOrder = localStorage.getItem('assistancesColumnOrder');
@@ -207,7 +206,7 @@ const Assistances: React.FC = () => {
           {showAddForm ? 'Cancelar' : 'Agregar Asistencia'}
         </button>
       )}
-      <div className={styles.gridWrapper}>
+      <div className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'} style={{ height: 400, width: '100%' }}> {/* Conditional class on wrapper */}
         <AgGridReact
           ref={gridRef}
           rowData={assistances}
@@ -217,7 +216,7 @@ const Assistances: React.FC = () => {
           onColumnMoved={onColumnMoved}
           animateRows={true}
           domLayout='autoHeight'
-          className={styles.agGrid}
+          className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'}
         />
       </div>
       {(showAddForm && userRank === 'Acceso Total') && (

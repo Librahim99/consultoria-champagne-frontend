@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, useContext } from 'react';
 import axios from 'axios';
 import { ranks } from '../../utils/enums';
 import { AgGridReact } from 'ag-grid-react';
@@ -6,9 +6,11 @@ import { ColDef, GridReadyEvent, ColumnState } from 'ag-grid-community';
 import { User, DecodedToken } from '../../utils/interfaces';
 import styles from './Users.module.css';
 import { jwtDecode } from 'jwt-decode';
+import { ThemeContext } from '../../contexts/ThemeContext';
 
 const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const { theme } = useContext(ThemeContext);
   const [error, setError] = useState<string>('');
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({ username: '', password: '', rank: '' });
@@ -119,7 +121,7 @@ const Users: React.FC = () => {
           {showEditForm ? 'Cancelar' : 'Editar Usuario'}
         </button>
       )}
-      <div className={styles.gridWrapper}>
+      <div className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'} style={{ height: 400, width: '100%' }}>
         <AgGridReact
           ref={gridRef}
           rowData={users}
@@ -129,7 +131,7 @@ const Users: React.FC = () => {
           onColumnMoved={onColumnMoved}
           animateRows={true}
           domLayout='autoHeight'
-          className={styles.agGrid}
+          className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'}
         />
       </div>
       {showEditForm && editingUser && userRank === 'Acceso Total' && (

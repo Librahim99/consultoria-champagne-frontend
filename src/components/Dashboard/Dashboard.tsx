@@ -1,89 +1,66 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
+import Spinner from '../Spinner/Spinner';
+import { UserContext } from '../../contexts/UserContext';
 import styles from './Dashboard.module.css';
-
-interface DecodedToken {
-  rank: string;
-}
+import { ranks } from '../../utils/enums';
+import { ThemeContext } from '../../contexts/ThemeContext';
 
 const Dashboard: React.FC = () => {
-  const [userRank, setUserRank] = useState<string>('');
+  const { userRank, userId } = useContext(UserContext);
+  const [stats, setStats] = useState({ users: 0, clients: 0, incidents: 0, pendings: 0, assistances: 0 });
+  const [loading, setLoading] = useState(true);
+  const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      const decoded: DecodedToken = jwtDecode(token);
-      setUserRank(decoded.rank);
-    }
-  }, []);
+    const fetchStats = async () => {
+      try {
+        const [usersRes, clientsRes, incidentsRes, pendingsRes, assistancesRes] = await Promise.all([
+          axios.get(`${process.env.REACT_APP_API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/incidents`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/pending`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/assistances`, { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        setStats({
+          users: usersRes.data.length,
+          clients: clientsRes.data.length,
+          incidents: incidentsRes.data.length,
+          pendings: pendingsRes.data.length,
+          assistances: assistancesRes.data.length,
+        });
+      } catch (err) {
+        console.error('Error fetching stats');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, [userId]);
+
+  if (loading) return <Spinner />;
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Portal de Gestión</h1>
       <div className={styles.grid}>
-        {userRank === 'Acceso Total' && (
-          <Link to="/users" className={`${styles.card} ${styles.link}`}>
-            <h2 className={styles.cardTitle}>Usuarios</h2>
-            <p className={styles.preview}>
-              Gestión de usuarios:
-              <ul>
-                <li>Usuario A: Acceso Total</li>
-                <li>Usuario B: Consultor</li>
-              </ul>
-            </p>
+        {userRank !== ranks.GUEST && (
+          <Link to="/users" className={styles.card}>
+            <h2>Usuarios</h2>
+            <p>{stats.users} usuarios registrados</p>
           </Link>
         )}
-        <Link to="/clients" className={`${styles.card} ${styles.link}`}>
-          <h2 className={styles.cardTitle}>Clientes</h2>
-          <p className={styles.preview}>
-            Lista de clientes:
-            <ul>
-              <li>Cliente A: Activo, VIP</li>
-              <li>Cliente B: Inactivo</li>
-            </ul>
-          </p>
+        <Link to="/clients" className={styles.card}>
+          <h2>Clientes</h2>
+          <p>{stats.clients} clientes activos</p>
         </Link>
-        <Link to="/license-expirations" className={`${styles.card} ${styles.link}`}>
-          <h2 className={styles.cardTitle}>Vencimientos de Licencia</h2>
-          <p className={styles.preview}>
-            Próximos vencimientos:
-            <ul>
-              <li>Cliente A: 15 días</li>
-              <li>Cliente B: 30 días</li>
-            </ul>
-          </p>
+        <Link to="/incidents" className={styles.card}>
+          <h2>Incidencias</h2>
+          <p>{stats.incidents} incidencias pendientes</p>
         </Link>
-        <Link to="/pending-tasks" className={`${styles.card} ${styles.link}`}>
-          <h2 className={styles.cardTitle}>Pendientes</h2>
-          <p className={styles.preview}>
-            Tareas pendientes:
-            <ul>
-              <li>Cliente C: Revisar contrato</li>
-              <li>Cliente D: Llamada de seguimiento</li>
-            </ul>
-          </p>
-        </Link>
-        <Link to="/assistances" className={`${styles.card} ${styles.link}`}>
-          <h2 className={styles.cardTitle}>Asistencias</h2>
-          <p className={styles.preview}>
-            Asistencias de hoy:
-            <ul>
-              <li>Cliente E: Soporte técnico</li>
-              <li>Cliente F: Capacitación</li>
-            </ul>
-          </p>
-        </Link>
-        <Link to="/incidents" className={`${styles.card} ${styles.link}`}>
-          <h2 className={styles.cardTitle}>Incidencias</h2>
-          <p className={styles.preview}>
-            Pedidos a programación:
-            <ul>
-              <li>Incidencia #001: Bug en módulo X</li>
-              <li>Incidencia #002: Nueva funcionalidad</li>
-            </ul>
-          </p>
-        </Link>
+        {/* Similar para otros */}
       </div>
     </div>
   );

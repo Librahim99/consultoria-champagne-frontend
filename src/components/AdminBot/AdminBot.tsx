@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import QRCode from 'react-qr-code';
-import { Tooltip as ReactTooltip } from 'react-tooltip';
 import styles from './AdminBot.module.css';
+import { ThemeContext } from '../../contexts/ThemeContext';
 
 const AdminBot: React.FC = () => {
   const [status, setStatus] = useState<'loading' | 'connected' | 'disconnected' | 'error'>('loading');
   const [qr, setQr] = useState<string | null>(null);
+  const { theme } = useContext(ThemeContext);
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [lastSendTime, setLastSendTime] = useState<number>(0);
-  const [logoutPassword, setLogoutPassword] = useState<string>(''); // Estado para contraseña de logout
-  const [showPasswordInput, setShowPasswordInput] = useState(false); // Mostrar input de contraseña
+  const [logoutPassword, setLogoutPassword] = useState<string>('');
+  const [showPasswordInput, setShowPasswordInput] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -41,7 +42,7 @@ const AdminBot: React.FC = () => {
   useEffect(() => {
     if (token) {
       fetchStatus();
-      const interval = setInterval(fetchStatus, status === 'connected' ? 10000 : 5000); // Polling optimizado: 5s si disconnected para reflejar cambios más rápido, 10s si connected
+      const interval = setInterval(fetchStatus, status === 'connected' ? 10000 : 5000);
       return () => clearInterval(interval);
     }
   }, [token, status]);
@@ -54,7 +55,7 @@ const AdminBot: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success('Iniciando sesión del bot... Espera el QR');
-      fetchStatus(); // Refresca inmediatamente
+      fetchStatus();
     } catch (error) {
       toast.error('Error al iniciar sesión del bot');
     } finally {
@@ -83,7 +84,7 @@ const AdminBot: React.FC = () => {
   const handleSendTest = async () => {
     if (!token) return;
     const now = Date.now();
-    if (now - lastSendTime < 60000) { // Cooldown de 60 segundos
+    if (now - lastSendTime < 60000) {
       toast.warning('Espera 1 minuto antes de enviar otro mensaje de prueba');
       return;
     }
@@ -112,9 +113,9 @@ const AdminBot: React.FC = () => {
       {status === 'disconnected' && qr && (
         <div className={styles.qrContainer}>
           <p>Escanea el QR para iniciar sesión (máximo 3 intentos):</p>
-          <div className={styles.qrWrapper}> {/* Wrapper para borders completos y centro */}
-              <QRCode value={qr} size={256} />
-            </div>
+          <div className={styles.qrWrapper}>
+            <QRCode value={qr} size={256} />
+          </div>
         </div>
       )}
       {status === 'disconnected' && !qr && (
@@ -122,8 +123,6 @@ const AdminBot: React.FC = () => {
           onClick={handleStartSession} 
           disabled={loading || !token} 
           className={styles.button}
-          data-tip="Inicia el proceso de conexión del bot mostrando el QR (requiere token válido)"
-          data-for="start-tooltip"
         >
           {loading ? 'Iniciando...' : 'Iniciar Sesión'}
         </button>
@@ -133,8 +132,6 @@ const AdminBot: React.FC = () => {
           onClick={() => setShowPasswordInput(true)} 
           disabled={status !== 'connected' || loading || !token || showPasswordInput} 
           className={styles.button}
-          data-tip="Cierra la sesión actual del bot y permite reconectar (requiere contraseña y token válido)"
-          data-for="logout-tooltip"
         >
           Cerrar Sesión
         </button>
@@ -155,19 +152,14 @@ const AdminBot: React.FC = () => {
             </button>
           </div>
         )}
-        <ReactTooltip id="logout-tooltip" place="top" />
 
         <button 
           onClick={handleSendTest} 
           disabled={status !== 'connected' || loading || !token || (Date.now() - lastSendTime < 60000)} 
           className={styles.button}
-          data-tip="Envía un mensaje de prueba a todos los usuarios con rank TOTAL_ACCESS y número registrado (requiere token válido, cooldown 1 min)"
-          data-for="test-tooltip"
         >
           {loading ? 'Enviando...' : 'Enviar Mensaje de Prueba'}
         </button>
-        <ReactTooltip id="test-tooltip" place="top" />
-        <ReactTooltip id="start-tooltip" place="top" />
       </div>
     </div>
   );
