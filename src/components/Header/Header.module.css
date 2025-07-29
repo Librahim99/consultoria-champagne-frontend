@@ -1,23 +1,71 @@
+:root {
+  --primary-bg: #1e1e2f;
+  --primary-text: #ffffff;
+  --hover-color: rgba(255, 255, 255, 0.08);
+  --alert: #ff4d4f;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --primary-bg: #f8f9fa;
+    --primary-text: #212529;
+    --hover-color: rgba(0, 0, 0, 0.05);
+    --alert: #dc3545;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
-  background-color: var(--primary);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  border-radius: 0 0 8px 8px;
+  padding: 12px 24px;
+  background-color: var(--primary-bg);
+  color: var(--primary-text);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  border-radius: 0 0 10px 10px;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  animation: slideDown 0.3s ease-out;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: inherit;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60vw;
 }
 
 .logout {
-  background: none;
+  background: transparent;
   border: none;
-  color: white;
-  cursor: pointer;
+  color: inherit;
   font-size: 1.5rem;
-  transition: color 0.2s;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .logout:hover {
-  color: #dc3545;
+  background-color: var(--hover-color);
+  color: var(--alert);
+  transform: scale(1.05);
 }

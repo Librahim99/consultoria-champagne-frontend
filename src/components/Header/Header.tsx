@@ -11,7 +11,7 @@ const Header: React.FC = () => {
   };
   return (
     <header className={styles.header}>
-      <h1>Portal de Gestión</h1>
+      <h1 className={styles.title}>Consultoría Mantis IT</h1>
       <button onClick={handleLogout} className={styles.logout}>
         {/* @ts-ignore */}
         <FaSignOutAlt />
