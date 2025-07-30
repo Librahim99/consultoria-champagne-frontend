@@ -1,36 +1,49 @@
-/* Código original + nuevos */
-.app {
-  min-height: 100vh;
-  padding: 20px;
+/* --------- BASE GENERAL --------- */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: 'Segoe UI', 'Inter', sans-serif;
+  background-color: transparent;
 }
 
+.app {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* --------- ESTRUCTURA CON SIDEBAR --------- */
 .app-layout {
   display: flex;
 }
 
 .main-content {
   flex: 1;
-  padding-left: var(--sidebar-width, 0); /* Espacio para sidebar */
+  padding-left: var(--sidebar-width, 0);
 }
 
+/* --------- SIDEBAR HOVER --------- */
 .sidebar-wrapper {
   position: fixed;
   left: 0;
   top: 0;
   bottom: 0;
-  width: 20px; /* Área hover */
+  width: 20px;
   z-index: 1001;
   transition: width 0.3s;
 }
 
 .sidebar-wrapper:hover {
-  width: 200px; /* Show on hover */
+  width: 200px;
 }
 
 .sidebar-wrapper:hover .sidebar {
-  left: 0; /* Show sidebar */
+  left: 0;
 }
 
+/* --------- ÍCONO DE TOGGLE --------- */
 .sidebar-toggle-icon {
   position: fixed;
   left: 5px;
@@ -46,6 +59,7 @@
   color: var(--primary);
 }
 
+/* --------- BOTÓN TEMA --------- */
 .themeButton {
   position: fixed;
   top: 10px;
@@ -61,14 +75,17 @@
   transform: scale(1.1);
 }
 
+/* --------- RESPONSIVE --------- */
 @media (max-width: 768px) {
   .sidebar-wrapper {
-    width: 0; /* No hover area in mobile, use click */
+    width: 0;
   }
+
   .main-content {
-    padding-left: 0; /* No padding in mobile */
+    padding-left: 0;
   }
+
   .sidebar-toggle-icon {
-    display: block; /* Visible in mobile */
+    display: block;
   }
 }

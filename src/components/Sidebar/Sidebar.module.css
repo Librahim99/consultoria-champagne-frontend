@@ -1,51 +1,87 @@
 .sidebar {
   position: fixed;
-  left: -300px; /* Hidden por default */
+  left: -180px;
   top: 0;
   bottom: 0;
   width: 200px;
-  background-color: var(--bg-light);
-  padding: 20px;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-  transition: left 0.3s ease; /* Animación slide-in */
-  overflow-y: hidden; /* Quitar scroll innecesario */
-  z-index: 1000; /* Alto para no overlaps */
-}
-
-[data-theme='dark'] .sidebar {
-  background-color: var(--bg-dark);
+  background-color: #121212;
+  color: #e0e0e0;
+  padding: 20px 16px;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+  transition: left 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .sidebar.visible {
-  left: 0; /* Show on mobile click */
+  left: 0;
 }
 
-ul {
+.sidebar ul {
   list-style: none;
   padding: 0;
+  margin: 4;
+  margin-top: 1px;
+
 }
 
-li {
-  margin-bottom: 10px;
+.sidebar li {
+  margin-bottom: 15px;
+  height: 50px;
 }
 
-a {
+.sidebar a {
   display: flex;
   align-items: center;
-  color: inherit;
-  text-decoration: none;
-  padding: 10px;
+  height: 50px;
+  gap: 10px;
+  color: #ccc;
+  padding: 10px 12px;
   border-radius: 8px;
-  transition: background 0.2s;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-a:hover {
-  background-color: var(--primary);
-  color: white;
+.sidebar a:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
 }
 
+.menuinteractivo{
+font-size: 1.50rem;
+align-self: center;
+}
+
+.sidebar a.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.sidebar a svg {
+  font-size: 1.1rem;
+}
+
+/* Borde izquierdo que activa por hover */
+.sidebarTriggerArea {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  z-index: 999;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .sidebar {
-    width: 200px; /* Full on click */
+    width: 100%;
+    left: -100%;
+  }
+
+  .sidebar.visible {
+    left: 0;
   }
 }
