@@ -37,7 +37,7 @@ body {
   height: 140px;
   object-fit: cover;
   border-radius: 50%;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); /* sombra visible */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   margin-bottom: 24px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
