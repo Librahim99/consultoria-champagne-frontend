@@ -8,6 +8,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { ranks } from '../../utils/enums';
 import { ThemeContext } from '../../contexts/ThemeContext';
 import styles from './Register.module.css';
+import logoImage from '../../assets/logo-mantis.png';
 
 interface FormData {
   username: string;
@@ -21,14 +22,20 @@ const schema = yup.object({
 
 const Register: React.FC = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({ resolver: yupResolver(schema) });
+
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: yupResolver(schema),
+  });
 
   const onSubmit = async (data: FormData) => {
     try {
-      const res = await axios.post<{ token: string }>(`${process.env.REACT_APP_API_URL}/api/auth/register`, { ...data, rank: ranks.GUEST });
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
+        ...data,
+        rank: ranks.GUEST,
+      });
       localStorage.setItem('token', res.data.token);
       navigate('/dashboard');
     } catch (err: any) {
@@ -37,39 +44,54 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className={styles.authContainer}>
-      <button onClick={toggleTheme} className={styles.themeButton} title="Cambiar tema (claro/oscuro)">
-        {theme === 'light' ? '🌙' : '☀️'}
-      </button>
-      <div className={styles.authBox}>
-        <h2>Registrarse</h2>
-        {error && <p className={styles.error}>{error}</p>}
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className={styles.formGroup}>
-            <label>Usuario</label>
-            <input {...register('username')} placeholder="Ingresa tu usuario" />
-            {errors.username && <p className={styles.error}>{errors.username.message}</p>}
-          </div>
-          <div className={styles.formGroup}>
-            <label>Contraseña</label>
-            <div className={styles.passwordWrapper}>
-              <input type={showPassword ? 'text' : 'password'} {...register('password')} placeholder="Ingresa una contraseña segura (mínimo 8 caracteres)" />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className={styles.eyeButton} title="Mostrar/ocultar contraseña">
-                {showPassword ? (
-                  // @ts-ignore
-                <FaEyeSlash />
-                ) : ( 
-                  // @ts-ignore
-                 <FaEye />
-                 )}
-              </button>
+    <div className={styles.container}>
+      <div className={styles.leftPanel}>
+        <img src={logoImage} alt="Logo Mantis" className={styles.logo} />
+        <h1 className={styles.title}>Consultoría Mantis Software IT</h1>
+      </div>
+
+      <div className={styles.rightPanel}>
+        <button onClick={toggleTheme} className={styles.themeButton}>
+          {theme === 'light' ? '🌙' : '☀️'}
+        </button>
+
+        <div className={styles.authBox}>
+          <h2>Registrarse</h2>
+          {error && <p className={styles.loginError}>{error}</p>}
+
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className={styles.formGroup}>
+              <input {...register('username')} placeholder=" " autoComplete="off" />
+              <label>Usuario</label>
+              {errors.username && <p className={styles.error}>{errors.username.message}</p>}
             </div>
-            {errors.password && <p className={styles.error}>{errors.password.message}</p>}
+
+            <div className={styles.formGroup}>
+              <div className={styles.passwordWrapper}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  {...register('password')}
+                  placeholder=" "
+                  autoComplete="off"
+                />
+                <label>Contraseña</label>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className={styles.eyeButton}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              {errors.password && <p className={styles.error}>{errors.password.message}</p>}
+            </div>
+
+            <button type="submit">Registrarse</button>
+          </form>
+
+          <div className={styles.link}>
+            <p>¿Ya tienes cuenta? <Link to="/">Inicia sesión aquí</Link></p>
           </div>
-          <button type="submit" title="Registrarse y acceder al dashboard">Registrarse</button>
-        </form>
-        <div className={styles.link}>
-          <p>¿Ya tienes cuenta? <Link to="/">Inicia sesión aquí</Link></p>
         </div>
       </div>
     </div>
