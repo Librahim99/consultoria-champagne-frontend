@@ -7,7 +7,8 @@ import {
   FaTasks,
   FaHeadset,
   FaExclamationTriangle,
-  FaRobot
+  FaRobot,
+  FaBars // Nueva import para la solapa
 } from 'react-icons/fa';
 import styles from './Sidebar.module.css';
 
@@ -21,7 +22,8 @@ const Sidebar: React.FC = () => {
     <div
       className={`${styles.sidebar} ${isHovered ? styles.visible : ''}`}
       onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}>
+      onMouseLeave={handleMouseLeave}
+    >
       <ul>
         <li><Link to="/dashboard"><FaClock /> Dashboard</Link></li>
         <li><Link to="/users"><FaUsers /> Usuarios</Link></li>
@@ -31,6 +33,10 @@ const Sidebar: React.FC = () => {
         <li><Link to="/assistances"><FaHeadset /> Asistencias</Link></li>
         <li><Link to="/admin/bot"><FaRobot /> Admin Bot</Link></li>
       </ul>
+      {/* Nueva solapa indicadora */}
+      <div className={styles.sidebarHintContainer} onMouseEnter={handleMouseEnter} title="Abrir menú lateral">
+      </div>
+      <FaBars className={styles.sidebarHint}  />
     </div>
   );
 };
