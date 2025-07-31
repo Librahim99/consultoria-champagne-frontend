@@ -2,6 +2,8 @@
   display: flex;
   position: relative;
   min-height: 100vh;
+  background-color: var(--background-color); /* Asegura BG full */
+  color: var(--text-color);
 }
 
 .mainContent {
@@ -15,7 +17,7 @@
   margin: 12px;
   height: 100vh;
   font-size: 1.5rem;
-  color: var(--text-color, #3f51b5);
+  color: var(--text-color);
   opacity: 0.6;
   z-index: 1001;
   pointer-events: none; /* no interfiere con el hover */
@@ -37,6 +39,7 @@
   font-size: 1.5rem;
   z-index: 1000;
   transition: transform 0.2s;
+  color: var(--text-color); /* Asegura visibilidad */
 }
 
 .themeButton:hover {

@@ -1,21 +1,26 @@
 .container {
   padding: 20px;
-  border: 1px solid var(--border-color); /* Usa variables de tema para consistencia con App.tsx */
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   max-width: 500px;
   margin: 20px auto;
   background-color: var(--background-color);
   text-align: center;
+  color: var(--text-color);
+  box-shadow: 0 2px 4px var(--shadow-color); /* Nueva: shadow para profundidad */
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .title {
   font-size: 1.5rem;
   margin-bottom: 10px;
+  color: var(--text-color);
 }
 
 .status {
   font-size: 1.2rem;
   margin-bottom: 20px;
+  color: var(--text-color);
 }
 
 .qrContainer {
@@ -58,12 +63,33 @@
   align-items: center;
   border: 1px solid var(--border-color);
   padding: 10px;
-  background-color: white;
+  background-color: white; 
   border-radius: 4px;
+  transition: background-color 0.3s;
 }
 
 .sessionInfo {
   font-size: 1rem;
   margin-bottom: 20px;
   color: var(--text-color);
+}
+
+/* Nueva: Input para password (asumiendo que lo agregaste en TSX) */
+.input {
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  margin-right: 10px;
+  transition: border-color 0.3s;
+}
+
+.input:focus {
+  border-color: var(--primary);
+}
+
+.cancelButton {
+  background-color: var(--error); /* Usa var para cancelar */
+  color: var(--button-text);
 }

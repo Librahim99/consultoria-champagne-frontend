@@ -13,55 +13,10 @@
 }
 
 .error {
-  color: var(--error-color);
+  color: var(--error);
   font-size: 0.9rem;
   text-align: center;
   margin-bottom: 1rem;
-}
-
-.groupBySelect {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1rem;
-}
-
-.groupBySelect label {
-  margin-right: 0.5rem;
-  font-size: 1rem;
-  color: var(--secondary-text-color);
-}
-
-.groupBySelect select {
-  padding: 0.5rem;
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-  background-color: var(--card-background);
-  color: var(--text-color);
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 0 auto;
-  max-width: 1200px;
-}
-
-.table th, .table td {
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
-  text-align: left;
-  background-color: var(--card-background);
-  color: var(--text-color);
-}
-
-.table th {
-  background-color: var(--button-background);
-  color: #ffffff;
-  cursor: pointer;
-}
-
-.table th:hover {
-  background-color: var(--button-hover);
 }
 
 .formContainer {
@@ -107,13 +62,13 @@
 .formGroup input:focus,
 .formGroup select:focus {
   outline: none;
-  border-color: var(--button-background);
+  border-color: var(--primary);
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
 
 .button {
   background-color: var(--button-background);
-  color: #ffffff;
+  color: var(--text-color);
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 5px;
@@ -145,7 +100,7 @@
     font-size: 1.5rem;
   }
 
-  .table {
-    font-size: 0.8rem;
+  .formContainer {
+    padding: 1rem;
   }
 }

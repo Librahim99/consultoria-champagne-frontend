@@ -1,12 +1,11 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { ThemeContext } from '../../contexts/ThemeContext';
-import styles from './Login.module.css';
+import styles from './Auth.module.css';
 import logoImage from '../../assets/logo-mantis.png';
 
 interface FormData {
@@ -20,7 +19,6 @@ const schema = yup.object({
 });
 
 const Login: React.FC = () => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -75,9 +73,6 @@ const Login: React.FC = () => {
         <h1 className={styles.title}>Consultoría Mantis Software IT</h1>
       </div>
       <div className={styles.rightPanel}>
-        <button onClick={toggleTheme} className={styles.themeButton}>
-          {theme === 'light' ? '🌙' : '☀️'}
-        </button>
         <div className={styles.authBox}>
           <h2>Iniciar Sesión</h2>
           {error && <p className={styles.loginError}>{error}</p>}
