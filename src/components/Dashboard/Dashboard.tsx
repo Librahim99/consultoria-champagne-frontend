@@ -3,15 +3,16 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Spinner from '../Spinner/Spinner';
 import { UserContext } from '../../contexts/UserContext';
-import styles from './Dashboard.module.css';
-import { ranks } from '../../utils/enums';
 import { ThemeContext } from '../../contexts/ThemeContext';
+import { ranks } from '../../utils/enums';
+import styles from './Dashboard.module.css';
+import { FaUser, FaBug, FaClipboardCheck, FaUsers } from 'react-icons/fa';
 
 const Dashboard: React.FC = () => {
   const { userRank, userId } = useContext(UserContext);
+  const { theme } = useContext(ThemeContext);
   const [stats, setStats] = useState({ users: 0, clients: 0, incidents: 0, pendings: 0, assistances: 0 });
   const [loading, setLoading] = useState(true);
-  const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -43,24 +44,31 @@ const Dashboard: React.FC = () => {
   if (loading) return <Spinner />;
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-theme={theme}>
       <h1 className={styles.title}>Portal de Gestión</h1>
       <div className={styles.grid}>
         {userRank !== ranks.GUEST && (
           <Link to="/users" className={styles.card}>
+            <FaUser className={styles.icon} />
             <h2>Usuarios</h2>
             <p>{stats.users} usuarios registrados</p>
           </Link>
         )}
         <Link to="/clients" className={styles.card}>
+          <FaUsers className={styles.icon} />
           <h2>Clientes</h2>
           <p>{stats.clients} clientes activos</p>
         </Link>
         <Link to="/incidents" className={styles.card}>
+          <FaBug className={styles.icon} />
           <h2>Incidencias</h2>
           <p>{stats.incidents} incidencias pendientes</p>
         </Link>
-        {/* Similar para otros */}
+        <Link to="/assistances" className={styles.card}>
+          <FaClipboardCheck className={styles.icon} />
+          <h2>Asistencias</h2>
+          <p>{stats.assistances} registradas</p>
+        </Link>
       </div>
     </div>
   );
