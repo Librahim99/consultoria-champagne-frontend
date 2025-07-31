@@ -56,8 +56,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid var(--border-color); /* Usa tu tema para borders visibles */
+  border: 1px solid var(--border-color);
   padding: 10px;
-  background-color: white; /* Fondo blanco para contraste, ajusta a tu tema */
+  background-color: white;
   border-radius: 4px;
+}
+
+.sessionInfo {
+  font-size: 1rem;
+  margin-bottom: 20px;
+  color: var(--text-color);
 }

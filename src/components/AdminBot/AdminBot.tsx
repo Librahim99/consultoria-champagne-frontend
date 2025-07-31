@@ -70,7 +70,7 @@ const AdminBot: React.FC = () => {
       await axios.post(`${process.env.REACT_APP_API_URL}/api/bot/logout`, { password: logoutPassword }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      toast.success('Sesión cerrada con éxito');
+      toast.success('Sesión cerrada y datos borrados. Escanea QR para reiniciar.');
       setShowPasswordInput(false);
       setLogoutPassword('');
       fetchStatus();
@@ -110,6 +110,7 @@ const AdminBot: React.FC = () => {
          status === 'disconnected' ? 'Desconectado ❌' : 
          status === 'loading' ? 'Cargando...' : 'Error ⚠️'}
       </p>
+      <p className={styles.sessionInfo}>Sesión actual: {process.env.REACT_APP_SESSION_ID || 'default'}</p>
       {status === 'disconnected' && qr && (
         <div className={styles.qrContainer}>
           <p>Escanea el QR para iniciar sesión (máximo 3 intentos):</p>
