@@ -4,10 +4,10 @@
   top: 0;
   bottom: 0;
   width: 200px;
-  background-color: #121212;
-  color: #e0e0e0;
+  background-color: var(--sidebar-bg); /* Era #121212 fijo */
+  color: var(--sidebar-text); /* Era #e0e0e0 fijo */
   padding: 20px 16px;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 2px 0 8px var(--shadow-color);
   transition: left 0.3s ease;
   z-index: 1000;
   display: flex;
@@ -24,7 +24,6 @@
   padding: 0;
   margin: 4;
   margin-top: 1px;
-
 }
 
 .sidebar li {
@@ -37,7 +36,7 @@
   align-items: center;
   height: 50px;
   gap: 10px;
-  color: #ccc;
+  color: var(--text-color); /* Era #ccc */
   padding: 10px 12px;
   border-radius: 8px;
   text-decoration: none;
@@ -46,18 +45,18 @@
 }
 
 .sidebar a:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
+  background-color: var(--hover-bg); /* Era rgba fija */
+  color: var(--text-color); /* Ajuste para contraste */
 }
 
-.menuinteractivo{
-font-size: 1.50rem;
-align-self: center;
+.menuinteractivo {
+  font-size: 1.50rem;
+  align-self: center;
 }
 
 .sidebar a.active {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background-color: var(--hover-bg); /* Ajuste */
+  color: var(--text-color);
 }
 
 .sidebar a svg {

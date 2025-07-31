@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -6,8 +6,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { ranks } from '../../utils/enums';
-import { ThemeContext } from '../../contexts/ThemeContext';
-import styles from './Register.module.css';
+import styles from '../Login/Auth.module.css';
 import logoImage from '../../assets/logo-mantis.png';
 
 interface FormData {
@@ -21,7 +20,6 @@ const schema = yup.object({
 });
 
 const Register: React.FC = () => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -51,10 +49,6 @@ const Register: React.FC = () => {
       </div>
 
       <div className={styles.rightPanel}>
-        <button onClick={toggleTheme} className={styles.themeButton}>
-          {theme === 'light' ? '🌙' : '☀️'}
-        </button>
-
         <div className={styles.authBox}>
           <h2>Registrarse</h2>
           {error && <p className={styles.loginError}>{error}</p>}

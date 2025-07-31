@@ -13,7 +13,7 @@
 }
 
 .error {
-  color: var(--error-color);
+  color: var(--error);
   font-size: 0.9rem;
   text-align: center;
   margin-bottom: 1rem;
@@ -21,7 +21,7 @@
 
 .button {
   background-color: var(--button-background);
-  color: #ffffff;
+  color: var(--text-color);
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 5px;
@@ -89,7 +89,7 @@
 .formGroup select:focus,
 .formGroup textarea:focus {
   outline: none;
-  border-color: var(--button-background);
+  border-color: var(--primary);
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
 
@@ -102,11 +102,10 @@
 .agGrid {
   height: 100%;
   width: 100%;
-  --ag-grid-background-color: var(--card-background);
-  --ag-header-background-color: var(--button-background);
-  --ag-header-foreground-color: #ffffff;
-  --ag-header-hover-background-color: var(--button-hover);
-  --ag-row-hover-color: var(--card-hover);
+  --ag-border-color: var(--ag-border-color);
+  --ag-row-hover-background-color: var(--ag-row-hover);
+  --ag-header-background-color: var(--ag-header-background);
+  --ag-header-foreground-color: var(--ag-header-foreground);
 }
 
 @media (max-width: 600px) {
