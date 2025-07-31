@@ -15,14 +15,6 @@ const AdminBot: React.FC = () => {
   const [logoutPassword, setLogoutPassword] = useState<string>('');
   const [showPasswordInput, setShowPasswordInput] = useState(false);
 
-  // Estados para sesiones
-  const [sessions, setSessions] = useState<string[]>([]);
-  const [currentSession, setCurrentSession] = useState<string>('');
-  const [switching, setSwitching] = useState(false);
-
-  // CAMBIO: Estado para nueva sesión
-  const [newSessionName, setNewSessionName] = useState<string>('');
-
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     if (!storedToken) {
@@ -41,30 +33,15 @@ const AdminBot: React.FC = () => {
       });
       setStatus(res.data.status);
       setQr(res.data.qr || null);
-      setCurrentSession(res.data.sessionId); // Actualiza sesión actual
     } catch (error) {
       toast.error('Error al obtener estado del bot');
       setStatus('error');
     }
   };
 
-  // Fetch sesiones disponibles
-  const fetchSessions = async () => {
-    if (!token) return;
-    try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/bot/sessions`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSessions(res.data.sessions);
-    } catch (error) {
-      toast.error('Error al obtener sesiones disponibles');
-    }
-  };
-
   useEffect(() => {
     if (token) {
       fetchStatus();
-      fetchSessions(); // Fetch inicial de sesiones
       const interval = setInterval(fetchStatus, status === 'connected' ? 10000 : 5000);
       return () => clearInterval(interval);
     }
@@ -93,7 +70,7 @@ const AdminBot: React.FC = () => {
       await axios.post(`${process.env.REACT_APP_API_URL}/api/bot/logout`, { password: logoutPassword }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      toast.success('Sesión cerrada con éxito');
+      toast.success('Sesión cerrada y datos borrados. Escanea QR para reiniciar.');
       setShowPasswordInput(false);
       setLogoutPassword('');
       fetchStatus();
@@ -125,63 +102,6 @@ const AdminBot: React.FC = () => {
     }
   };
 
-  // Función para cambiar sesión
-  const handleSwitchSession = async (newSessionId: string) => {
-    if (!token || switching) return;
-    setSwitching(true);
-    try {
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/bot/switch-session`, { sessionId: newSessionId }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      toast.success(res.data.message);
-      setCurrentSession(newSessionId);
-      fetchStatus(); // Actualiza status inmediatamente
-      await fetchSessions(); // Recarga sesiones si nueva
-    } catch (error) {
-      toast.error('Error al cambiar sesión');
-    } finally {
-      setSwitching(false);
-    }
-  };
-
-  // CAMBIO: Función para agregar nueva sesión y switch auto
-  const handleAddNewSession = async () => {
-    if (!token || !newSessionName.trim() || switching) {
-      toast.warning('Ingresa un nombre válido para la nueva sesión');
-      return;
-    }
-    setSwitching(true);
-    try {
-      // Llama a switch con el nuevo ID (crea implícitamente)
-      await handleSwitchSession(newSessionName);
-      toast.success(`Sesión '${newSessionName}' creada y activada. Reconectando...`);
-      setNewSessionName(''); // Limpia input
-    } catch (error) {
-      toast.error('Error al crear nueva sesión');
-    } finally {
-      setSwitching(false);
-    }
-  };
-
-
-  const handleResetSession = async () => {
-    if (!token || switching) return;
-    if (!window.confirm('¿Resetear sesión actual? Perderás creds, escanea QR nuevo.')) return;
-    setSwitching(true);
-    try {
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/bot/reset-session`, { sessionId: currentSession }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      toast.success(res.data.message);
-      fetchStatus();
-      fetchSessions();
-    } catch (error) {
-      toast.error('Error al resetear sesión');
-    } finally {
-      setSwitching(false);
-    }
-  };
-
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Administración del Bot</h2>
@@ -190,46 +110,7 @@ const AdminBot: React.FC = () => {
          status === 'disconnected' ? 'Desconectado ❌' : 
          status === 'loading' ? 'Cargando...' : 'Error ⚠️'}
       </p>
-      {/* Selector de sesiones */}
-      <div className={styles.sessionSelector}>
-        <label>Sesión actual: {currentSession}</label>
-        <select 
-          value={currentSession} 
-          onChange={(e) => handleSwitchSession(e.target.value)} 
-          disabled={switching || loading || !token || sessions.length === 0}
-          className={styles.select}
-        >
-          {sessions.map((sess) => (
-            <option key={sess} value={sess}>{sess}</option>
-          ))}
-        </select>
-        <button 
-          onClick={handleResetSession} 
-          disabled={switching || loading || !token || status !== 'disconnected'} 
-          className={styles.button}
-        >
-          Reset Sesión
-        </button>
-        {switching && <p>Cambiando sesión...</p>}
-      </div>
-      {/* CAMBIO: Input y botón para nueva sesión */}
-      <div className={styles.newSession}>
-        <input 
-          type="text" 
-          value={newSessionName} 
-          onChange={(e) => setNewSessionName(e.target.value)} 
-          placeholder="Nombre de nueva sesión (ej. nuevo-dispositivo)" 
-          className={styles.input}
-          disabled={switching || loading || !token}
-        />
-        <button 
-          onClick={handleAddNewSession} 
-          disabled={switching || loading || !token || !newSessionName.trim()} 
-          className={styles.button}
-        >
-          {switching ? 'Creando...' : 'Agregar Nueva Sesión'}
-        </button>
-      </div>
+      <p className={styles.sessionInfo}>Sesión actual: {process.env.REACT_APP_SESSION_ID || 'default'}</p>
       {status === 'disconnected' && qr && (
         <div className={styles.qrContainer}>
           <p>Escanea el QR para iniciar sesión (máximo 3 intentos):</p>
