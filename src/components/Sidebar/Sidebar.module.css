@@ -1,12 +1,12 @@
 .sidebar {
   position: fixed;
-  left: -180px;
+  left: -240px; /* Cambiado de -180px para ocultar completamente (width 200px) */
   top: 0;
   bottom: 0;
   width: 200px;
-  background-color: var(--sidebar-bg); /* Era #121212 fijo */
-  color: var(--sidebar-text); /* Era #e0e0e0 fijo */
-  padding: 20px 16px;
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding: 0px 16px;
   box-shadow: 2px 0 8px var(--shadow-color);
   transition: left 0.3s ease;
   z-index: 1000;
@@ -15,15 +15,17 @@
   gap: 16px;
 }
 
+
 .sidebar.visible {
   left: 0;
+  opacity: 100;
 }
 
 .sidebar ul {
   list-style: none;
   padding: 0;
   margin: 4;
-  margin-top: 1px;
+  margin-top: 21px;
 }
 
 .sidebar li {
@@ -36,7 +38,7 @@
   align-items: center;
   height: 50px;
   gap: 10px;
-  color: var(--text-color); /* Era #ccc */
+  color: var(--text-color);
   padding: 10px 12px;
   border-radius: 8px;
   text-decoration: none;
@@ -45,8 +47,8 @@
 }
 
 .sidebar a:hover {
-  background-color: var(--hover-bg); /* Era rgba fija */
-  color: var(--text-color); /* Ajuste para contraste */
+  background-color: var(--hover-bg);
+  color: var(--text-color);
 }
 
 .menuinteractivo {
@@ -55,12 +57,49 @@
 }
 
 .sidebar a.active {
-  background-color: var(--hover-bg); /* Ajuste */
+  background-color: var(--hover-bg);
   color: var(--text-color);
 }
 
 .sidebar a svg {
   font-size: 1.1rem;
+}
+
+.sidebarHintContainer{
+  position: absolute;
+  left: 235px;
+  width: 0.5vw;
+  height: 100vh;
+  cursor: pointer;
+  z-index: 1001;
+  padding: 8px;
+  border-radius: 0 8px 8px 0;
+}
+
+/* Nueva solapa indicadora */
+.sidebarHint {
+  position: absolute;
+  left: 232px; 
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding: 8px 4px;
+  border-radius: 0 8px 8px 0;
+  box-shadow: 2px 0 8px var(--shadow-color);
+  cursor: pointer;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+  font-size: 1.2rem;
+  z-index: 1000;
+}
+
+.sidebar.visible .sidebarHint {
+  opacity: 0; /* Ocultar solapa cuando sidebar abierta, para no molestar */
+  pointer-events: none;
+}
+
+.sidebarHint:hover {
+  transform: scale(1.1) translateY(-50%);
 }
 
 /* Borde izquierdo que activa por hover */
@@ -69,18 +108,28 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 20px;
+  width: 50px;
   z-index: 999;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .sidebar {
-    width: 100%;
-    left: -100%;
+    width: 100vw;
+    left: -112vw;
   }
 
   .sidebar.visible {
     left: 0;
+  }
+
+  .sidebarHintContainer{
+    left: 112vw; /* Ajuste para mobile */
+  }
+
+  .sidebarHint {
+    left: 112vw; /* Ajuste para mobile */
+    padding: 6px 3px;
+    font-size: 1rem;
   }
 }
