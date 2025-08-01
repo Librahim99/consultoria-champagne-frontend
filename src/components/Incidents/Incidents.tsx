@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, useContext } from 'react';
 import axios from 'axios';
-import { incident_status, incident_types } from '../../utils/enums';
+import { incident_status, incident_types, ranks } from '../../utils/enums';
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef, GridReadyEvent, ColumnState } from 'ag-grid-community';
 import { Incident, Client, User } from '../../utils/interfaces';
@@ -120,7 +120,7 @@ const Incidents: React.FC = () => {
     <div className={styles.container}>
       <h1 className={styles.title}>Incidencias</h1>
       {error && <p className={styles.error}>{error}</p>}
-      {userRank === 'Acceso Total' && (
+      {userRank === ranks.TOTALACCESS && (
         <button onClick={toggleForm} className={styles.button}>
           {showForm ? 'Cancelar' : 'Agregar Incidencia'}
         </button>

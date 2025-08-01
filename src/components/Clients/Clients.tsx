@@ -12,6 +12,7 @@ import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import ReactTooltip from 'react-tooltip';
+import { ranks } from '../../utils/enums';
 
 const schema = yup.object({
   name: yup.string().required('Nombre requerido').min(3, 'Mínimo 3 caracteres'),
@@ -82,7 +83,7 @@ const Clients: React.FC = () => {
     { field: 'lastUpdate', headerName: 'Última Actualización' },
     { field: 'vip', headerName: 'VIP', valueFormatter: p => p.value ? 'Sí' : 'No' },
     { field: 'active', headerName: 'Activo', valueFormatter: p => p.value ? 'Sí' : 'No' },
-    { headerName: 'Acciones', cellRenderer: (params: { data: Client; }) => userRank === 'Acceso Total' && <button onClick={() => handleEdit(params.data)} data-tip="Editar cliente">Editar</button> },
+    { headerName: 'Acciones', cellRenderer: (params: { data: Client; }) => userRank === ranks.TOTALACCESS && <button onClick={() => handleEdit(params.data)} data-tip="Editar cliente">Editar</button> },
   ], [userRank]);
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
@@ -99,7 +100,7 @@ const Clients: React.FC = () => {
     <div className={styles.container}>
       <h1 className={styles.title}>Clientes</h1>
       {error && <p className={styles.error}>{error}</p>}
-      {userRank === 'Acceso Total' && (
+      {userRank === ranks.TOTALACCESS && (
         <button onClick={toggleForm} className={styles.button} data-tip="Agregar o editar cliente">
           {showForm ? 'Cancelar' : 'Agregar Cliente'}
         </button>
