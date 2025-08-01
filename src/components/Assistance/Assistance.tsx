@@ -5,6 +5,7 @@ import { ThemeContext } from '../../contexts/ThemeContext'; // Agregado
 import { type Assistance, Client, User, DecodedToken } from '../../utils/interfaces';
 import styles from './Assistance.module.css'; // Corregido a Assistances.module.css
 import CustomTable from '../CustomTable/CustomTable';
+import { ranks } from '../../utils/enums';
 
 const Assistances: React.FC = () => {
   const [assistances, setAssistances] = useState<Assistance[]>([]);
@@ -192,7 +193,7 @@ const Assistances: React.FC = () => {
   storageKey="assistanceTable"
   />
 </div>
-      {(showAddForm && userRank === 'Acceso Total') && (
+      {(showAddForm && userRank === ranks.TOTALACCESS) && (
         <div className={styles.formContainer}>
           <h2>Agregar Asistencia</h2>
           <form onSubmit={handleSubmit}>

@@ -106,7 +106,7 @@ const Clients: React.FC = () => {
       {
         field: 'actions',
         headerName: 'Acciones',
-        cellRenderer: (data) => userRank === 'Acceso Total' && <button onClick={() => handleEdit(data)} data-tip="Editar cliente">Editar</button>,
+        cellRenderer: (data) => userRank === ranks.TOTALACCESS && <button onClick={() => handleEdit(data)} data-tip="Editar cliente">Editar</button>,
       },
     ]}
     pagination={true}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, useContext } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { incident_status } from '../../utils/enums';
+import { incident_status, ranks } from '../../utils/enums';
 import { ThemeContext } from '../../contexts/ThemeContext';
 import { type Pending, Client, User, DecodedToken } from '../../utils/interfaces';
 import styles from './Pending.module.css';
@@ -230,7 +230,7 @@ const PendingTask: React.FC = () => {
   storageKey="pendingTable"
   />
 </div>
-      {(showAddForm && userRank === 'Acceso Total') && (
+      {(showAddForm && userRank === ranks.TOTALACCESS) && (
         <div className={styles.formContainer}>
           <h2>Agregar Tarea Pendiente</h2>
           <form onSubmit={handleSubmit}>
