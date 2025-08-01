@@ -2,17 +2,16 @@ import React, { useContext } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ranks } from '../../utils/enums';
 import { UserContext } from '../../contexts/UserContext';
-import { ThemeContext } from '../../contexts/ThemeContext';
+import { ContextMenuProvider } from '../../contexts/ContextMenuProvider';
 import Sidebar from '../Sidebar/Sidebar';
 import { FaBars } from 'react-icons/fa';
 import styles from './Layout.module.css';
 
 const Layout: React.FC = () => {
   const { userRank } = useContext(UserContext);
-  const { theme, toggleTheme } = useContext(ThemeContext);
 
   return (
-    <div data-theme={theme} className={styles.appLayout}>
+    <div className={styles.appLayout}>
       {userRank !== ranks.GUEST && <Sidebar />}
 
       {/* {userRank !== ranks.GUEST && (
@@ -20,16 +19,10 @@ const Layout: React.FC = () => {
       )} */}
 
       <div className={styles.mainContent}>
-        <Outlet />
+        <ContextMenuProvider>
+          <Outlet />
+        </ContextMenuProvider>
       </div>
-
-      <button
-        onClick={toggleTheme}
-        className={styles.themeButton}
-        title="Cambiar tema (claro/oscuro)"
-      >
-        {theme === 'light' ? '🌙' : '☀️'}
-      </button>
     </div>
   );
 };
