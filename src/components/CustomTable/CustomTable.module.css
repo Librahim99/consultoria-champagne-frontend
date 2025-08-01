@@ -18,6 +18,7 @@ flex-direction: row;
   align-items: center;
   margin-bottom: 0.75rem;
   flex-wrap: wrap;
+  padding: 0 15px;
   gap: 0.3rem;
 }
 
@@ -52,7 +53,7 @@ flex-direction: row;
 }
 
 .table th {
-  background-color: var(--primary);
+  background-color: var(--button-background);
   color: var(--ag-header-foreground);
   font-weight: 600;
   position: sticky;
