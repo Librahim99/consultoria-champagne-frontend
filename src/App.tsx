@@ -16,8 +16,6 @@ import styles from './App.module.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './utils/gridConfig'; // Importa el archivo como módulo secundario
-import 'ag-grid-community/styles/ag-grid.css'; // Import AgGrid global CSS
-import 'ag-grid-community/styles/ag-theme-alpine.css'; // Light theme
 
 const App: React.FC = () => {
   return (
