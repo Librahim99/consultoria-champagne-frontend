@@ -51,17 +51,17 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
     e.preventDefault();
     const generalItems: MenuItem[] = [
       {
-        label: 'Recargar',
+        label: ' Recargar',
         icon: <FaSyncAlt />,
         onClick: () => window.location.reload(),
       },
       {
-        label: 'Ayuda',
+        label: ' Ayuda',
         icon: <FaQuestionCircle />,
         onClick: () => window.open('https://wa.me/1234567890?text=Hola%2C%20necesito%20ayuda%20con%20la%20app', '_blank'),
       },
       {
-        label: 'Cerrar Sesión',
+        label: ' Cerrar Sesión',
         icon: <FaSignOutAlt />,
         onClick: () => {
           localStorage.removeItem('token');
@@ -69,7 +69,7 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
         },
       },
       {
-        label: theme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro',
+        label: theme === 'light' ? ' Cambiar a modo oscuro' : ' Cambiar a modo claro',
         icon: theme === 'light' ? <FaMoon /> : <FaSun />,
         onClick: toggleTheme,
       },
