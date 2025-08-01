@@ -2,11 +2,10 @@ import React, { useState, useEffect, useMemo, useCallback, useRef, useContext } 
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { incident_status } from '../../utils/enums';
-import { AgGridReact } from 'ag-grid-react';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { ColDef, GridReadyEvent, ColumnState } from 'ag-grid-community';
 import { type Pending, Client, User, DecodedToken } from '../../utils/interfaces';
 import styles from './Pending.module.css';
+import CustomTable from '../CustomTable/CustomTable';
 
 // Función para mapear valores legibles a claves del enum
 const mapStatusToKey = (value: string): keyof typeof incident_status | '' => {
@@ -36,7 +35,6 @@ const PendingTask: React.FC = () => {
   const [loggedInUserId, setLoggedInUserId] = useState<string>('');
   const [clients, setClients] = useState<Client[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const gridRef = useRef<AgGridReact>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -172,88 +170,66 @@ const PendingTask: React.FC = () => {
     return user ? user.username : 'Desconocido';
   };
 
-  const columnDefs = useMemo<ColDef[]>(() => [
-    { 
-      field: 'clientId', 
-      headerName: 'Cliente', 
-      sortable: true, 
-      resizable: true, 
-      valueGetter: (params) => getClientName(params.data?.clientId || null) 
-    },
-    { 
-      field: 'userId', 
-      headerName: 'Usuario', 
-      sortable: true, 
-      resizable: true, 
-      valueGetter: (params) => getUserName(params.data?.userId || null) 
-    },
-    { 
-      field: 'assignedUserId', 
-      headerName: 'Asignado', 
-      sortable: true, 
-      resizable: true, 
-      valueGetter: (params) => getUserName(params.data?.assignedUserId || null) 
-    },
-    { field: 'date', headerName: 'Fecha', sortable: true, resizable: true, valueFormatter: params => new Date(params.value).toLocaleDateString() },
-    { field: 'status', headerName: 'Estado', sortable: true, resizable: true, valueFormatter: (params) => incident_status[params.value as keyof typeof incident_status] || params.value },
-    { field: 'detail', headerName: 'Detalle', sortable: true, resizable: true },
-    { field: 'observation', headerName: 'Observación', sortable: true, resizable: true },
-    { 
-      field: 'sequenceNumber', 
-      headerName: 'Número', 
-      sortable: true, 
-      resizable: true, 
-      valueFormatter: (params) => params.value ? params.value : 'Sin número asignado' 
-    },
-  ], [clients, users]);
-
-  const defaultColDef = useMemo<ColDef>(
-    () => ({
-      sortable: true,
-      resizable: true,
-      filter: true,
-    }),
-    []
-  );
-
-  const onGridReady = useCallback((params: GridReadyEvent) => {
-    const savedColumnOrder = localStorage.getItem('pendingTaskColumnOrder');
-    if (savedColumnOrder) {
-      const columnState: ColumnState[] = JSON.parse(savedColumnOrder);
-      params.api.applyColumnState({ state: columnState });
-    }
-    gridRef.current!.api.sizeColumnsToFit();
-  }, []);
-
-  const onColumnMoved = useCallback(() => {
-    if (gridRef.current) {
-      const columnState = gridRef.current.api.getColumnState();
-      localStorage.setItem('pendingTaskColumnOrder', JSON.stringify(columnState));
-    }
-  }, []);
-
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Tareas Pendientes</h1>
       {error && <p className={styles.error}>{error}</p>}
-      {userRank === 'Acceso Total' && (
-        <button onClick={toggleAddForm} className={styles.button}>
-          {showAddForm ? 'Cancelar' : 'Agregar Tarea Pendiente'}
-        </button>
-      )}
-      <div className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'} style={{ height: 400, width: '100%' }}>
-        <AgGridReact
-          ref={gridRef}
-          rowData={pendings}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          onGridReady={onGridReady}
-          onColumnMoved={onColumnMoved}
-          animateRows={true}
-          domLayout='autoHeight'
-          className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'}
-        />
-      </div>
+      <div style={{ height: 'auto', width: '100%' }}>
+  <CustomTable
+    rowData={pendings}
+    columnDefs={[
+      {
+        field: 'clientId',
+        headerName: 'Cliente',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => getClientName(value),
+      },
+      {
+        field: 'userId',
+        headerName: 'Usuario',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => getUserName(value),
+      },
+      {
+        field: 'assignedUserId',
+        headerName: 'Asignado',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => getUserName(value),
+      },
+      {
+        field: 'date',
+        headerName: 'Fecha',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => new Date(value).toLocaleDateString(),
+      },
+      {
+        field: 'status',
+        headerName: 'Estado',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => incident_status[value as keyof typeof incident_status] || value,
+      },
+      { field: 'detail', headerName: 'Detalle', sortable: true, filterable: true },
+      { field: 'observation', headerName: 'Observación', sortable: true, filterable: true },
+      {
+        field: 'sequenceNumber',
+        headerName: 'Número',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => value ? value : 'Sin número asignado',
+      },
+    ]}
+    pagination={true}
+    defaultPageSize={10}
+    searchable={true}
+    customizable={true}
+  storageKey="pendingTable"
+  />
+</div>
       {(showAddForm && userRank === 'Acceso Total') && (
         <div className={styles.formContainer}>
           <h2>Agregar Tarea Pendiente</h2>

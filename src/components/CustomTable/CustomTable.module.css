@@ -1,0 +1,329 @@
+.tableContainer {
+  margin: 0.5rem 0;
+  border-radius: 10px;
+  box-shadow: 0 3px 12px var(--shadow-color);
+  background-color: var(--card-background);
+  padding: 0.75rem;
+  position: relative;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.tableWrapper {
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border-radius: 6px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  background-color: var(--card-background);
+  table-layout: auto; /* Ajustar ancho al contenido */
+}
+
+.table th,
+.table td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  min-width: 5ch; /* Mínimo ~5 caracteres */
+  max-width: 30ch; /* Máximo ~30 caracteres */
+  overflow: hidden; /* Truncar texto largo */
+  text-overflow: ellipsis; /* Mostrar "..." */
+  white-space: nowrap; /* Evitar salto de línea */
+}
+
+.table th {
+  background-color: var(--primary);
+  color: var(--ag-header-foreground);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.table tbody tr {
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background-color: var(--hover-bg);
+  transform: scale(1.015);
+}
+
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.headerText {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sortIcon {
+  font-size: 0.85rem;
+  color: var(--ag-header-foreground);
+  transition: color 0.3s ease;
+}
+
+.filterWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  max-width: 100%; /* Evitar que el input desborde */
+}
+
+.filterIcon {
+  font-size: 0.75rem;
+  color: var(--secondary-text-color);
+}
+
+.headerFilterInput {
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  font-size: 0.75rem;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.headerFilterInput:focus {
+  border-color: var(--primary-light);
+  background-color: var(--card-background);
+  outline: none;
+}
+
+.searchInput {
+  width: 100%;
+  max-width: 250px;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background-color: var(--card-background);
+  color: var(--text-color);
+  font-size: 0.85rem;
+  transition: border-color 0.3s ease;
+}
+
+.searchInput:focus {
+  border-color: var(--primary-light);
+  outline: none;
+}
+
+.noData {
+  text-align: center;
+  padding: 2rem;
+  color: var(--secondary-text-color);
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.75rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.paginationButton {
+  padding: 0.5rem 1rem;
+  background-color: var(--button-background);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background-color: var(--button-hover);
+  transform: translateY(-2px);
+}
+
+.paginationButton:disabled {
+  background-color: gray;
+  cursor: not-allowed;
+}
+
+.paginationInfo {
+  color: var(--text-color);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.pageSizeSelect {
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-background);
+  color: var(--text-color);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.pageSizeSelect:focus {
+  border-color: var(--primary-light);
+  outline: none;
+}
+
+.configButton {
+  background-color: var(--button-background);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.configButton:hover {
+  background-color: var(--button-hover);
+  transform: translateY(-2px);
+}
+
+.configMenu {
+  position: absolute;
+  top: 3rem;
+  right: 0.75rem;
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+  min-width: 200px;
+}
+
+.configItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+  font-size: 0.85rem;
+}
+
+.configItem input {
+  cursor: pointer;
+}
+
+.configMenu p {
+  color: var(--secondary-text-color);
+  font-size: 0.8rem;
+  margin: 0.5rem 0;
+}
+
+.configMenuButton {
+  background-color: var(--button-background);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.configMenuButton:hover {
+  background-color: var(--button-hover);
+  transform: translateY(-2px);
+}
+
+.light {
+  --table-bg: var(--card-background);
+}
+
+.dark {
+  --table-bg: var(--card-background);
+}
+
+@media (max-width: 768px) {
+  .tableContainer {
+    padding: 0.5rem;
+  }
+  .tableWrapper {
+    max-height: 300px;
+  }
+  .table {
+    font-size: 0.8rem;
+  }
+  .table th,
+  .table td {
+    min-width: 4ch; /* Reducido para móviles */
+    max-width: 25ch; /* Reducido para móviles */
+  }
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 0.5rem;
+  }
+  .searchInput {
+    max-width: 100%;
+    font-size: 0.8rem;
+    padding: 0.4rem;
+  }
+  .configButton {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+  .configMenu {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 85%;
+    max-width: 260px;
+    padding: 0.75rem;
+  }
+  .pagination {
+    gap: 0.3rem;
+  }
+  .paginationButton, .pageSizeSelect {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+  .headerFilterInput {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.4rem;
+  }
+  .filterIcon {
+    font-size: 0.65rem;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

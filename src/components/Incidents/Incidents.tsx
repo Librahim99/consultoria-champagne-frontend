@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, useContext } from 'react';
 import axios from 'axios';
 import { incident_status, incident_types } from '../../utils/enums';
-import { AgGridReact } from 'ag-grid-react';
-import { ColDef, GridReadyEvent, ColumnState } from 'ag-grid-community';
 import { Incident, Client, User } from '../../utils/interfaces';
 import styles from './Incidents.module.css';
 import Modal from 'react-modal';
@@ -12,6 +10,7 @@ import { ThemeContext } from '../../contexts/ThemeContext';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import CustomTable from '../CustomTable/CustomTable';
 
 const schema = yup.object({
   clientId: yup.string().required('Cliente requerido'),
@@ -35,7 +34,6 @@ const Incidents: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState<Client[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const gridRef = useRef<AgGridReact>(null);
   const { register, handleSubmit, formState: { errors }, reset } = useForm({ resolver: yupResolver(schema) });
 
   useEffect(() => {
@@ -80,66 +78,63 @@ const Incidents: React.FC = () => {
   const getClientName = (clientId: string | null) => clients.find(c => c._id === clientId)?.name || 'Desconocido';
   const getUserName = (userId: string | null) => users.find(u => u._id === userId)?.username || 'Desconocido';
 
-  const columnDefs = useMemo<ColDef[]>(() => [
-    { field: 'clientId', headerName: 'Cliente', valueGetter: params => getClientName(params.data?.clientId || null) },
-    { field: 'userId', headerName: 'Usuario', valueGetter: params => getUserName(params.data?.userId || null) },
-    { field: 'executiveId', headerName: 'Ejecutivo', valueGetter: params => getUserName(params.data?.executiveId || null) },
-    { field: 'assignedUserId', headerName: 'Asignado', valueGetter: params => getUserName(params.data?.assignedUserId || null) },
-    { field: 'detail', headerName: 'Detalle' },
-    { field: 'order', headerName: 'Orden' },
-    { field: 'status', headerName: 'Estado' },
-    { field: 'creationDate', headerName: 'Fecha de Creación' },
-    { field: 'sequenceNumber', headerName: 'Número', valueFormatter: params => params.value ? params.value : 'Sin número asignado' },
-  ], [clients, users]);
-
-  const defaultColDef = useMemo<ColDef>(() => ({
-    sortable: true,
-    resizable: true,
-    filter: true,
-  }), []);
-
-  const onGridReady = useCallback((params: GridReadyEvent) => {
-    const savedColumnOrder = localStorage.getItem('incidentsColumnOrder');
-    if (savedColumnOrder) {
-      const columnState: ColumnState[] = JSON.parse(savedColumnOrder);
-      params.api.applyColumnState({ state: columnState });
-    }
-    gridRef.current!.api.sizeColumnsToFit();
-  }, []);
-
-  const onColumnMoved = useCallback(() => {
-    if (gridRef.current) {
-      const columnState = gridRef.current.api.getColumnState();
-      localStorage.setItem('incidentsColumnOrder', JSON.stringify(columnState));
-    }
-  }, []);
-
   if (loading) return <Spinner />;
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Incidencias</h1>
       {error && <p className={styles.error}>{error}</p>}
-      {userRank === 'Acceso Total' && (
-        <button onClick={toggleForm} className={styles.button}>
-          {showForm ? 'Cancelar' : 'Agregar Incidencia'}
-        </button>
-      )}
-      <div className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'} style={{ height: 400, width: '100%' }}>
-        <AgGridReact
-          ref={gridRef}
-          rowData={incidents}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          onGridReady={onGridReady}
-          onColumnMoved={onColumnMoved}
-          pagination={true}
-          paginationPageSize={10}
-          animateRows={true}
-          domLayout='autoHeight'
-          className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'}
-        />
-      </div>
+      <div style={{ height: 'auto', width: '100%' }}>
+  <CustomTable
+    rowData={incidents}
+    columnDefs={[
+      {
+        field: 'clientId',
+        headerName: 'Cliente',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => getClientName(value),
+      },
+      {
+        field: 'userId',
+        headerName: 'Usuario',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => getUserName(value),
+      },
+      {
+        field: 'executiveId',
+        headerName: 'Ejecutivo',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => getUserName(value),
+      },
+      {
+        field: 'assignedUserId',
+        headerName: 'Asignado',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => getUserName(value),
+      },
+      { field: 'detail', headerName: 'Detalle', sortable: true, filterable: true },
+      { field: 'order', headerName: 'Orden', sortable: true, filterable: true },
+      { field: 'status', headerName: 'Estado', sortable: true, filterable: true },
+      { field: 'creationDate', headerName: 'Fecha de Creación', sortable: true, filterable: true },
+      {
+        field: 'sequenceNumber',
+        headerName: 'Número',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => value ? value : 'Sin número asignado',
+      },
+    ]}
+    pagination={true}
+    defaultPageSize={10}
+    searchable={true}
+    customizable={true}
+  storageKey="incidentTable"
+  />
+</div>
       <Modal isOpen={showForm} onRequestClose={toggleForm} className={styles.modal} contentLabel="Formulario Incidencia">
         <h2>Agregar Incidencia</h2>
         <form onSubmit={handleSubmit(onSubmit)}>

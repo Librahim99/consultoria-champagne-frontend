@@ -13,6 +13,8 @@ import Layout from './components/Layout/Layout';
 import { UserContextProvider } from './contexts/UserContext';
 import { ThemeContextProvider } from './contexts/ThemeContext';
 import styles from './App.module.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './utils/gridConfig'; // Importa el archivo como módulo secundario
 import 'ag-grid-community/styles/ag-grid.css'; // Import AgGrid global CSS
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Light theme
@@ -23,6 +25,7 @@ const App: React.FC = () => {
       <ThemeContextProvider>
         <Router>
           <div className={styles.app}>
+            <ToastContainer position="top-right" autoClose={2000} />
             <Routes>
               <Route path="/" element={<Login />} />
               <Route path="/register" element={<Register />} />

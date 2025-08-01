@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, useContext } from 'react';
 import axios, { AxiosResponse } from 'axios';
-import { AgGridReact } from 'ag-grid-react';
-import { ColDef, GridReadyEvent, ColumnState } from 'ag-grid-community';
 import { Client } from '../../utils/interfaces';
 import styles from './Clients.module.css';
 import Modal from 'react-modal';
@@ -12,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import ReactTooltip from 'react-tooltip';
+import CustomTable from '../CustomTable/CustomTable';
 
 const schema = yup.object({
   name: yup.string().required('Nombre requerido').min(3, 'Mínimo 3 caracteres'),
@@ -28,7 +27,6 @@ const Clients: React.FC = () => {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
-  const gridRef = useRef<AgGridReact>(null);
   const { register, handleSubmit, formState: { errors }, reset } = useForm({ resolver: yupResolver(schema) });
 
   useEffect(() => {
@@ -76,49 +74,46 @@ const Clients: React.FC = () => {
     setEditingClient(null);
   };
 
-  const columnDefs = useMemo<ColDef[]>(() => [
-    { field: 'common', headerName: 'Común' },
-    { field: 'name', headerName: 'Nombre' },
-    { field: 'lastUpdate', headerName: 'Última Actualización' },
-    { field: 'vip', headerName: 'VIP', valueFormatter: p => p.value ? 'Sí' : 'No' },
-    { field: 'active', headerName: 'Activo', valueFormatter: p => p.value ? 'Sí' : 'No' },
-    { headerName: 'Acciones', cellRenderer: (params: { data: Client; }) => userRank === 'Acceso Total' && <button onClick={() => handleEdit(params.data)} data-tip="Editar cliente">Editar</button> },
-  ], [userRank]);
-
-  const onGridReady = useCallback((params: GridReadyEvent) => {
-    // ... original
-  }, []);
-
-  const onColumnMoved = useCallback(() => {
-    // ... original
-  }, []);
-
   if (loading) return <Spinner />;
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Clientes</h1>
       {error && <p className={styles.error}>{error}</p>}
-      {userRank === 'Acceso Total' && (
-        <button onClick={toggleForm} className={styles.button} data-tip="Agregar o editar cliente">
-          {showForm ? 'Cancelar' : 'Agregar Cliente'}
-        </button>
-      )}
-      <div className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'}>
-        <AgGridReact
-          ref={gridRef}
-          rowData={clients}
-          columnDefs={columnDefs}
-          defaultColDef={{ sortable: true, resizable: true, filter: true }}
-          pagination={true}
-          paginationPageSize={10}
-          onGridReady={onGridReady}
-          onColumnMoved={onColumnMoved}
-          animateRows={true}
-          domLayout='autoHeight'
-          className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'}
-        />
-      </div>
+      <div style={{ height: 'auto', width: '100%' }}>
+  <CustomTable
+    rowData={clients}
+    columnDefs={[
+      { field: 'common', headerName: 'Común', sortable: true, filterable: true },
+      { field: 'name', headerName: 'Nombre', sortable: true, filterable: true },
+      { field: 'lastUpdate', headerName: 'Última Actualización', sortable: true, filterable: true },
+      {
+        field: 'vip',
+        headerName: 'VIP',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => value ? 'Sí' : 'No',
+      },
+      {
+        field: 'active',
+        headerName: 'Activo',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => value ? 'Sí' : 'No',
+      },
+      {
+        field: 'actions',
+        headerName: 'Acciones',
+        cellRenderer: (data) => userRank === 'Acceso Total' && <button onClick={() => handleEdit(data)} data-tip="Editar cliente">Editar</button>,
+      },
+    ]}
+    pagination={true}
+    defaultPageSize={10}
+    searchable={true}
+    customizable={true}
+  storageKey="clientTable"
+  />
+</div>
       <Modal isOpen={showForm} onRequestClose={toggleForm} className={styles.modal} contentLabel="Formulario Cliente">
         <h2 className={styles.modalTitle}>{editingClient ? 'Editar Cliente' : 'Agregar Cliente'}</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
