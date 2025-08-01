@@ -15,7 +15,6 @@ import { ThemeContextProvider } from './contexts/ThemeContext';
 import styles from './App.module.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './utils/gridConfig'; // Importa el archivo como módulo secundario
 
 const App: React.FC = () => {
   return (
