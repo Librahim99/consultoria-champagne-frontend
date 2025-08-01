@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, useContext } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { AgGridReact } from 'ag-grid-react';
 import { ThemeContext } from '../../contexts/ThemeContext'; // Agregado
-import { ColDef, GridReadyEvent, ColumnState } from 'ag-grid-community';
 import { type Assistance, Client, User, DecodedToken } from '../../utils/interfaces';
 import styles from './Assistance.module.css'; // Corregido a Assistances.module.css
+import CustomTable from '../CustomTable/CustomTable';
 
 const Assistances: React.FC = () => {
   const [assistances, setAssistances] = useState<Assistance[]>([]);
@@ -28,7 +27,6 @@ const Assistances: React.FC = () => {
   const [loggedInUserId, setLoggedInUserId] = useState<string>('');
   const [clients, setClients] = useState<Client[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const gridRef = useRef<AgGridReact>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -147,78 +145,53 @@ const Assistances: React.FC = () => {
     return user ? user.username : 'Desconocido';
   };
 
-  const columnDefs = useMemo<ColDef[]>(() => [
-    { 
-      field: 'clientId', 
-      headerName: 'Cliente', 
-      sortable: true, 
-      resizable: true, 
-      valueGetter: (params) => getClientName(params.data?.clientId || null) 
-    },
-    { 
-      field: 'userId', 
-      headerName: 'Usuario', 
-      sortable: true, 
-      resizable: true, 
-      valueGetter: (params) => getUserName(params.data?.userId || null) 
-    },
-    { field: 'date', headerName: 'Fecha', sortable: true, resizable: true, valueFormatter: params => new Date(params.value).toLocaleDateString() },
-    { field: 'detail', headerName: 'Detalle', sortable: true, resizable: true },
-    { field: 'contact', headerName: 'Contacto', sortable: true, resizable: true },
-    { field: 'timeSpent', headerName: 'Tiempo Gastado (min)', sortable: true, resizable: true },
-    { 
-      field: 'sequenceNumber', 
-      headerName: 'Número', 
-      sortable: true, 
-      resizable: true, 
-      valueFormatter: (params) => params.value ? params.value : 'Sin número asignado' 
-    },
-  ], [clients, users]);
-
-  const defaultColDef = useMemo<ColDef>(() => ({
-    sortable: true,
-    resizable: true,
-    filter: true,
-  }), []);
-
-  const onGridReady = useCallback((params: GridReadyEvent) => {
-    const savedColumnOrder = localStorage.getItem('assistancesColumnOrder');
-    if (savedColumnOrder) {
-      const columnState: ColumnState[] = JSON.parse(savedColumnOrder);
-      params.api.applyColumnState({ state: columnState });
-    }
-    gridRef.current!.api.sizeColumnsToFit();
-  }, []);
-
-  const onColumnMoved = useCallback(() => {
-    if (gridRef.current) {
-      const columnState = gridRef.current.api.getColumnState();
-      localStorage.setItem('assistancesColumnOrder', JSON.stringify(columnState));
-    }
-  }, []);
-
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Asistencias</h1>
       {error && <p className={styles.error}>{error}</p>}
-      {userRank === 'Acceso Total' && (
-        <button onClick={toggleAddForm} className={styles.button}>
-          {showAddForm ? 'Cancelar' : 'Agregar Asistencia'}
-        </button>
-      )}
-      <div className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'} style={{ height: 400, width: '100%' }}> {/* Conditional class on wrapper */}
-        <AgGridReact
-          ref={gridRef}
-          rowData={assistances}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          onGridReady={onGridReady}
-          onColumnMoved={onColumnMoved}
-          animateRows={true}
-          domLayout='autoHeight'
-          className={theme === 'light' ? 'ag-theme-alpine' : 'ag-theme-alpine-dark'}
-        />
-      </div>
+      <div style={{ height: 'auto', width: '100%' }}>
+  <CustomTable
+    rowData={assistances}
+    columnDefs={[
+      {
+        field: 'clientId',
+        headerName: 'Cliente',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => getClientName(value),
+      },
+      {
+        field: 'userId',
+        headerName: 'Usuario',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => getUserName(value),
+      },
+      {
+        field: 'date',
+        headerName: 'Fecha',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => new Date(value).toLocaleDateString(),
+      },
+      { field: 'detail', headerName: 'Detalle', sortable: true, filterable: true },
+      { field: 'contact', headerName: 'Contacto', sortable: true, filterable: true },
+      { field: 'timeSpent', headerName: 'Tiempo Gastado (min)', sortable: true, filterable: true },
+      {
+        field: 'sequenceNumber',
+        headerName: 'Número',
+        sortable: true,
+        filterable: true,
+        valueFormatter: (value) => value ? value : 'Sin número asignado',
+      },
+    ]}
+    pagination={true}
+    defaultPageSize={10}
+    searchable={true}
+    customizable={true}
+  storageKey="assistanceTable"
+  />
+</div>
       {(showAddForm && userRank === 'Acceso Total') && (
         <div className={styles.formContainer}>
           <h2>Agregar Asistencia</h2>
