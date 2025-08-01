@@ -4,6 +4,11 @@ export interface User {
   username: string;
   rank: string;
   entryDate: string;
+  number?: string;
+  active?: boolean;
+  lastLogin?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Interfaz para el cliente

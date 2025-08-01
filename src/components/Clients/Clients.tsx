@@ -11,6 +11,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import ReactTooltip from 'react-tooltip';
 import CustomTable from '../CustomTable/CustomTable';
+import { ranks } from '../../utils/enums';
 
 const schema = yup.object({
   name: yup.string().required('Nombre requerido').min(3, 'Mínimo 3 caracteres'),
@@ -73,6 +74,7 @@ const Clients: React.FC = () => {
     if (!showForm) reset({ name: '', common: '', vip: false, active: true });
     setEditingClient(null);
   };
+
 
   if (loading) return <Spinner />;
 

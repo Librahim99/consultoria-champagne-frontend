@@ -1,5 +1,5 @@
 export const ranks = {
-  TOTALACCESS: 'Acceso Total',
+  TOTALACCESS: 'CEO',
   CONSULTOR: 'Consultor',
   CONSULTORCHIEF:'Jefe de Consultoría',
   CONSULTORJR: 'Consultor Junior',

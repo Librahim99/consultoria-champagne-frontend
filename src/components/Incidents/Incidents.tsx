@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, useContext } from 'react';
 import axios from 'axios';
-import { incident_status, incident_types } from '../../utils/enums';
+import { incident_status, incident_types, ranks } from '../../utils/enums';
 import { Incident, Client, User } from '../../utils/interfaces';
 import styles from './Incidents.module.css';
 import Modal from 'react-modal';
