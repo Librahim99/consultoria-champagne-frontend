@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useContext, useEffect, useRef } from 'react';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { FaSortUp, FaSortDown, FaSort, FaCog, FaUndo, FaSearch } from 'react-icons/fa';
+import { FaSortUp, FaSortDown, FaSort, FaCog, FaUndo, FaFilter, FaSync } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import styles from './CustomTable.module.css';
 
@@ -25,18 +25,20 @@ interface CustomTableProps {
   className?: string;
   customizable?: boolean;
   storageKey?: string;
+  onRefresh?: () => void; // Prop opcional para re-fetch
 }
 
 const CustomTable: React.FC<CustomTableProps> = ({
   rowData,
   columnDefs,
   pagination = true,
-  pageSizeOptions = [10, 20, 50],
-  defaultPageSize = 10,
+  pageSizeOptions = [15, 50, 100],
+  defaultPageSize = 15,
   searchable = true,
   className = '',
   customizable = false,
   storageKey = 'defaultTable',
+  onRefresh,
 }) => {
   const { theme } = useContext(ThemeContext);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
@@ -47,9 +49,11 @@ const CustomTable: React.FC<CustomTableProps> = ({
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [columnOrder, setColumnOrder] = useState<string[]>([]);
   const [showConfigMenu, setShowConfigMenu] = useState(false);
+  const [showFilter, setShowFilter] = useState<{ [key: string]: boolean }>({});
   const isInitialLoad = useRef(true);
   const hasUserChangedConfig = useRef(false);
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const filterRefs = useRef<{ [key: string]: HTMLDivElement | null }>({}); // Refs para inputs de filtro
 
   const getDefaultColumns = useCallback(() => ({
     visible: columnDefs.filter(col => !col.hiddenByDefault).map(col => col.field),
@@ -121,7 +125,7 @@ const CustomTable: React.FC<CustomTableProps> = ({
           }
           toastTimeoutRef.current = setTimeout(() => {
             toast.success('Configuración de tabla guardada', { autoClose: 2000 });
-          }, 2000);
+          }, 1000);
         } catch (err) {
           console.error(`Error guardando config en ${key}:`, err);
           toast.error('Error al guardar la configuración');
@@ -146,6 +150,24 @@ const CustomTable: React.FC<CustomTableProps> = ({
     };
   }, []);
 
+  // Cierre de inputs al clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        !Object.values(filterRefs.current).some(ref => ref && ref.contains(target)) &&
+        !(target instanceof Element && target.closest(`.${styles.configMenu}`))
+      ) {
+        setShowFilter({});
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const processedColumns = useMemo(() => {
     return columnOrder
       .filter(field => visibleColumns.includes(field))
@@ -159,17 +181,21 @@ const CustomTable: React.FC<CustomTableProps> = ({
     if (globalSearch) {
       const searchLower = globalSearch.toLowerCase();
       data = data.filter((row) =>
-        Object.values(row).some((val) =>
-          String(val).toLowerCase().includes(searchLower)
-        )
+        processedColumns.some((col) => {
+          const val = col.valueFormatter ? col.valueFormatter(row[col.field] || '') : row[col.field] ?? '';
+          return String(val).toLowerCase().includes(searchLower);
+        })
       );
     }
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
-        data = data.filter((row) =>
-          String(row[key]).toLowerCase().includes(value.toLowerCase())
-        );
+        const lowerValue = value.toLowerCase();
+        const col = columnDefs.find(c => c.field === key);
+        data = data.filter((row) => {
+          const val = col?.valueFormatter ? col.valueFormatter(row[key] || '') : row[key] ?? '';
+          return String(val).toLowerCase().includes(lowerValue);
+        });
       }
     });
 
@@ -184,7 +210,7 @@ const CustomTable: React.FC<CustomTableProps> = ({
     }
 
     return data;
-  }, [rowData, globalSearch, filters, sortConfig]);
+  }, [rowData, globalSearch, filters, sortConfig, columnDefs, processedColumns]);
 
   const paginatedData = useMemo(() => {
     if (!pagination) return processedData;
@@ -198,8 +224,20 @@ const CustomTable: React.FC<CustomTableProps> = ({
     setCurrentPage(1);
   }, [globalSearch, filters, pageSize]);
 
-  const handleFilterChange = (key: string, value: string) => {
+  const handleFilterChange = useCallback((key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const resetFilters = () => {
+    setFilters({});
+    setGlobalSearch('');
+    setShowFilter({});
+    setSortConfig(null); // Resetear ordenamiento
+    setCurrentPage(1); // Volver a la primera página
+    if (onRefresh) {
+      onRefresh(); // Llama al fetch del componente padre si existe
+    }
+    toast.info('Filtros, búsqueda y orden reseteados', { autoClose: 2000 });
   };
 
   const requestSort = useCallback((key: string) => {
@@ -213,6 +251,11 @@ const CustomTable: React.FC<CustomTableProps> = ({
   const getSortIcon = (key: string) => {
     if (!sortConfig || sortConfig.key !== key) return <FaSort />;
     return sortConfig.direction === 'asc' ? <FaSortUp /> : <FaSortDown />;
+  };
+
+  const toggleFilter = (field: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowFilter((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
   const onDragStart = (e: React.DragEvent<HTMLTableCellElement>, field: string) => {
@@ -254,7 +297,7 @@ const CustomTable: React.FC<CustomTableProps> = ({
 
   const renderConfigMenu = () => (
     <div className={styles.configMenu}>
-      <h3>Configurar Columnas</h3>
+      <h3>Personalizar Columnas</h3>
       {columnDefs.map(col => (
         <div key={col.field} className={styles.configItem}>
           <input
@@ -287,11 +330,20 @@ const CustomTable: React.FC<CustomTableProps> = ({
             className={styles.searchInput}
           />
         )}
+        <div className={styles.buttonsContainer}>
+        <button
+          className={styles.refreshButton}
+          onClick={resetFilters}
+          title="Refrescar y resetear filtros"
+          >
+          <FaSync />
+        </button>
         {customizable && (
           <button className={styles.configButton} onClick={() => setShowConfigMenu(!showConfigMenu)}>
-            <FaCog /> Configurar
+            <FaCog /> Personalizar
           </button>
         )}
+        </div>
       </div>
       {showConfigMenu && renderConfigMenu()}
       <div className={styles.tableWrapper}>
@@ -313,14 +365,19 @@ const CustomTable: React.FC<CustomTableProps> = ({
                     <span className={styles.headerText}>
                       {col.headerName}
                       {col.sortable && <span className={styles.sortIcon}>{getSortIcon(col.field)}</span>}
+                      {col.filterable && (
+                        <button className={styles.filterToggle} onClick={(e) => toggleFilter(col.field, e)}>
+                          <FaFilter />
+                        </button>
+                      )}
                     </span>
-                    {col.filterable && (
-                      <div className={styles.filterWrapper}>
-                        <FaSearch className={styles.filterIcon} />
+                    {col.filterable && showFilter[col.field] && (
+                      <div className={styles.filterWrapper} ref={(el) => (filterRefs.current[col.field] = el)}>
                         <input
                           type="text"
                           placeholder="Filtrar"
                           value={filters[col.field] || ''}
+                          onClick={(e) => e.stopPropagation()}
                           onChange={(e) => handleFilterChange(col.field, e.target.value)}
                           className={styles.headerFilterInput}
                         />
@@ -339,9 +396,9 @@ const CustomTable: React.FC<CustomTableProps> = ({
                     const cellValue = col.cellRenderer
                       ? col.cellRenderer(row)
                       : col.valueFormatter
-                      ? col.valueFormatter(row[col.field])
+                      ? col.valueFormatter(row[col.field] || '')
                       : row[col.field] ?? '';
-                    const displayValue = cellValue.toString(); // Para tooltip
+                    const displayValue = String(cellValue);
                     return (
                       <td key={`${index}-${col.field}`} title={displayValue}>
                         {cellValue}

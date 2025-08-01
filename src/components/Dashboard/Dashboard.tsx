@@ -47,7 +47,7 @@ const Dashboard: React.FC = () => {
     <div className={styles.container} data-theme={theme}>
       <h1 className={styles.title}>Portal de Gestión</h1>
       <div className={styles.grid}>
-        {userRank !== ranks.GUEST && (
+        {(userRank === ranks.TOTALACCESS || userRank === ranks.CONSULTORCHIEF) && (
           <Link to="/users" className={styles.card}>
             <FaUser className={styles.icon} />
             <h2>Usuarios</h2>

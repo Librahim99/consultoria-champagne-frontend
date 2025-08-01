@@ -110,7 +110,7 @@ const Clients: React.FC = () => {
       },
     ]}
     pagination={true}
-    defaultPageSize={10}
+    defaultPageSize={15}
     searchable={true}
     customizable={true}
   storageKey="clientTable"
