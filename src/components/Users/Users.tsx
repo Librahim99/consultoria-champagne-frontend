@@ -1,5 +1,3 @@
-// ✅ Users.tsx con tipado correcto, gráfico, acción rápida, exportación CSV y sin errores de compilación
-
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { ranks } from '../../utils/enums';
@@ -11,20 +9,61 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import EditUserModal from './EditUserModal';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
+import { LabelList } from 'recharts';
+import { BarProps } from 'recharts';
 import Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 
 interface UserMetrics {
-  asignados: number;
   abiertos: number;
   cerrados: number;
   promedioResolucion: number;
-  diasActivos: number;
   ultimoCierre: string | null;
 }
 
 const Users: React.FC = () => {
+  const exportCSV = () => {
+  const rows = users.map(user => {
+    const m = userMetricsMap[user._id];
+    const total = (m?.cerrados || 0) + (m?.abiertos || 0);
+    const porcentaje = total > 0 ? Math.round((m?.cerrados || 0) / total * 100) : 0;
+    return {
+      Usuario: user.username,
+      Rol: user.rank,
+      Número: user.number || '',
+      Cerrados: m?.cerrados || 0,
+      Abiertos: m?.abiertos || 0,
+      PromedioResolucion: m?.promedioResolucion || 0,
+      PorcentajeCierre: porcentaje
+    };
+  });
+  const csv = Papa.unparse(rows);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  saveAs(blob, 'usuarios_metricas.csv');
+};
+
+const exportXLSX = () => {
+  const rows = users.map(user => {
+    const m = userMetricsMap[user._id];
+    const total = (m?.cerrados || 0) + (m?.abiertos || 0);
+    const porcentaje = total > 0 ? Math.round((m?.cerrados || 0) / total * 100) : 0;
+    return {
+      Usuario: user.username,
+      Rol: user.rank,
+      Número: user.number || '',
+      Cerrados: m?.cerrados || 0,
+      Abiertos: m?.abiertos || 0,
+      PromedioResolucion: m?.promedioResolucion || 0,
+      PorcentajeCierre: porcentaje
+    };
+  });
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuarios');
+  XLSX.writeFile(workbook, 'usuarios_metricas.xlsx');
+};
+
   const [users, setUsers] = useState<User[]>([]);
   const [userMetricsMap, setUserMetricsMap] = useState<Record<string, UserMetrics>>({});
   const { theme } = useContext(ThemeContext);
@@ -76,6 +115,12 @@ const Users: React.FC = () => {
     fetchUsers();
   }, []);
 
+  const getPerformanceClass = (percentage: number): 'low' | 'medium' | 'high' => {
+    if (percentage < 50) return 'low';
+    if (percentage < 80) return 'medium';
+    return 'high';
+  };
+
   const openEditModal = (user: User) => {
     setModalUser(user);
   };
@@ -118,59 +163,32 @@ const Users: React.FC = () => {
     }
   };
 
-  const exportCSV = () => {
-    const rows = users.map(user => {
-      const m = userMetricsMap[user._id];
-      return {
-        Usuario: user.username,
-        Rol: user.rank,
-        Número: user.number || '',
-        Cerrados: m?.cerrados || 0,
-        Asignados: m?.asignados || 0,
-        PromedioResolucion: m?.promedioResolucion || 0,
-        DíasActivos: m?.diasActivos || 0,
-      };
-    });
-    const csv = Papa.unparse(rows);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, 'usuarios_metricas.csv');
-  };
-      const exportXLSX = () => {
-    const rows = users.map(user => {
-      const m = userMetricsMap[user._id];
-      return {
-        Usuario: user.username,
-        Rol: user.rank,
-        Número: user.number || '',
-        Cerrados: m?.cerrados || 0,
-        Asignados: m?.asignados || 0,
-        PromedioResolucion: m?.promedioResolucion || 0,
-      };
-    });
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuarios');
-    XLSX.writeFile(workbook, 'usuarios_metricas.xlsx');
-  };
-
   const filteredUsers = users.filter(user =>
     user.username.toLowerCase().includes(filter.toLowerCase()) ||
     user.rank.toLowerCase().includes(filter.toLowerCase())
   );
 
-  const chartData = users.map(user => ({
+  const chartData = users.map(user => {
+  const m = userMetricsMap[user._id];
+  const total = (m?.cerrados || 0) + (m?.abiertos || 0);
+  const porcentaje = total > 0 ? Math.round((m?.cerrados || 0) / total * 100) : 0;
+  return {
     name: user.username,
-    Cerrados: userMetricsMap[user._id]?.cerrados || 0,
-    Asignados: userMetricsMap[user._id]?.asignados || 0,
-    Promedio: userMetricsMap[user._id]?.promedioResolucion || 0,
-  }));
+    Cerrados: m?.cerrados || 0,
+    Abiertos: m?.abiertos || 0,
+    CierrePorcentaje: porcentaje
+  };
+});
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>👥 Panel de Usuarios 👥</h1>
-      <button onClick={exportCSV} className={styles.exportButton}>📤 Exportar CSV</button>
-      <button onClick={exportXLSX} className={styles.exportButton}>📥 Exportar XLSX</button>
-      {error && <p className={styles.error}>{error}</p>}
+
+<div className={styles.exportActions}>
+  <button onClick={exportCSV} className={styles.exportButton}>📤 Exportar CSV</button>
+  <button onClick={exportXLSX} className={styles.exportButton}>📥 Exportar XLSX</button>
+</div>
+
 
       <input
         type="text"
@@ -180,69 +198,126 @@ const Users: React.FC = () => {
       />
 
       <div className={styles.chartCard}>
-  <ResponsiveContainer width="100%" height={350}>
+  <h2 style={{ textAlign: 'center', color: 'var(--text-color)', marginBottom: '1rem' }}>
+    📊 Rendimiento Global de Usuarios
+  </h2>
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '2rem',
+    marginBottom: '1.5rem',
+    flexWrap: 'wrap',
+    color: 'var(--text-color)',
+    fontWeight: 500
+  }}>
+    <div>🔓 Abiertos Totales: {users.reduce((acc, u) => acc + (userMetricsMap[u._id]?.abiertos || 0), 0)}</div>
+    <div>✅ Cerrados Totales: {users.reduce((acc, u) => acc + (userMetricsMap[u._id]?.cerrados || 0), 0)}</div>
+    <div>📈 % Cierre Promedio: {
+      (() => {
+        const abiertos = users.reduce((acc, u) => acc + (userMetricsMap[u._id]?.abiertos || 0), 0);
+        const cerrados = users.reduce((acc, u) => acc + (userMetricsMap[u._id]?.cerrados || 0), 0);
+        const total = abiertos + cerrados;
+        return total > 0 ? Math.round((cerrados / total) * 100) + '%' : '0%';
+      })()
+    }</div>
+  </div>
+  <ResponsiveContainer width="100%" height={380}>
     <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="name" />
-      <YAxis />
-      <Tooltip />
-      <Legend />
-      <Bar dataKey="Cerrados" stackId="a" fill="#28a745" />
-      <Bar dataKey="Asignados" stackId="a" fill="#007bff" />
-      <Bar dataKey="Promedio" fill="#ffc107" />
-    </BarChart>
-  </ResponsiveContainer>
-</div>
+  <CartesianGrid strokeDasharray="3 3" />
+  <XAxis dataKey="name" />
+  <YAxis />
+  <Tooltip />
+  <Legend />
+  <Bar dataKey="Abiertos" stackId="a" fill="#007bff" />
+  <Bar dataKey="Cerrados" stackId="a" fill="#28a745" />
+  <Bar
+  dataKey="CierrePorcentaje"
+  name="% Cierre"
+  shape={(props: any) => {
+    const x = Number(props.x ?? 0);
+    const y = Number(props.y ?? 0);
+    const width = Number(props.width ?? 0);
+    const height = Number(props.height ?? 0);
+    const value = props.payload?.CierrePorcentaje ?? 0;
+
+    let color = '#f44336';
+    if (value >= 80) color = '#4caf50';
+    else if (value >= 50) color = '#ffc107';
+
+    return (
+      <g>
+        <rect x={x} y={y} width={width} height={height} fill={color} rx={4} ry={4} />
+        <text x={x + width / 2} y={y - 5} fill="#fff" textAnchor="middle" fontSize={12}>
+          {value}%
+        </text>
+      </g>
+    );
+  }}
+/>
+</BarChart>
+        </ResponsiveContainer>
+      </div>
 
 
       <div className={styles.userGrid}>
-        {filteredUsers.map((user) => (
-          <motion.div
-            key={user._id}
-            className={styles.userCard}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className={styles.avatar}>
-              {user.username.charAt(0).toUpperCase()}
-            </div>
-            <div className={styles.userHeader}>
-              <h3>{user.username}</h3>
-              <span className={`${styles.badge} ${styles.total}`}>{user.rank}</span>
-            </div>
-            <div className={styles.userDetails}>
-              {user.number && <p>📱 {user.number}</p>}
-              <p>🟢 Estado: {user.active ? 'Activo' : 'Inactivo'}</p>
-              {user.lastLogin && <p>🕓 Último acceso: {new Date(user.lastLogin).toLocaleString()}</p>}
-            </div>
-            {userMetricsMap[user._id] && (
-              <div className={styles.metrics}>
-                <p>📌 Asignados: {userMetricsMap[user._id].asignados}</p>
-                <p>✅ Cerrados: {userMetricsMap[user._id].cerrados}</p>
-                <p>⏱️ Promedio: {Math.round(userMetricsMap[user._id].promedioResolucion)} min</p>
+        {filteredUsers.map((user) => {
+          const metrics = userMetricsMap[user._id];
+          const total = (metrics?.cerrados || 0) + (metrics?.abiertos || 0);
+          const cierrePorcentaje = total > 0 ? Math.round((metrics?.cerrados || 0) / total * 100) : 0;
+          const performanceClass = getPerformanceClass(cierrePorcentaje);
+
+          return (
+            <motion.div
+              key={user._id}
+              className={styles.userCard}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className={styles.avatar}>
+                {user.username.charAt(0).toUpperCase()}
               </div>
-            )}
-            <div className={styles.actions}>
-              <button onClick={() => openEditModal(user)} className={styles.iconButton}>
-                <FaEdit />
-              </button>
-              <button className={styles.iconButton}>
-                <FaTrash />
-              </button>
-              {user.number && userMetricsMap[user._id]?.abiertos > 5 && (
-                <button
-                  className={styles.reminderButton}
-                  onClick={() => sendWhatsAppReminder(user)}
-                >
-                  📩 Recordatorio
-                </button>
+              <div className={styles.userHeader}>
+                <h3>{user.username}</h3>
+                <span className={`${styles.badge} ${styles.total}`}>{user.rank}</span>
+              </div>
+              <div className={styles.userDetails}>
+                {user.number && <p>📱 {user.number}</p>}
+                <p>🟢 Estado: {user.active ? 'Activo' : 'Inactivo'}</p>
+                {user.lastLogin && <p>🕓 Último acceso: {new Date(user.lastLogin).toLocaleString()}</p>}
+              </div>
+              {metrics && (
+                <div className={styles.metrics}>
+                  <p>📌 Abiertos: {metrics.abiertos}</p>
+                  <p>✅ Cerrados: {metrics.cerrados}</p>
+                  <p>⏱️ Promedio: {Math.round(metrics.promedioResolucion)} min</p>
+                  <div className={styles.performanceIndicator}>
+                    <span className={`${styles.dot} ${styles[performanceClass]}`} />
+                    % Cierre: {cierrePorcentaje}%
+                  </div>
+                </div>
               )}
-            </div>
-          </motion.div>
-        ))}
+              <div className={styles.actions}>
+                <button onClick={() => openEditModal(user)} className={styles.iconButton}>
+                  <FaEdit />
+                </button>
+                <button className={styles.iconButton}>
+                  <FaTrash />
+                </button>
+                {user.number && metrics?.abiertos > 5 && (
+                  <button
+                    className={styles.reminderButton}
+                    onClick={() => sendWhatsAppReminder(user)}
+                  >
+                    📩 Recordatorio
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
 
       <AnimatePresence>

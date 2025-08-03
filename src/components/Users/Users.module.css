@@ -250,3 +250,29 @@
   margin: 2rem 0;
   transition: all 0.3s ease;
 }
+
+.performanceIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  margin-top: 0.3rem;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.low {
+  background-color: #dc3545;
+}
+
+.medium {
+  background-color: #ffc107;
+}
+
+.high {
+  background-color: #28a745;
+}
