@@ -3,6 +3,7 @@ import { ThemeContext } from '../../contexts/ThemeContext';
 import { FaSortUp, FaSortDown, FaSort, FaCog, FaUndo, FaFilter, FaSync } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import styles from './CustomTable.module.css';
+import { useContextMenu } from '../../contexts/UseContextMenu';
 
 interface Column {
   field: string;
@@ -15,6 +16,14 @@ interface Column {
   hiddenByDefault?: boolean;
 }
 
+interface MenuItem {
+  label: string;
+  onClick: () => void; // Hacer onClick opcional para soportar submenús
+  disabled?: boolean;
+  icon?: React.ReactNode;
+  children?: MenuItem[]; // Agregar soporte para submenús
+}
+
 interface CustomTableProps {
   rowData: any[];
   columnDefs: Column[];
@@ -25,7 +34,8 @@ interface CustomTableProps {
   className?: string;
   customizable?: boolean;
   storageKey?: string;
-  onRefresh?: () => void; // Prop opcional para re-fetch
+  onRefresh?: () => void;
+  onRowContextMenu?: (rowData: any) => MenuItem[];
 }
 
 const CustomTable: React.FC<CustomTableProps> = ({
@@ -39,7 +49,9 @@ const CustomTable: React.FC<CustomTableProps> = ({
   customizable = false,
   storageKey = 'defaultTable',
   onRefresh,
+  onRowContextMenu
 }) => {
+  const { showMenu } = useContextMenu();
   const { theme } = useContext(ThemeContext);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [filters, setFilters] = useState<{ [key: string]: string }>({});
@@ -53,12 +65,21 @@ const CustomTable: React.FC<CustomTableProps> = ({
   const isInitialLoad = useRef(true);
   const hasUserChangedConfig = useRef(false);
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const filterRefs = useRef<{ [key: string]: HTMLDivElement | null }>({}); // Refs para inputs de filtro
+  const filterRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const getDefaultColumns = useCallback(() => ({
     visible: columnDefs.filter(col => !col.hiddenByDefault).map(col => col.field),
     order: columnDefs.map(col => col.field),
   }), [columnDefs]);
+
+  const handleRowContextMenu = (e: React.MouseEvent, row: any) => {
+    if (onRowContextMenu) {
+      e.preventDefault();
+      e.stopPropagation();
+      const items = onRowContextMenu(row);
+      showMenu(e.clientX, e.clientY, items);
+    }
+  };
 
   const isValidConfig = (config: { visible: string[]; order: string[] }) => {
     const validFields = columnDefs.map(col => col.field);
@@ -150,7 +171,6 @@ const CustomTable: React.FC<CustomTableProps> = ({
     };
   }, []);
 
-  // Cierre de inputs al clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -232,10 +252,10 @@ const CustomTable: React.FC<CustomTableProps> = ({
     setFilters({});
     setGlobalSearch('');
     setShowFilter({});
-    setSortConfig(null); // Resetear ordenamiento
-    setCurrentPage(1); // Volver a la primera página
+    setSortConfig(null);
+    setCurrentPage(1);
     if (onRefresh) {
-      onRefresh(); // Llama al fetch del componente padre si existe
+      onRefresh();
     }
     toast.info('Filtros, búsqueda y orden reseteados', { autoClose: 2000 });
   };
@@ -331,18 +351,18 @@ const CustomTable: React.FC<CustomTableProps> = ({
           />
         )}
         <div className={styles.buttonsContainer}>
-        <button
-          className={styles.refreshButton}
-          onClick={resetFilters}
-          title="Refrescar y resetear filtros"
+          <button
+            className={styles.refreshButton}
+            onClick={resetFilters}
+            title="Refrescar y resetear filtros"
           >
-          <FaSync />
-        </button>
-        {customizable && (
-          <button className={styles.configButton} onClick={() => setShowConfigMenu(!showConfigMenu)}>
-            <FaCog /> Personalizar
+            <FaSync />
           </button>
-        )}
+          {customizable && (
+            <button className={styles.configButton} onClick={() => setShowConfigMenu(!showConfigMenu)}>
+              <FaCog /> Personalizar
+            </button>
+          )}
         </div>
       </div>
       {showConfigMenu && renderConfigMenu()}
@@ -391,7 +411,8 @@ const CustomTable: React.FC<CustomTableProps> = ({
           <tbody>
             {paginatedData.length > 0 ? (
               paginatedData.map((row, index) => (
-                <tr key={index}>
+                <tr key={index}
+                    onContextMenu={(e) => handleRowContextMenu(e, row)}>
                   {processedColumns.map((col) => {
                     const cellValue = col.cellRenderer
                       ? col.cellRenderer(row)

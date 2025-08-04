@@ -1,15 +1,16 @@
-import React, { createContext, useState, useCallback, useEffect, useContext } from 'react';
+import React, { createContext, useState, useCallback, useEffect, useContext, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeContext } from '../contexts/ThemeContext';
-import styles from '../components/CustomContextMenu/CustomContextMenu.module.css';
-import { FaSyncAlt, FaQuestionCircle, FaSignOutAlt, FaMoon, FaSun } from 'react-icons/fa';
+import { FaSyncAlt, FaQuestionCircle, FaSignOutAlt, FaMoon, FaSun, FaAngleRight } from 'react-icons/fa'; // Agregado FaAngleRight para indicador de submenu
 import { useNavigate } from 'react-router-dom';
+import styles from '../components/CustomContextMenu/CustomContextMenu.module.css';
 
 interface MenuItem {
   label: string;
-  onClick: () => void;
+  onClick?: () => void;
   disabled?: boolean;
   icon?: React.ReactNode;
+  children?: MenuItem[]; // Agregado para submenús
 }
 
 interface ContextMenuContextType {
@@ -21,6 +22,61 @@ export const ContextMenuContext = createContext<ContextMenuContextType>({
   showMenu: () => {},
   hideMenu: () => {},
 });
+
+const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean }> = ({ items, isSubmenu }) => {
+  const [activeSub, setActiveSub] = useState<number | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setActiveSub(null);
+    }, 200); // Delay de 200ms para tolerar movimientos rápidos
+  };
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  };
+
+  return (
+    <div ref={menuRef} onMouseLeave={handleMouseLeave} onMouseEnter={handleMouseEnter}>
+      {items.map((item, index) => (
+        <div key={index} style={{ position: 'relative' }}>
+          <button
+            className={`${styles.menuItem} ${item.disabled ? styles.disabled : ''}`}
+            onClick={item.children ? undefined : item.onClick}
+            disabled={item.disabled}
+            onMouseEnter={() => {
+              handleMouseEnter();
+              if (item.children) setActiveSub(index);
+            }}
+            onMouseLeave={handleMouseLeave}
+          >
+            {item.icon && <span className={styles.menuIcon}>{item.icon}</span>}
+            {item.label}
+            {item.children && <FaAngleRight style={{ marginLeft: 'auto' }} />}
+          </button>
+          <AnimatePresence>
+            {item.children && activeSub === index && (
+              <motion.div
+                className={`${styles.contextMenu} ${styles.submenu} ${isSubmenu ? styles.dark : ''}`}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.15 }}
+                style={{ position: 'absolute', left: '100%', top: 0 }}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
+                <RenderMenuItems items={item.children} isSubmenu={true} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,7 +97,7 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const handleClickOutside = useCallback((e: MouseEvent) => {
     if (isOpen) hideMenu();
-  }, [isOpen, hideMenu]);
+  }, [isOpen]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') hideMenu();
@@ -77,16 +133,28 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
     showMenu(e.clientX, e.clientY, generalItems);
   }, [showMenu, navigate, theme, toggleTheme]);
 
+  const handleWheel = useCallback((e: WheelEvent) => {
+    if (isOpen) e.preventDefault();
+  }, [isOpen]);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (isOpen) e.preventDefault();
+  }, [isOpen]);
+
   useEffect(() => {
     document.addEventListener('click', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('wheel', handleWheel);
+    document.addEventListener('touchmove', handleTouchMove);
     return () => {
       document.removeEventListener('click', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('wheel', handleWheel);
+      document.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [handleClickOutside, handleKeyDown, handleContextMenu]);
+  }, [handleClickOutside, handleKeyDown, handleContextMenu, handleWheel, handleTouchMove]);
 
   return (
     <ContextMenuContext.Provider value={{ showMenu, hideMenu }}>
@@ -105,29 +173,7 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
               e.stopPropagation();
             }}
           >
-            {menuItems.map((item, index) => (
-              <button
-                key={index}
-                className={`${styles.menuItem} ${item.disabled ? styles.disabled : ''}`}
-                onClick={() => {
-                  if (!item.disabled) {
-                    item.onClick();
-                    hideMenu();
-                  }
-                }}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  if (!item.disabled) {
-                    item.onClick();
-                    hideMenu();
-                  }
-                }}
-                disabled={item.disabled}
-              >
-                {item.icon && <span className={styles.menuIcon}>{item.icon}</span>}
-                {item.label}
-              </button>
-            ))}
+            <RenderMenuItems items={menuItems} />
           </motion.div>
         )}
       </AnimatePresence>
