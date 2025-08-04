@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
 import { ranks } from '../../utils/enums';
 import { User, DecodedToken } from '../../utils/interfaces';
 import styles from './Users.module.css';
 import { jwtDecode } from 'jwt-decode';
 import { ThemeContext } from '../../contexts/ThemeContext';
+import { useContextMenu } from '../../contexts/UseContextMenu';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import EditUserModal from './EditUserModal';
@@ -67,10 +68,13 @@ const exportXLSX = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [userMetricsMap, setUserMetricsMap] = useState<Record<string, UserMetrics>>({});
   const { theme } = useContext(ThemeContext);
+  const { showMenu } = useContextMenu();
   const [error, setError] = useState<string>('');
   const [userRank, setUserRank] = useState<string>('');
   const [filter, setFilter] = useState<string>('');
   const [modalUser, setModalUser] = useState<User | null>(null);
+
+  
 
   const fetchUserMetrics = async (userId: string): Promise<UserMetrics | null> => {
     const token = localStorage.getItem('token');
@@ -180,6 +184,21 @@ const exportXLSX = () => {
   };
 });
 
+
+const handleContextMenu = useCallback((user: User, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const menuItems = [
+      {
+        label: ' Modificar',
+        icon: <FaEdit/>,
+        onClick: () => openEditModal(user)
+      }
+    ]
+    showMenu(e.clientX, e.clientY, menuItems)
+  }, [openEditModal, showMenu])
+
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>👥 Panel de Usuarios 👥</h1>
@@ -275,6 +294,7 @@ const exportXLSX = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
+              onContextMenu={(e) => handleContextMenu(user, e)}
             >
               <div className={styles.avatar}>
                 {user.username.charAt(0).toUpperCase()}
