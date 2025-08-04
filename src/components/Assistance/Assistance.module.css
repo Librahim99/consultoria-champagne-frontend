@@ -121,3 +121,23 @@
     height: 400px;
   }
 }
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: #2ecc71;
+  color: white;
+  font-size: 32px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  z-index: 1000;
+}
+
+.fab:hover {
+  background-color: #27ae60;
+}
