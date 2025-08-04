@@ -1,0 +1,109 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  backdrop-filter: blur(6px);
+}
+
+.modalContent {
+  background: linear-gradient(145deg, #1f1f1f, #2a2a2a);
+  padding: 32px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  color: #f1f1f1;
+  position: relative;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modalHeader {
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+  text-align: center;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.modalCloseButton {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modalCloseButton:hover {
+  color: #f44336;
+}
+
+.modalForm .formGroup {
+  margin-bottom: 16px;
+}
+
+.modalForm label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #bbb;
+}
+
+.modalForm input,
+.modalForm select,
+.modalForm textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: #2e2e2e;
+  border: 1px solid #444;
+  color: #f1f1f1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.modalForm textarea {
+  resize: none;
+  height: 120px;
+}
+
+.modalForm input:focus,
+.modalForm select:focus,
+.modalForm textarea:focus {
+  outline: none;
+  border-color: #00bcd4;
+}
+
+.modalForm button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.modalForm button:hover {
+  background: var(--primary)
+}
