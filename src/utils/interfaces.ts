@@ -23,6 +23,7 @@ export interface Client {
   lastUpdate: string;
   vip: boolean;
   active: boolean;
+  email: string[];
 }
 
 // Interfaz para el incidente
