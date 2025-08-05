@@ -155,7 +155,7 @@ const Assistances: React.FC = () => {
 
   const getUserName = (userId: string | null) => {
     const user = users.find(u => u._id === userId);
-    return user ? user.username : 'Desconocido';
+    return user ? user.name : 'Desconocido';
   };
 
   return (
@@ -204,7 +204,7 @@ const Assistances: React.FC = () => {
             <label>Usuario *</label>
             <select name="userId" value={newAssistance.userId || ''} onChange={handleInputChange} required>
               <option value="">Seleccione un usuario</option>
-              {users.map((user) => <option key={user._id} value={user._id}>{user.username}</option>)}
+              {users.map((user) => <option key={user._id} value={user._id}>{user.name}</option>)}
             </select>
           </div>
           <div className="formGroup">

@@ -240,10 +240,10 @@ const PendingTask: React.FC = () => {
 }, []);
 
   const handleSendWhatsappToUser = useCallback(async (pending: Pending, user: User) => {
-  if (!window.confirm(`¿Enviar resumen a ${user.username} vía WhatsApp?`)) return;
+  if (!window.confirm(`¿Enviar resumen a ${user.name} vía WhatsApp?`)) return;
   try {
     await axios.post(`${process.env.REACT_APP_API_URL}/api/bot/sendPending`, { pendingId: pending._id, targetUserId: user._id });
-    toast.success(`Resumen enviado a ${user.username}`);
+    toast.success(`Resumen enviado a ${user.name}`);
   } catch (err) {
     toast.error('Error al enviar resumen');
   }
@@ -308,7 +308,7 @@ const PendingTask: React.FC = () => {
       icon: <FaWhatsapp />,
       onClick: () => {},
       children: users.filter(u => u._id !== row.userId).map((user) => ({
-  label: user.username,
+  label: user.name,
   onClick: () => handleSendWhatsappToUser(row, user),
 })),
     },
@@ -333,7 +333,7 @@ const PendingTask: React.FC = () => {
 
   const getUserName = (userId: string | null) => {
     const user = users.find(u => u._id === userId);
-    return user ? user.username : 'Desconocido';
+    return user ? user.name : 'Desconocido';
   };
 
   return (

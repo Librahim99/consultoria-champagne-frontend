@@ -1,16 +1,16 @@
 import React, { createContext, useState, useCallback, useEffect, useContext, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeContext } from '../contexts/ThemeContext';
-import { FaSyncAlt, FaQuestionCircle, FaSignOutAlt, FaMoon, FaSun, FaAngleRight } from 'react-icons/fa'; // Agregado FaAngleRight para indicador de submenu
-import { useNavigate } from 'react-router-dom';
 import styles from '../components/CustomContextMenu/CustomContextMenu.module.css';
+import { FaSyncAlt, FaQuestionCircle, FaSignOutAlt, FaMoon, FaSun, FaAngleRight } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 interface MenuItem {
   label: string;
   onClick?: () => void;
   disabled?: boolean;
   icon?: React.ReactNode;
-  children?: MenuItem[]; // Agregado para submenús
+  children?: MenuItem[];
 }
 
 interface ContextMenuContextType {
@@ -23,34 +23,39 @@ export const ContextMenuContext = createContext<ContextMenuContextType>({
   hideMenu: () => {},
 });
 
-const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean }> = ({ items, isSubmenu }) => {
+const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean; position: { x: number; y: number } }> = ({ items, isSubmenu, position }) => {
   const [activeSub, setActiveSub] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setActiveSub(null);
-    }, 200); // Delay de 200ms para tolerar movimientos rápidos
-  };
-
-  const handleMouseEnter = () => {
+  const handleToggleSubmenu = (index: number) => {
+    setActiveSub(activeSub === index ? null : index);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
+  const handleMouseLeave = () => {
+    if (!isMobile) {
+      timeoutRef.current = setTimeout(() => {
+        setActiveSub(null);
+      }, 200);
+    }
+  };
+
+  const handleMouseEnter = () => {
+    if (!isMobile && timeoutRef.current) clearTimeout(timeoutRef.current);
+  };
+
   return (
-    <div ref={menuRef} onMouseLeave={handleMouseLeave} onMouseEnter={handleMouseEnter}>
+    <div ref={menuRef} onMouseLeave={isMobile ? undefined : handleMouseLeave} onMouseEnter={isMobile ? undefined : handleMouseEnter}>
       {items.map((item, index) => (
         <div key={index} style={{ position: 'relative' }}>
           <button
             className={`${styles.menuItem} ${item.disabled ? styles.disabled : ''}`}
-            onClick={item.children ? undefined : item.onClick}
+            onClick={isMobile && item.children ? () => handleToggleSubmenu(index) : item.onClick}
             disabled={item.disabled}
-            onMouseEnter={() => {
-              handleMouseEnter();
-              if (item.children) setActiveSub(index);
-            }}
-            onMouseLeave={handleMouseLeave}
+            onMouseEnter={() => !isMobile && item.children && setActiveSub(index)}
+            onMouseLeave={isMobile ? undefined : handleMouseLeave}
           >
             {item.icon && <span className={styles.menuIcon}>{item.icon}</span>}
             {item.label}
@@ -64,11 +69,15 @@ const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean }> = ({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ duration: 0.15 }}
-                style={{ position: 'absolute', left: '100%', top: 0 }}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
+                style={{
+                  position: 'absolute',
+                  left: '100%',
+                  top: 0, // Alinea con el ítem padre
+                }}
+                onMouseEnter={isMobile ? undefined : handleMouseEnter}
+                onMouseLeave={isMobile ? undefined : handleMouseLeave}
               >
-                <RenderMenuItems items={item.children} isSubmenu={true} />
+                <RenderMenuItems items={item.children} isSubmenu={true} position={position} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -82,8 +91,10 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [adjustedPosition, setAdjustedPosition] = useState({ x: 0, y: 0 });
   const { theme, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const showMenu = useCallback((x: number, y: number, items: MenuItem[]) => {
     setPosition({ x, y });
@@ -96,8 +107,8 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, []);
 
   const handleClickOutside = useCallback((e: MouseEvent) => {
-    if (isOpen) hideMenu();
-  }, [isOpen]);
+    if (isOpen && !menuRef.current?.contains(e.target as Node)) hideMenu();
+  }, [isOpen, hideMenu]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') hideMenu();
@@ -142,6 +153,15 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, [isOpen]);
 
   useEffect(() => {
+    if (isOpen && menuRef.current) {
+      const menuRect = menuRef.current.getBoundingClientRect();
+      const adjustedX = Math.min(position.x, window.innerWidth - menuRect.width - (menuRect.width / 4) ); // 10px margen
+      const adjustedY = Math.min(position.y, window.innerHeight - menuRect.height -(menuRect.height / 4) ); // Ajusta según altura real
+      setAdjustedPosition({ x: adjustedX, y: adjustedY });
+    }
+  }, [isOpen, position]);
+
+  useEffect(() => {
     document.addEventListener('click', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('contextmenu', handleContextMenu);
@@ -163,17 +183,22 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
         {isOpen && (
           <motion.div
             className={`${styles.contextMenu} ${theme === 'dark' ? styles.dark : ''}`}
-            style={{ top: position.y, left: position.x, position: 'fixed' }}
+            style={{
+              position: 'fixed',
+              left: adjustedPosition.x,
+              top: adjustedPosition.y,
+            }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.1 }}
+            ref={menuRef}
             onContextMenu={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <RenderMenuItems items={menuItems} />
+            <RenderMenuItems items={menuItems} isSubmenu={false} position={adjustedPosition} />
           </motion.div>
         )}
       </AnimatePresence>

@@ -38,7 +38,7 @@ const Users: React.FC = () => {
       const porcentaje =
         total > 0 ? Math.round(((m?.cerrados || 0) / total) * 100) : 0;
       return {
-        Usuario: user.username,
+        Usuario: user.name,
         Rol: user.rank,
         Número: user.number || "",
         Cerrados: m?.cerrados || 0,
@@ -59,7 +59,7 @@ const Users: React.FC = () => {
       const porcentaje =
         total > 0 ? Math.round(((m?.cerrados || 0) / total) * 100) : 0;
       return {
-        Usuario: user.username,
+        Usuario: user.name,
         Rol: user.rank,
         Número: user.number || "",
         Cerrados: m?.cerrados || 0,
@@ -187,7 +187,7 @@ const Users: React.FC = () => {
   );
 
   const handleUserUpdate = async (updatedUser: {
-    username: string;
+    name: string;
     number: string;
     rank: string;
   }) => {
@@ -216,7 +216,7 @@ const Users: React.FC = () => {
 
   const sendWhatsAppReminder = async (user: User) => {
     const message = 
-      `Hola ${user.username}, te recordamos que tenés ${
+      `Hola ${user.name}, te recordamos que tenés ${
         userMetricsMap[user._id]?.abiertos
       } tickets pendientes por resolver.`
     
@@ -236,7 +236,7 @@ const Users: React.FC = () => {
 
   const filteredUsers = users.filter(
     (user) =>
-      user.username.toLowerCase().includes(filter.toLowerCase()) ||
+      user.name?.toLowerCase().includes(filter.toLowerCase()) ||
       user.rank.toLowerCase().includes(filter.toLowerCase())
   );
 
@@ -246,7 +246,7 @@ const Users: React.FC = () => {
     const porcentaje =
       total > 0 ? Math.round(((m?.cerrados || 0) / total) * 100) : 0;
     return {
-      name: user.username,
+      name: user.name,
       Cerrados: m?.cerrados || 0,
       Abiertos: m?.abiertos || 0,
       CierrePorcentaje: porcentaje,
@@ -432,11 +432,9 @@ const Users: React.FC = () => {
               transition={{ duration: 0.3 }}
               onContextMenu={(e) => handleContextMenu(user, e)}
             >
-              <div className={styles.avatar}>
-                {user.username.charAt(0).toUpperCase()}
-              </div>
+              <img src={user.picture} alt="Profile" className={styles.avatar}/>
               <div className={styles.userHeader}>
-                <h3>{user.username}</h3>
+                <h3>{user.name}</h3>
                 <span className={`${styles.badge} ${styles.total}`}>
                   {user.rank}
                 </span>
@@ -466,25 +464,6 @@ const Users: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div className={styles.actions}>
-                <button
-                  onClick={() => openEditModal(user)}
-                  className={styles.iconButton}
-                >
-                  <FaEdit />
-                </button>
-                <button className={styles.iconButton}>
-                  <FaTrash />
-                </button>
-                {user.number && metrics?.abiertos > 5 && (
-                  <button
-                    className={styles.reminderButton}
-                    onClick={() => sendWhatsAppReminder(user)}
-                  >
-                    📩 Recordatorio
-                  </button>
-                )}
-              </div>
             </motion.div>
           );
         })}

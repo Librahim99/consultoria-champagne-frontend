@@ -69,6 +69,11 @@ const Dashboard: React.FC = () => {
           <h2>Asistencias</h2>
           <p>{stats.assistances} registradas</p>
         </Link>
+        <Link to="/pending-tasks" className={styles.card}>
+          <FaClipboardCheck className={styles.icon} />
+          <h2>Pendientes</h2>
+          <p>{stats.pendings} registrados</p>
+        </Link>
       </div>
     </div>
   );

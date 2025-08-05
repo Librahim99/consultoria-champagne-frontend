@@ -76,7 +76,7 @@ const Incidents: React.FC = () => {
   };
 
   const getClientName = (clientId: string | null) => clients.find(c => c._id === clientId)?.name || 'Desconocido';
-  const getUserName = (userId: string | null) => users.find(u => u._id === userId)?.username || 'Desconocido';
+  const getUserName = (userId: string | null) => users.find(u => u._id === userId)?.name || 'Desconocido';
 
   if (loading) return <Spinner />;
 
@@ -153,7 +153,7 @@ const Incidents: React.FC = () => {
             <select {...register('executiveId')}>
               <option value="">Seleccione un ejecutivo</option>
               {users.map((user) => (
-                <option key={user._id} value={user._id}>{user.username}</option>
+                <option key={user._id} value={user._id}>{user.name}</option>
               ))}
             </select>
             {errors.executiveId && <p className={styles.error}>{errors.executiveId.message}</p>}
@@ -163,7 +163,7 @@ const Incidents: React.FC = () => {
             <select {...register('assignedUserId')}>
               <option value="">No asignado</option>
               {users.map((user) => (
-                <option key={user._id} value={user._id}>{user.username}</option>
+                <option key={user._id} value={user._id}>{user.name}</option>
               ))}
             </select>
           </div>

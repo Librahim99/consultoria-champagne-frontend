@@ -1,8 +1,12 @@
 // Interfaz para el usuario
 export interface User {
   _id: string;
+  name: string;
   username: string;
+  googleId: string
   rank: string;
+  email: string;
+  picture: string;
   entryDate: string;
   number?: string;
   active?: boolean;

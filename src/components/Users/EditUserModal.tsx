@@ -5,17 +5,17 @@ import { ranks } from '../../utils/enums';
 
 interface Props {
   user: {
-    username: string;
+    name: string;
     number?: string;
     rank: string;
   };
   onCancel: () => void;
-  onSave: (data: { username: string; number: string; rank: string }) => void;
+  onSave: (data: { name: string; number: string; rank: string }) => void;
 }
 
 const EditUserModal: React.FC<Props> = ({ user, onCancel, onSave }) => {
   const [formData, setFormData] = useState({
-    username: user.username,
+    name: user.name,
     number: user.number || '',
     rank: user.rank,
   });
@@ -35,7 +35,7 @@ const EditUserModal: React.FC<Props> = ({ user, onCancel, onSave }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.username || !formData.rank) return;
+    if (!formData.name || !formData.rank) return;
     onSave(formData);
   };
 
@@ -52,13 +52,13 @@ const EditUserModal: React.FC<Props> = ({ user, onCancel, onSave }) => {
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
-            <label htmlFor="username">Usuario</label>
+            <label htmlFor="name">Usuario</label>
             <input
-              id="username"
+              id="name"
               ref={inputRef}
               type="text"
-              name="username"
-              value={formData.username}
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               placeholder="Nombre de usuario"
               required
