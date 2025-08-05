@@ -7,6 +7,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import styles from './Auth.module.css';
 import logoImage from '../../assets/logo-mantis.png';
+import LoginGoogle from './LoginGoogle';
+
 
 interface FormData {
   username: string;
@@ -125,6 +127,10 @@ const Login: React.FC = () => {
               {loading ? 'Ingresando...' : 'Iniciar Sesión'}
             </button>
           </form>
+                {/* Google login aquí */}
+            <div style={{ marginTop: '20px' }}>
+                    <LoginGoogle />
+             </div>
 
           <div className={styles.link}>
             <p>¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link></p>
