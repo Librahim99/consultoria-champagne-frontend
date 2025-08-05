@@ -1,134 +1,163 @@
+/* ------------------ OVERLAY ------------------ */
 .modalOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.75);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 1000;
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 10000;
-  backdrop-filter: blur(6px);
+  justify-content: center;
+  padding: 1.5rem;
+  backdrop-filter: blur(4px); /* Glassmorphism */
 }
 
+/* ------------------ MODAL ------------------ */
 .modalContent {
-  background-color: var(--modal-bg);
-  padding: 1.5rem;
-  border-radius: var(--border-radius);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  position: relative;
   width: 100%;
+  max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
-  max-width: 460px;
+  background-color: var(--modal-bg);
+  padding: 2rem;
+  border-radius: 16px;
   color: var(--modal-text);
-  animation: slideUp 0.3s ease;
-  animation: fadeIn 0.3s ease;
-  animation: fadeIn 0.3s ease-out;
-  position: relative;
-   scrollbar-width: thin;
-  scrollbar-color: transparent transparent; /* Firefox */
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  animation: fadeIn 0.3s ease-out, slideUp 0.3s ease-out;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
 }
 
+/* ------------------ SCROLL TRANSPARENTE ------------------ */
 .modalContent::-webkit-scrollbar {
   width: 8px;
 }
-
 .modalContent::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .modalContent::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.08);
   border-radius: 4px;
-  transition: background 0.3s ease;
 }
-
 .modalContent::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
+/* ------------------ ANIMACIONES ------------------ */
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
 }
 
-.modalHeader {
-  font-size: 1.8rem;
-  margin-bottom: 24px;
-  text-align: center;
-  color: var(--primary);
-  font-weight: 600;
+@keyframes slideUp {
+  from { transform: translateY(20px); }
+  to { transform: translateY(0); }
 }
 
+/* ------------------ HEADER ------------------ */
+.modalHeader {
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+  letter-spacing: 0.3px;
+}
+
+/* ------------------ BOTÓN CIERRE ------------------ */
 .modalCloseButton {
   position: absolute;
-  top: 8px;       /* más pegado al borde interno */
-  right: 12px;
-  font-size: 1.5rem;
+  top: 12px;
+  right: 14px;
   background: none;
   border: none;
+  font-size: 1.4rem;
   color: #ccc;
-  z-index: 10;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
-
 .modalCloseButton:hover {
-  color: #ff4c4c;
+  color: #ff5f5f;
+  transform: rotate(90deg) scale(1.1);
 }
 
+/* ------------------ FORMULARIO ------------------ */
 .modalForm .formGroup {
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
-
 .modalForm label {
   display: block;
   margin-bottom: 6px;
   font-weight: 600;
   font-size: 0.95rem;
-  color: #bbb;
+  color: #ccc;
 }
 
+/* ------------------ INPUTS ------------------ */
 .modalForm input,
 .modalForm select,
 .modalForm textarea {
   width: 100%;
-  padding: 10px 12px;
-  background: #2e2e2e;
+  padding: 10px 14px;
   border: 1px solid #444;
+  border-radius: 10px;
+  background: #1e1e1e;
   color: #f1f1f1;
-  border-radius: 8px;
   font-size: 0.95rem;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .modalForm textarea {
-  resize: none;
-  height: 120px;
+  resize: vertical;
+  min-height: 80px;
+  max-height: 180px;
 }
 
 .modalForm input:focus,
 .modalForm select:focus,
 .modalForm textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.25);
   outline: none;
-  border-color: #00bcd4;
 }
 
+/* ------------------ BOTONES ------------------ */
 .modalForm button {
-  margin-top: 20px;
   width: 100%;
   padding: 12px;
-  background: var(--primary);
-  border: none;
-  border-radius: 8px;
+  margin-top: 1rem;
   font-weight: 600;
   font-size: 1rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
   color: white;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .modalForm button:hover {
-  background: var(--primary)
+  background: #00a5bd;
+  transform: scale(1.02);
+}
+
+/* Botón secundario */
+.modalForm .secondaryBtn {
+  background: transparent;
+  color: #ccc;
+  border: 1px solid #555;
+  margin-top: 0.75rem;
+}
+.modalForm .secondaryBtn:hover {
+  color: white;
+  border-color: #888;
+  background: #333;
+}
+
+/* ------------------ RESPONSIVE ------------------ */
+@media (max-height: 600px) {
+  .modalContent {
+    padding: 1rem;
+    border-radius: 12px;
+  }
 }
