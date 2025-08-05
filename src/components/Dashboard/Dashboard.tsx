@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
+import CalendarCreateButton from '../../components/GoogleAPIs/CalendarCreateButton';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Spinner from '../Spinner/Spinner';
@@ -6,13 +7,79 @@ import { UserContext } from '../../contexts/UserContext';
 import { ThemeContext } from '../../contexts/ThemeContext';
 import { ranks } from '../../utils/enums';
 import styles from './Dashboard.module.css';
+import CrearMeetForm from '../../components/GoogleAPIs/CrearMeetForm';
 import { FaUser, FaBug, FaClipboardCheck, FaUsers } from 'react-icons/fa';
+import { FaVideo } from 'react-icons/fa';
+import Modal from '../Modal/Modal';
+
+const CrearMeetButton = ({ onClick }: { onClick: () => void }) => (
+  <button className={styles.button} onClick={onClick}>
+    <FaVideo style={{ marginRight: 8 }} />
+    Crear Reunión Google Meet
+  </button>
+);
+
 
 const Dashboard: React.FC = () => {
   const { userRank, userId } = useContext(UserContext);
   const { theme } = useContext(ThemeContext);
   const [stats, setStats] = useState({ users: 0, clients: 0, incidents: 0, pendings: 0, assistances: 0 });
   const [loading, setLoading] = useState(true);
+
+    const [modalOpen, setModalOpen] = useState(false);
+
+  const handleCreateGoogleMeetEvent = async () => {
+  const accessToken = localStorage.getItem('google_access_token');
+  if (!accessToken) {
+    return alert('No se encontró el token de Google. Iniciá sesión con Google.');
+  }
+
+  const evento = {
+    summary: 'Reunión de soporte técnico',
+    description: 'Reunión automática desde el portal de gestión',
+    start: {
+      dateTime: new Date(Date.now() + 5 * 60000).toISOString(), // 5 minutos desde ahora
+      timeZone: 'America/Argentina/Buenos_Aires',
+    },
+    end: {
+      dateTime: new Date(Date.now() + 35 * 60000).toISOString(), // 30 min de duración
+      timeZone: 'America/Argentina/Buenos_Aires',
+    },
+    conferenceData: {
+      createRequest: {
+        requestId: `meet-${Date.now()}`, // ID único
+      },
+    },
+    attendees: [
+      { email: 'thomas.rodriguez@mantis.com.ar' }, // Opcional
+    ],
+  };
+
+  try {
+    const response = await axios.post(
+      'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1',
+      evento,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const meetLink = response.data?.hangoutLink;
+    if (meetLink) {
+      alert(`✅ Reunión creada: ${meetLink}`);
+      // Opcional: Copiar al portapapeles
+      navigator.clipboard.writeText(meetLink);
+    } else {
+      alert('Evento creado pero sin enlace Meet.');
+    }
+  } catch (err) {
+    console.error('Error al crear evento:', err);
+    alert('Error al crear el evento de Google Meet.');
+  }
+};
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -46,6 +113,12 @@ const Dashboard: React.FC = () => {
   return (
     <div className={styles.container} data-theme={theme}>
       <h1 className={styles.title}>Portal de Gestión</h1>
+        <div className={styles.topActions}>
+  <button className={styles.meetBtn} onClick={() => setModalOpen(true)}>
+    <FaVideo className={styles.meetIcon} />
+    Crear Reunión Google Meet
+  </button>
+</div>
       <div className={styles.grid}>
         {(userRank === ranks.TOTALACCESS || userRank === ranks.CONSULTORCHIEF) && (
           <Link to="/users" className={styles.card}>
@@ -75,6 +148,13 @@ const Dashboard: React.FC = () => {
           <p>{stats.pendings} registrados</p>
         </Link>
       </div>
+      <Modal
+  isOpen={modalOpen}
+  onClose={() => setModalOpen(false)}
+  title="Crear Reunión Google Meet"
+>
+  <CrearMeetForm onClose={() => setModalOpen(false)} />
+</Modal>
     </div>
   );
 };
