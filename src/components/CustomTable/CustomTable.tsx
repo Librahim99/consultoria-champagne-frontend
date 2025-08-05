@@ -101,7 +101,6 @@ const CustomTable: React.FC<CustomTableProps> = ({
         const defaults = getDefaultColumns();
         if (savedConfig) {
           const parsed = JSON.parse(savedConfig);
-          console.log(`Cargando config de ${key}:`, parsed);
           if (isValidConfig(parsed)) {
             setVisibleColumns(parsed.visible);
             setColumnOrder(parsed.order);
@@ -112,7 +111,6 @@ const CustomTable: React.FC<CustomTableProps> = ({
             localStorage.setItem(key, JSON.stringify(defaults));
           }
         } else {
-          console.log(`No hay config en ${key}, inicializando con defaults`);
           setVisibleColumns(defaults.visible);
           setColumnOrder(defaults.order);
           localStorage.setItem(key, JSON.stringify(defaults));
@@ -140,7 +138,6 @@ const CustomTable: React.FC<CustomTableProps> = ({
       if (isValidConfig(config)) {
         try {
           localStorage.setItem(key, JSON.stringify(config));
-          console.log(`Guardando config en ${key}:`, config);
           if (toastTimeoutRef.current) {
             clearTimeout(toastTimeoutRef.current);
           }

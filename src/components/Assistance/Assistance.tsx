@@ -1,20 +1,16 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { ThemeContext } from '../../contexts/ThemeContext';
 import { type Assistance, Client, User, DecodedToken } from '../../utils/interfaces';
 import styles from './Assistance.module.css';
 import CustomTable from '../CustomTable/CustomTable';
 import { ranks } from '../../utils/enums';
-import { useContextMenu } from '../../contexts/UseContextMenu';
-import { FaEdit, FaTrash, FaWhatsapp, FaUserPlus, FaPlus } from 'react-icons/fa'; // Agregado FaPlus para Nueva Asistencia
+import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa'; // Agregado FaPlus para Nueva Asistencia
 import Modal from '../Modal/Modal';
 
 const Assistances: React.FC = () => {
   const [assistances, setAssistances] = useState<Assistance[]>([]);
   const [error, setError] = useState<string>('');
-  const { showMenu } = useContextMenu();
-  const { theme } = useContext(ThemeContext);
   const [editingAssistance, setEditingAssistance] = useState<Assistance | null>(null);
   const [newAssistance, setNewAssistance] = useState<Assistance>({
     _id: '', clientId: '', userId: '', date: new Date().toISOString(), detail: '', contact: '', timeSpent: 0,
