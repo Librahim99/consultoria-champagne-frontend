@@ -3,6 +3,7 @@
   --primary-dark: #0056b3;
   --primary-light: #00aaff;
   --error: #e53935;
+  --modal-bg: #e1e1e1;
   --success: #28a745;
   --background-color: #f0f2f5;
   --text-color: #050505;
@@ -10,6 +11,7 @@
   --card-background: #ffffff;
   --border-color: #ddd;
   --area-text-background: #ddd ;
+  --button-color: #fff;
   --button-background: #007bff;
   --button-hover: #0056b3;
   --cancel-button-background: #e53935;
@@ -29,6 +31,7 @@
 }
 
 [data-theme='dark'] {
+  --modal-bg: #1e1e1e;
   --background-color: #121212;
   --text-color: #e4e6eb;
   --area-text-background: #222 ;
