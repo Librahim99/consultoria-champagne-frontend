@@ -11,6 +11,8 @@ import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import CustomTable from '../CustomTable/CustomTable';
+import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
+import { useContextMenu } from '../../contexts/UseContextMenu';
 
 const schema = yup.object({
   clientId: yup.string().required('Cliente requerido'),
@@ -32,6 +34,7 @@ const Incidents: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+    const { showMenu } = useContextMenu();
   const [clients, setClients] = useState<Client[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const { register, handleSubmit, formState: { errors }, reset } = useForm({ resolver: yupResolver(schema) });
@@ -78,13 +81,46 @@ const Incidents: React.FC = () => {
   const getClientName = (clientId: string | null) => clients.find(c => c._id === clientId)?.name || 'Desconocido';
   const getUserName = (userId: string | null) => users.find(u => u._id === userId)?.name || 'Desconocido';
 
+const getContextMenu = useCallback((e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const menuItems = [
+    {
+      label: ' Nueva Incidencia',
+      icon: <FaPlus />,
+      onClick: toggleForm
+    }
+  ]
+   showMenu(e.clientX, e.clientY, menuItems) 
+  },[showMenu])
+  
+
+  const getRowContextMenu = useCallback((row: Incident) => [
+    {
+      label: ' Nuevo Pendiente',
+      icon: <FaPlus />,
+      onClick: toggleForm
+    },
+    {
+      label: ' Modificar',
+      icon: <FaEdit />,
+      onClick: () => toggleForm,
+    },
+    {
+      label: ' Eliminar',
+      icon: <FaTrash />,
+      onClick: () => toggleForm,
+      disabled: userRank !== ranks.TOTALACCESS,
+    },
+  ], [userRank, users]);
+
   if (loading) return <Spinner />;
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Incidencias</h1>
       {error && <p className={styles.error}>{error}</p>}
-      <div style={{ height: 'auto', width: '100%' }}>
+      <div onContextMenu={(e) => {getContextMenu(e)}} style={{ height: 'auto', width: '100%' }}>
   <CustomTable
     rowData={incidents}
     columnDefs={[
@@ -132,6 +168,7 @@ const Incidents: React.FC = () => {
     defaultPageSize={15}
     searchable={true}
     customizable={true}
+    onRowContextMenu={getRowContextMenu}
   storageKey="incidentTable"
   />
 </div>
