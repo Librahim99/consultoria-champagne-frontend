@@ -23,6 +23,7 @@
   --ag-row-hover: #f0f0f0;
   --ag-header-background: #004b87;
   --ag-header-foreground: #ffffff;
+  --transparency: #ffffff00;
 }
 
 [data-theme='dark'] {
@@ -45,6 +46,12 @@
   --ag-row-hover: #333;
   --ag-header-background: #003d80;
   --ag-header-foreground: #ffffff;
+}
+
+/* Estilo para Firefox */
+html {
+  scrollbar-width: thin; /* 'auto' o 'thin' */
+  scrollbar-color: var(--button-background) var(--transparency); /* Color del pulgar y pista */
 }
 
 body {
