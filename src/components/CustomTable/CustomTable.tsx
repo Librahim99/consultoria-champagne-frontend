@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useContext, useEffect, useRef } from 'react';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { FaSortUp, FaSortDown, FaSort, FaCog, FaUndo, FaFilter, FaSync } from 'react-icons/fa';
+import { FaSortUp, FaSortDown, FaSort, FaCog, FaUndo, FaFilter, FaSync, FaBars } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import styles from './CustomTable.module.css';
 import { useContextMenu } from '../../contexts/UseContextMenu';
@@ -18,10 +18,10 @@ interface Column {
 
 interface MenuItem {
   label: string;
-  onClick: () => void; // Hacer onClick opcional para soportar submenús
+  onClick?: () => void;
   disabled?: boolean;
   icon?: React.ReactNode;
-  children?: MenuItem[]; // Agregar soporte para submenús
+  children?: MenuItem[];
 }
 
 interface CustomTableProps {
@@ -60,16 +60,22 @@ const CustomTable: React.FC<CustomTableProps> = ({
   const [pageSize, setPageSize] = useState(defaultPageSize);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [columnOrder, setColumnOrder] = useState<string[]>([]);
+  const [columnWidths, setColumnWidths] = useState<{ [key: string]: string }>({});
   const [showConfigMenu, setShowConfigMenu] = useState(false);
   const [showFilter, setShowFilter] = useState<{ [key: string]: boolean }>({});
   const isInitialLoad = useRef(true);
   const hasUserChangedConfig = useRef(false);
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const filterRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const resizeRef = useRef<{ field: string; startX: number; startWidth: number } | null>(null);
 
   const getDefaultColumns = useCallback(() => ({
     visible: columnDefs.filter(col => !col.hiddenByDefault).map(col => col.field),
     order: columnDefs.map(col => col.field),
+    widths: columnDefs.reduce((acc, col) => {
+      acc[col.field] = col.width || '150px';
+      return acc;
+    }, {} as { [key: string]: string }),
   }), [columnDefs]);
 
   const handleRowContextMenu = (e: React.MouseEvent, row: any) => {
@@ -81,15 +87,14 @@ const CustomTable: React.FC<CustomTableProps> = ({
     }
   };
 
-  const isValidConfig = (config: { visible: string[]; order: string[] }) => {
+  const isValidConfig = (config: { visible: string[]; order: string[]; widths: { [key: string]: string } }) => {
     const validFields = columnDefs.map(col => col.field);
     return (
       Array.isArray(config.visible) &&
       Array.isArray(config.order) &&
-      config.visible.length > 0 &&
-      config.order.length > 0 &&
       config.visible.every(field => validFields.includes(field)) &&
-      config.order.every(field => validFields.includes(field))
+      config.order.every(field => validFields.includes(field)) &&
+      Object.keys(config.widths).every(field => validFields.includes(field))
     );
   };
 
@@ -104,29 +109,33 @@ const CustomTable: React.FC<CustomTableProps> = ({
           if (isValidConfig(parsed)) {
             setVisibleColumns(parsed.visible);
             setColumnOrder(parsed.order);
+            setColumnWidths(parsed.widths);
           } else {
             console.warn(`Configuración inválida en ${key}, usando defaults`);
             setVisibleColumns(defaults.visible);
             setColumnOrder(defaults.order);
+            setColumnWidths(defaults.widths);
             localStorage.setItem(key, JSON.stringify(defaults));
           }
         } else {
           setVisibleColumns(defaults.visible);
           setColumnOrder(defaults.order);
+          setColumnWidths(defaults.widths);
           localStorage.setItem(key, JSON.stringify(defaults));
         }
       } catch (err) {
         console.error(`Error cargando config de ${key}:`, err);
-        toast.error('Error al cargar la configuración de la tabla');
         const defaults = getDefaultColumns();
         setVisibleColumns(defaults.visible);
         setColumnOrder(defaults.order);
+        setColumnWidths(defaults.widths);
         localStorage.setItem(key, JSON.stringify(defaults));
       }
     } else {
       const defaults = getDefaultColumns();
       setVisibleColumns(defaults.visible);
       setColumnOrder(defaults.order);
+      setColumnWidths(defaults.widths);
     }
     isInitialLoad.current = false;
   }, [customizable, storageKey, getDefaultColumns]);
@@ -134,7 +143,7 @@ const CustomTable: React.FC<CustomTableProps> = ({
   const saveConfig = useCallback(() => {
     if (customizable && !isInitialLoad.current && hasUserChangedConfig.current) {
       const key = `customTable_${storageKey}`;
-      const config = { visible: visibleColumns, order: columnOrder };
+      const config = { visible: visibleColumns, order: columnOrder, widths: columnWidths };
       if (isValidConfig(config)) {
         try {
           localStorage.setItem(key, JSON.stringify(config));
@@ -142,23 +151,21 @@ const CustomTable: React.FC<CustomTableProps> = ({
             clearTimeout(toastTimeoutRef.current);
           }
           toastTimeoutRef.current = setTimeout(() => {
-            toast.success('Configuración de tabla guardada', { autoClose: 2000 });
           }, 1000);
         } catch (err) {
           console.error(`Error guardando config en ${key}:`, err);
-          toast.error('Error al guardar la configuración');
         }
       } else {
         console.warn(`No se guardó config en ${key}: configuración inválida`, config);
       }
     }
-  }, [customizable, storageKey, visibleColumns, columnOrder]);
+  }, [customizable, storageKey, visibleColumns, columnOrder, columnWidths]);
 
   useEffect(() => {
     if (!isInitialLoad.current && hasUserChangedConfig.current) {
       saveConfig();
     }
-  }, [visibleColumns, columnOrder, saveConfig]);
+  }, [visibleColumns, columnOrder, columnWidths, saveConfig]);
 
   useEffect(() => {
     return () => {
@@ -254,7 +261,7 @@ const CustomTable: React.FC<CustomTableProps> = ({
     if (onRefresh) {
       onRefresh();
     }
-    toast.info('Filtros, búsqueda y orden reseteados', { autoClose: 2000 });
+    toast.info('Filtros, búsqueda y orden reseteados', { autoClose: 1000 });
   };
 
   const requestSort = useCallback((key: string) => {
@@ -275,15 +282,15 @@ const CustomTable: React.FC<CustomTableProps> = ({
     setShowFilter((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
-  const onDragStart = (e: React.DragEvent<HTMLTableCellElement>, field: string) => {
+  const onDragStart = (e: React.DragEvent<HTMLDivElement>, field: string) => {
     e.dataTransfer.setData('text/plain', field);
   };
 
-  const onDragOver = (e: React.DragEvent<HTMLTableCellElement>) => {
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
   };
 
-  const onDrop = (e: React.DragEvent<HTMLTableCellElement>, targetField: string) => {
+  const onDrop = (e: React.DragEvent<HTMLDivElement>, targetField: string) => {
     const draggedField = e.dataTransfer.getData('text/plain');
     if (draggedField === targetField) return;
     const newOrder = [...columnOrder];
@@ -302,14 +309,50 @@ const CustomTable: React.FC<CustomTableProps> = ({
     hasUserChangedConfig.current = true;
   };
 
+  const updateColumnWidth = (field: string, width: string) => {
+    setColumnWidths(prev => ({ ...prev, [field]: width }));
+    hasUserChangedConfig.current = true;
+  };
+
   const resetConfig = () => {
     const defaults = getDefaultColumns();
     setVisibleColumns(defaults.visible);
     setColumnOrder(defaults.order);
+    const newWidths: { [key: string]: string } = {};
+    columnDefs.forEach(col => {
+      newWidths[col.field] = '150px';
+    });
+    setColumnWidths(newWidths);
     hasUserChangedConfig.current = true;
     const key = `customTable_${storageKey}`;
-    localStorage.removeItem(key);
-    toast.info('Configuración de tabla reseteada', { autoClose: 2000 });
+    localStorage.setItem(key, JSON.stringify({ visible: defaults.visible, order: defaults.order, widths: newWidths }));
+    toast.info('Configuración de tabla reseteada a defaults', { autoClose: 1000 });
+  };
+
+  const handleResizeMouseDown = (e: React.MouseEvent, field: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const th = e.currentTarget.closest('th');
+    if (!th) return;
+    const startWidth = parseFloat(columnWidths[field] || '150') || th.offsetWidth;
+    const startX = e.clientX;
+    resizeRef.current = { field, startX, startWidth };
+
+    const handleMouseMove = (moveE: MouseEvent) => {
+      if (!resizeRef.current) return;
+      const delta = moveE.clientX - resizeRef.current.startX;
+      const newWidth = Math.max(100, resizeRef.current.startWidth + delta);
+      updateColumnWidth(resizeRef.current.field, `${newWidth}px`);
+    };
+
+    const handleMouseUp = () => {
+      resizeRef.current = null;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
   const renderConfigMenu = () => (
@@ -323,11 +366,19 @@ const CustomTable: React.FC<CustomTableProps> = ({
             onChange={() => toggleColumnVisibility(col.field)}
           />
           <span>{col.headerName}</span>
+          <input
+            type="number"
+            value={parseInt(columnWidths[col.field] || '150')}
+            onChange={(e) => updateColumnWidth(col.field, `${e.target.value}px`)}
+            style={{ width: '60px', marginLeft: 'auto' }}
+            min={100}
+            title="Ancho en px"
+          />
         </div>
       ))}
-      <p>Arrastra las columnas en la tabla para reordenar.</p>
+      {/* <p>Ordená ↑↓ clickeando en el nombre de la columna, arrastra para moverla, estirá desde el borde para ajustar el ancho.</p> */}
       <button onClick={resetConfig} className={styles.configMenuButton}>
-        <FaUndo /> Resetear
+        <FaUndo /> Resetear (anchos a 150px)
       </button>
       <button onClick={() => setShowConfigMenu(false)} className={styles.configMenuButton}>
         Cerrar
@@ -370,24 +421,46 @@ const CustomTable: React.FC<CustomTableProps> = ({
               {processedColumns.map((col) => (
                 <th
                   key={col.field}
-                  onClick={col.sortable ? () => requestSort(col.field) : undefined}
-                  style={{ cursor: col.sortable ? 'pointer' : 'default', width: col.width }}
+                  style={{
+                    width: columnWidths[col.field] || '150px',
+                    minWidth: '100px',
+                    maxWidth: columnWidths[col.field] || '150px', // Forzar máximo al ancho definido
+                  }}
                   title={col.headerName}
-                  draggable={customizable}
-                  onDragStart={(e) => onDragStart(e, col.field)}
-                  onDragOver={onDragOver}
-                  onDrop={(e) => onDrop(e, col.field)}
                 >
                   <div className={styles.headerContent}>
                     <span className={styles.headerText}>
-                      {col.headerName}
-                      {col.sortable && <span className={styles.sortIcon}>{getSortIcon(col.field)}</span>}
-                      {col.filterable && (
-                        <button className={styles.filterToggle} onClick={(e) => toggleFilter(col.field, e)}>
-                          <FaFilter />
+                      {customizable && (
+                        <div
+                          className={styles.dragHandle}
+                          draggable={true}
+                          onDragStart={(e) => onDragStart(e, col.field)}
+                          onDragOver={onDragOver}
+                          onDrop={(e) => onDrop(e, col.field)}
+                          title="Arrastrar para reordenar"
+                        >
+                          {col.headerName}
+                        </div>
+                      )}
+                      {col.sortable && (
+                        <button
+                          className={styles.sortButton}
+                          onClick={() => requestSort(col.field)}
+                          title="Ordenar"
+                        >
+                          {getSortIcon(col.field)}
                         </button>
                       )}
                     </span>
+                    {col.filterable && (
+                      <button
+                        className={styles.filterToggle}
+                        onClick={(e) => toggleFilter(col.field, e)}
+                        title="Filtrar"
+                      >
+                        <FaFilter />
+                      </button>
+                    )}
                     {col.filterable && showFilter[col.field] && (
                       <div className={styles.filterWrapper} ref={(el) => (filterRefs.current[col.field] = el)}>
                         <input
@@ -401,6 +474,13 @@ const CustomTable: React.FC<CustomTableProps> = ({
                       </div>
                     )}
                   </div>
+                  {customizable && (
+                    <div
+                      className={styles.resizeHandle}
+                      onMouseDown={(e) => handleResizeMouseDown(e, col.field)}
+                      title="Arrastra para cambiar ancho"
+                    />
+                  )}
                 </th>
               ))}
             </tr>
@@ -408,8 +488,7 @@ const CustomTable: React.FC<CustomTableProps> = ({
           <tbody>
             {paginatedData.length > 0 ? (
               paginatedData.map((row, index) => (
-                <tr key={index}
-                    onContextMenu={(e) => handleRowContextMenu(e, row)}>
+                <tr key={index} onContextMenu={(e) => handleRowContextMenu(e, row)}>
                   {processedColumns.map((col) => {
                     const cellValue = col.cellRenderer
                       ? col.cellRenderer(row)
@@ -418,7 +497,15 @@ const CustomTable: React.FC<CustomTableProps> = ({
                       : row[col.field] ?? '';
                     const displayValue = String(cellValue);
                     return (
-                      <td key={`${index}-${col.field}`} title={displayValue}>
+                      <td
+                        key={`${index}-${col.field}`}
+                        title={displayValue}
+                        style={{
+                          width: columnWidths[col.field] || '150px',
+                          minWidth: '100px',
+                          maxWidth: columnWidths[col.field] || '150px', // Forzar máximo al ancho definido
+                        }}
+                      >
                         {cellValue}
                       </td>
                     );
