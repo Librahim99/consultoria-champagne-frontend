@@ -30,33 +30,40 @@ const AsistenciasPorUsuarioChart: React.FC<Props> = ({ data }) => {
   if (!data?.length) return null;
 
   return (
-    <div className={styles.chartCard}>
-      <h3 className={styles.chartTitle}>🙋‍♂️ Asistencias por Usuario</h3>
+    <>
       <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={data}>
-          <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--shadow-color)" />
-          <XAxis
-            dataKey="usuario"
-            tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis
-            allowDecimals={false}
-            tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Bar
-            dataKey="total"
-            fill="var(--primary-light)"
-            radius={[6, 6, 0, 0]}
-            barSize={36}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+  <BarChart data={data}>
+    {/* ✅ Grilla sutil para fondo oscuro */}
+    <CartesianGrid
+      stroke="rgba(255, 255, 255, 0.05)"
+      strokeDasharray="0"
+    />
+    <XAxis
+      dataKey="usuario"
+      tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+      axisLine={false}
+      tickLine={false}
+    />
+    <YAxis
+      allowDecimals={false}
+      tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+      axisLine={false}
+      tickLine={false}
+    />
+    <Tooltip
+      contentStyle={{ backgroundColor: '#1f1f1f', border: 'none', borderRadius: 8 }}
+      labelStyle={{ color: '#ccc' }}
+      cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+    />
+    <Bar
+      dataKey="total"
+      fill="var(--primary-light)"
+      radius={[6, 6, 0, 0]}
+      barSize={36}
+    />
+  </BarChart>
+</ResponsiveContainer>
+    </>
   );
 };
 
