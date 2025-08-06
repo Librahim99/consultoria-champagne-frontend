@@ -27,3 +27,5 @@ export const incident_types = {
   DEV_IMPROVEMENT: 'Mejora',
   DEV_NEW: 'Nueva opción'
 } as const;
+
+export type UserRank = typeof ranks[keyof typeof ranks];
