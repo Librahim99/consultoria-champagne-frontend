@@ -7,6 +7,7 @@ import CustomTable from '../CustomTable/CustomTable';
 import { ranks } from '../../utils/enums';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa'; // Agregado FaPlus para Nueva Asistencia
 import Modal from '../Modal/Modal';
+import { toast } from 'react-toastify';
 
 const Assistances: React.FC = () => {
   const [assistances, setAssistances] = useState<Assistance[]>([]);
@@ -64,7 +65,7 @@ const Assistances: React.FC = () => {
     if (!token) return setError('No token available for submission');
 
     if (!newAssistance.clientId || !newAssistance.detail || !newAssistance.contact || !newAssistance.timeSpent) {
-      return setError('Faltan campos requeridos');
+      toast.error('Faltan campos requeridos')
     }
 
     const assistanceToSend = { ...newAssistance, userId: loggedInUserId };
@@ -90,7 +91,7 @@ const Assistances: React.FC = () => {
 
   // Función para manejar edición (usada en Modificar y Asignar)
   const handleEdit = useCallback((assistance: Assistance, assignOnly: boolean = false) => {
-    if (userRank !== ranks.TOTALACCESS) {
+    if (userRank === ranks.GUEST) {
       setError('No tienes permisos para editar');
       return;
     }
@@ -101,7 +102,7 @@ const Assistances: React.FC = () => {
 
   // Nueva función para manejar Nueva Asistencia
   const handleNewAssistance = useCallback(() => {
-    if (userRank !== ranks.TOTALACCESS) {
+    if (userRank === ranks.GUEST) {
       setError('No tienes permisos para crear asistencias');
       return;
     }
@@ -188,7 +189,7 @@ const Assistances: React.FC = () => {
         />
       </div>
       <Modal
-        isOpen={showAddForm && userRank === ranks.TOTALACCESS}
+        isOpen={showAddForm}
         onClose={() => setShowAddForm(false)}
         title={editingAssistance ? 'Editar Asistencia' : 'Agregar Asistencia'}
       >
