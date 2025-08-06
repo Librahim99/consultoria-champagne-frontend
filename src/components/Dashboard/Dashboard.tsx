@@ -1,160 +1,204 @@
-import React, { useEffect, useState, useContext } from 'react';
-import CalendarCreateButton from '../../components/GoogleAPIs/CalendarCreateButton';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Spinner from '../Spinner/Spinner';
+import Modal from '../Modal/Modal';
+import CrearMeetForm from '../../components/GoogleAPIs/CrearMeetForm';
 import { UserContext } from '../../contexts/UserContext';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { ranks } from '../../utils/enums';
+import { UserRank } from '../../utils/enums';
+import {
+  FaUser,
+  FaBug,
+  FaClipboardCheck,
+  FaUsers,
+  FaVideo,
+  FaChartPie
+} from 'react-icons/fa';
 import styles from './Dashboard.module.css';
-import CrearMeetForm from '../../components/GoogleAPIs/CrearMeetForm';
-import { FaUser, FaBug, FaClipboardCheck, FaUsers } from 'react-icons/fa';
-import { FaVideo } from 'react-icons/fa';
-import Modal from '../Modal/Modal';
+import IncidentesPorDiaChart from '../../components/Charts/IncidentesPorDiaChart';
+import AsistenciasPorUsuarioChart from '../../components/Charts/AsistenciasPorUsuarioChart';
 
-const CrearMeetButton = ({ onClick }: { onClick: () => void }) => (
-  <button className={styles.button} onClick={onClick}>
-    <FaVideo style={{ marginRight: 8 }} />
-    Crear Reunión Google Meet
-  </button>
-);
+interface Stats {
+  users: number;
+  clients: number;
+  incidents: number;
+  pendings: number;
+  assistances: number;
+}
 
+interface Shortcut {
+  to: string;
+  title: string;
+  description: string;
+  icon: JSX.Element;
+  bg: string;
+  show?: boolean;
+}
 
 const Dashboard: React.FC = () => {
   const { userRank, userId } = useContext(UserContext);
   const { theme } = useContext(ThemeContext);
-  const [stats, setStats] = useState({ users: 0, clients: 0, incidents: 0, pendings: 0, assistances: 0 });
+
+  const [stats, setStats] = useState<Stats>({
+    users: 0,
+    clients: 0,
+    incidents: 0,
+    pendings: 0,
+    assistances: 0
+  });
+
+  const [incidentesPorDia, setIncidentesPorDia] = useState([]);
+  const [asistenciasPorUsuario, setAsistenciasPorUsuario] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
 
-    const [modalOpen, setModalOpen] = useState(false);
+  const fetchStats = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
 
-  const handleCreateGoogleMeetEvent = async () => {
-  const accessToken = localStorage.getItem('google_access_token');
-  if (!accessToken) {
-    return alert('No se encontró el token de Google. Iniciá sesión con Google.');
-  }
+      const endpoints = ['users', 'clients', 'incidents', 'pending', 'assistances'];
+      const responses = await Promise.all(
+        endpoints.map(endpoint => axios.get(`${process.env.REACT_APP_API_URL}/api/${endpoint}`, config))
+      );
 
-  const evento = {
-    summary: 'Reunión de soporte técnico',
-    description: 'Reunión automática desde el portal de gestión',
-    start: {
-      dateTime: new Date(Date.now() + 5 * 60000).toISOString(), // 5 minutos desde ahora
-      timeZone: 'America/Argentina/Buenos_Aires',
-    },
-    end: {
-      dateTime: new Date(Date.now() + 35 * 60000).toISOString(), // 30 min de duración
-      timeZone: 'America/Argentina/Buenos_Aires',
-    },
-    conferenceData: {
-      createRequest: {
-        requestId: `meet-${Date.now()}`, // ID único
-      },
-    },
-    attendees: [
-      { email: 'thomas.rodriguez@mantis.com.ar' }, // Opcional
-    ],
-  };
-
-  try {
-    const response = await axios.post(
-      'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1',
-      evento,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    const meetLink = response.data?.hangoutLink;
-    if (meetLink) {
-      alert(`✅ Reunión creada: ${meetLink}`);
-      // Opcional: Copiar al portapapeles
-      navigator.clipboard.writeText(meetLink);
-    } else {
-      alert('Evento creado pero sin enlace Meet.');
+      setStats({
+        users: responses[0].data.length,
+        clients: responses[1].data.length,
+        incidents: responses[2].data.length,
+        pendings: responses[3].data.length,
+        assistances: responses[4].data.length
+      });
+    } catch (error) {
+      console.error('❌ Error al obtener estadísticas:', error);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error('Error al crear evento:', err);
-    alert('Error al crear el evento de Google Meet.');
-  }
-};
+  }, []);
+
+  const fetchGraficos = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
+      const [resInc, resAsis] = await Promise.all([
+        axios.get(`${process.env.REACT_APP_API_URL}/api/incidents/metricas-dashboard`, config),
+        axios.get(`${process.env.REACT_APP_API_URL}/api/assistances/por-usuario`, config)
+      ]);
+
+      setIncidentesPorDia(resInc.data.porDia || []);
+      setAsistenciasPorUsuario(resAsis.data || []);
+    } catch (error) {
+      console.error('❌ Error al cargar gráficos:', error);
+    }
+  }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const fetchStats = async () => {
-      try {
-        const [usersRes, clientsRes, incidentsRes, pendingsRes, assistancesRes] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${process.env.REACT_APP_API_URL}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${process.env.REACT_APP_API_URL}/api/incidents`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${process.env.REACT_APP_API_URL}/api/pending`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${process.env.REACT_APP_API_URL}/api/assistances`, { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-        setStats({
-          users: usersRes.data.length,
-          clients: clientsRes.data.length,
-          incidents: incidentsRes.data.length,
-          pendings: pendingsRes.data.length,
-          assistances: assistancesRes.data.length,
-        });
-      } catch (err) {
-        console.error('Error fetching stats');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchStats();
-  }, [userId]);
+  }, [fetchStats, userId]);
+
+  useEffect(() => {
+    fetchGraficos();
+  }, [fetchGraficos]);
+
+  useEffect(() => {
+  console.log("Incidentes por Día:", incidentesPorDia);
+  console.log("Asistencias por Usuario:", asistenciasPorUsuario);
+}, [incidentesPorDia, asistenciasPorUsuario]);
+
 
   if (loading) return <Spinner />;
 
+  const shortcuts: Shortcut[] = [
+    {
+      to: '/users',
+      title: 'Usuarios',
+      description: `${stats.users} registrados`,
+      icon: <FaUser />,
+      bg: 'linear-gradient(135deg, #3b82f6, #1e40af)',
+      show: ['CEO', 'Jefe de Consultoría'].includes(userRank)
+    },
+    {
+      to: '/clients',
+      title: 'Clientes',
+      description: `${stats.clients} activos`,
+      icon: <FaUsers />,
+      bg: 'linear-gradient(135deg, #10b981, #047857)'
+    },
+    {
+      to: '/incidents',
+      title: 'Incidencias',
+      description: `${stats.incidents} pendientes`,
+      icon: <FaBug />,
+      bg: 'linear-gradient(135deg, #f59e0b, #b45309)'
+    },
+    {
+      to: '/assistances',
+      title: 'Asistencias',
+      description: `${stats.assistances} registradas`,
+      icon: <FaClipboardCheck />,
+      bg: 'linear-gradient(135deg, #6366f1, #4f46e5)'
+    },
+    {
+      to: '/pending-tasks',
+      title: 'Pendientes',
+      description: `${stats.pendings} en espera`,
+      icon: <FaChartPie />,
+      bg: 'linear-gradient(135deg, #ec4899, #db2777)'
+    }
+  ];
+
   return (
     <div className={styles.container} data-theme={theme}>
-      <h1 className={styles.title}>Portal de Gestión</h1>
-        <div className={styles.topActions}>
-  <button className={styles.meetBtn} onClick={() => setModalOpen(true)}>
-    <FaVideo className={styles.meetIcon} />
-    Crear Reunión Google Meet
-  </button>
-</div>
-      <div className={styles.grid}>
-        {(userRank === ranks.TOTALACCESS || userRank === ranks.CONSULTORCHIEF) && (
-          <Link to="/users" className={styles.card}>
-            <FaUser className={styles.icon} />
-            <h2>Usuarios</h2>
-            <p>{stats.users} usuarios registrados</p>
-          </Link>
+      <header className={styles.header}>
+        <div className={styles.headerContent}>
+          <h1 className={styles.title}>📊 Portal de Gestión Mantis 📊</h1>
+          <p className={styles.subtitle}>
+            Accedé a tus herramientas de control en un solo lugar.
+          </p>
+        </div>
+        <div className={styles.headerAction}>
+          <button className={styles.meetBtn} onClick={() => setModalOpen(true)}>
+            <FaVideo className={styles.meetIcon} /> Crear Reunión
+          </button>
+        </div>
+      </header>
+
+      <section className={styles.shortcuts}>
+        {shortcuts.map(
+          (s, i) =>
+            (s.show === undefined || s.show) && (
+              <Link
+                key={i}
+                to={s.to}
+                className={styles.shortcutCard}
+                style={{ backgroundImage: s.bg }}
+              >
+                <div className={styles.shortcutIcon}>{s.icon}</div>
+                <div className={styles.shortcutInfo}>
+                  <h3>{s.title}</h3>
+                  <p>{s.description}</p>
+                </div>
+              </Link>
+            )
         )}
-        <Link to="/clients" className={styles.card}>
-          <FaUsers className={styles.icon} />
-          <h2>Clientes</h2>
-          <p>{stats.clients} clientes activos</p>
-        </Link>
-        <Link to="/incidents" className={styles.card}>
-          <FaBug className={styles.icon} />
-          <h2>Incidencias</h2>
-          <p>{stats.incidents} incidencias pendientes</p>
-        </Link>
-        <Link to="/assistances" className={styles.card}>
-          <FaClipboardCheck className={styles.icon} />
-          <h2>Asistencias</h2>
-          <p>{stats.assistances} registradas</p>
-        </Link>
-        <Link to="/pending-tasks" className={styles.card}>
-          <FaClipboardCheck className={styles.icon} />
-          <h2>Pendientes</h2>
-          <p>{stats.pendings} registrados</p>
-        </Link>
-      </div>
+      </section>
+
+      {/* 📊 Gráficos */}
+      <section className={styles.charts}>
+        <IncidentesPorDiaChart data={incidentesPorDia} />
+        <AsistenciasPorUsuarioChart data={asistenciasPorUsuario} />
+      </section>
+
+      {/* 📅 Modal de Google Meet */}
       <Modal
-  isOpen={modalOpen}
-  onClose={() => setModalOpen(false)}
-  title="Crear Reunión Google Meet"
->
-  <CrearMeetForm onClose={() => setModalOpen(false)} />
-</Modal>
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Crear Reunión Google Meet"
+      >
+        <CrearMeetForm onClose={() => setModalOpen(false)} />
+      </Modal>
     </div>
   );
 };
