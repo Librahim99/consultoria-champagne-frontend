@@ -7,6 +7,7 @@ import CrearMeetForm from '../../components/GoogleAPIs/CrearMeetForm';
 import { UserContext } from '../../contexts/UserContext';
 import { ThemeContext } from '../../contexts/ThemeContext';
 import { UserRank } from '../../utils/enums';
+import PendientesPorEstadoChart from '../../components/Charts/PendientesPorEstadoChart';
 import {
   FaUser,
   FaBug,
@@ -37,6 +38,14 @@ interface Shortcut {
   show?: boolean;
 }
 
+interface AsistenciaStats {
+  cantidadHoy: number;
+  totalHorasHoy: number;
+  topCliente: string;
+  licenciasPorVencer: number;
+}
+
+
 const Dashboard: React.FC = () => {
   const { userRank, userId } = useContext(UserContext);
   const { theme } = useContext(ThemeContext);
@@ -48,7 +57,7 @@ const Dashboard: React.FC = () => {
     pendings: 0,
     assistances: 0
   });
-
+  const [asistenciaStats, setAsistenciaStats] = useState<AsistenciaStats | null>(null);
   const [incidentesPorDia, setIncidentesPorDia] = useState([]);
   const [asistenciasPorUsuario, setAsistenciasPorUsuario] = useState([]);
   const [pendientesPorEstado, setPendientesPorEstado] = useState([]);
@@ -137,12 +146,14 @@ const Dashboard: React.FC = () => {
       bg: 'linear-gradient(135deg, #f59e0b, #b45309)'
     },
     {
-      to: '/assistances',
-      title: 'Asistencias',
-      description: `${stats.assistances} registradas`,
-      icon: <FaClipboardCheck />,
-      bg: 'linear-gradient(135deg, #6366f1, #4f46e5)'
-    },
+  to: '/assistances',
+  title: 'Asistencias',
+  description: asistenciaStats
+    ? `${stats.assistances} registradas • ${asistenciaStats.cantidadHoy} hoy • ${asistenciaStats.totalHorasHoy}h`
+    : `${stats.assistances} registradas`,
+  icon: <FaClipboardCheck />,
+  bg: 'linear-gradient(135deg, #6366f1, #4f46e5)'
+},
     {
       to: '/pending-tasks',
       title: 'Pendientes',
@@ -194,7 +205,6 @@ const Dashboard: React.FC = () => {
         <AsistenciasPorUsuarioChart />
         <PendientesPorEstado data={pendientesPorEstado} />
       </section>
-
       {/* 📅 Modal de Google Meet */}
       <Modal
         isOpen={modalOpen}
