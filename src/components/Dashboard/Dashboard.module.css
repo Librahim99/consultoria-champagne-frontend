@@ -227,6 +227,13 @@
   box-shadow: var(--elevation-medium);
 }
 
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
 .chartCard {
   background-color: var(--card-background);
   padding: 1.8rem;
