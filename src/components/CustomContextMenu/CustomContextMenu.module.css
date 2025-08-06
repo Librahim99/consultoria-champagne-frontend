@@ -67,3 +67,9 @@
     font-size: 1rem;
   }
 }
+
+.contextMenu, .submenu {
+  width: 200px; /* Tamaño fijo, ajusta si necesitas */
+  min-width: 200px;
+  box-sizing: border-box;
+}

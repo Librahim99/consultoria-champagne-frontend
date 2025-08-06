@@ -43,8 +43,8 @@ const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean; positi
   const handleMouseEnter = (index: number) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (activeSub !== index) {
-      setActiveSub(null); // Cierra cualquier submenú activo antes de abrir uno nuevo
-      if (items[index].children) setActiveSub(index); // Abre el nuevo submenú si tiene children
+      setActiveSub(null);
+      if (items[index].children) setActiveSub(index);
     }
   };
 
@@ -58,31 +58,30 @@ const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean; positi
           onMouseLeave={() => !isMobile && handleMouseLeave()}
         >
           <button
-  className={`${styles.menuItem} ${item.disabled ? styles.disabled : ''}`}
-  onClick={() => {
-    if (item.children) {
-      handleToggleSubmenu(index);
-    } else if (item.onClick) {
-      item.onClick();
-      hideMenu();
-    }
-  }}
-  onContextMenu={(e) => {
-    e.preventDefault(); // Evita el menú contextual del navegador
-    if (item.children) {
-      handleToggleSubmenu(index);
-    } else if (item.onClick) {
-      item.onClick();
-      hideMenu();
-    }
-  }}
-  disabled={item.disabled}
-  onMouseEnter={() => !isMobile && item.children && setActiveSub(index)}
->
-  {item.icon && <span className={styles.menuIcon}>{item.icon}</span>}
-  {item.label}
-  {item.children && <FaAngleRight style={{ marginLeft: 'auto' }} />}
-</button>
+            className={`${styles.menuItem} ${item.disabled ? styles.disabled : ''}`}
+            onClick={() => {
+              if (item.children) {
+                handleToggleSubmenu(index);
+              } else if (item.onClick) {
+                item.onClick();
+                hideMenu();
+              }
+            }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              if (item.children) {
+                handleToggleSubmenu(index);
+              } else if (item.onClick) {
+                item.onClick();
+                hideMenu();
+              }
+            }}
+            disabled={item.disabled}
+          >
+            {item.icon && <span className={styles.menuIcon}>{item.icon}</span>}
+            {item.label}
+            {item.children && <FaAngleRight style={{ marginLeft: 'auto' }} />}
+          </button>
           <AnimatePresence>
             {item.children && activeSub === index && (
               <motion.div
@@ -93,8 +92,9 @@ const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean; positi
                 transition={{ duration: 0.15 }}
                 style={{
                   position: 'absolute',
-                  left: '100%',
+                  left: position.x + (isSubmenu ? 200 : 400) > window.innerWidth ? '-100%' : '100%', // Abre a la izquierda si no hay espacio
                   top: 0,
+                  transformOrigin: position.x + (isSubmenu ? 200 : 400) > window.innerWidth ? 'top right' : 'top left', // Ancla esquina según dirección
                 }}
               >
                 <RenderMenuItems items={item.children} isSubmenu={true} position={position} hideMenu={hideMenu} />
@@ -177,8 +177,10 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setTimeout(() => {
         if (menuRef.current) {
           const menuRect = menuRef.current.getBoundingClientRect();
-          const adjustedX = Math.min(position.x, window.innerWidth - menuRect.width - 10);
-          const adjustedY = Math.min(position.y, window.innerHeight - menuRect.height - 10);
+          const menuWidth = menuRect.width || 200; // Fallback si no se mide
+          const menuHeight = menuRect.height || 300; // Fallback si no se mide
+          const adjustedX = position.x + menuWidth > window.innerWidth ? position.x - menuWidth : position.x; // Ancla esquina superior-derecha o izquierda al cursor
+          const adjustedY = position.y + menuHeight > window.innerHeight ? position.y - menuHeight : position.y; // Ancla esquina superior o inferior al cursor
           setAdjustedPosition({ x: adjustedX, y: adjustedY });
         }
       }, 0);
@@ -211,6 +213,7 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
               position: 'fixed',
               left: adjustedPosition.x,
               top: adjustedPosition.y,
+              transformOrigin: position.x + 200 > window.innerWidth ? 'top right' : 'top left', // Ancla esquina según dirección
             }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
