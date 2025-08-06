@@ -80,7 +80,7 @@ const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean; positi
           >
             {item.icon && <span className={styles.menuIcon}>{item.icon}</span>}
             {item.label}
-            {item.children && <FaAngleRight style={{ marginLeft: 'auto' }} />}
+            {item.children && <FaAngleRight style={{ marginLeft: '105px' }} />}
           </button>
           <AnimatePresence>
             {item.children && activeSub === index && (
@@ -156,7 +156,7 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
         },
       },
       {
-        label: theme === 'light' ? ' Cambiar a modo oscuro' : ' Cambiar a modo claro',
+        label: theme === 'light' ? ' Modo oscuro' : ' Modo claro',
         icon: theme === 'light' ? <FaMoon /> : <FaSun />,
         onClick: toggleTheme,
       },

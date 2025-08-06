@@ -9,6 +9,10 @@
   min-width: 150px;
 }
 
+.menuIcon{
+  object-fit: contain;
+}
+
 .menuItem {
   display: block;
   width: 100%;
@@ -69,7 +73,14 @@
 }
 
 .contextMenu, .submenu {
-  width: 200px; /* Tamaño fijo, ajusta si necesitas */
-  min-width: 200px;
+  width: 235px; /* Tamaño fijo, ajusta si necesitas */
+  min-width: 235px;
   box-sizing: border-box;
+}
+
+.menuIcon img.userIcon {
+  width: 16px;
+  height: 16px;
+  object-fit: cover; /* Evita distorsión */
+  border-radius: 50%; /* Avatar redondeado */
 }

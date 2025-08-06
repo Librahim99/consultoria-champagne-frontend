@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useContext } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { incident_status, ranks } from '../../utils/enums';
-import { ThemeContext } from '../../contexts/ThemeContext';
 import { type Pending, Client, User, DecodedToken, Assistance } from '../../utils/interfaces';
 import styles from './Pending.module.css';
 import CustomTable from '../CustomTable/CustomTable';
@@ -11,6 +10,7 @@ import { toast } from 'react-toastify';
 import { FaEdit, FaTrash, FaWhatsapp, FaPlus, FaEye } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../Modal/Modal';
+import styles2 from '../CustomContextMenu/CustomContextMenu.module.css';
 
 // Función para mapear valores legibles a claves del enum
 const mapStatusToKey = (value: string): keyof typeof incident_status | '' => {
@@ -22,7 +22,6 @@ const PendingTask: React.FC = () => {
   const [pendings, setPendings] = useState<Pending[]>([]);
   const [error, setError] = useState<string>('');
   const { showMenu } = useContextMenu();
-  const { theme } = useContext(ThemeContext);
   const [editingPending, setEditingPending] = useState<Pending | null>(null);
   const [newPending, setNewPending] = useState<Pending>({
     _id: '',
@@ -299,16 +298,17 @@ const PendingTask: React.FC = () => {
       disabled: userRank !== ranks.TOTALACCESS,
     },
     {
-      label: ' Enviar por whatsapp',
+      label: ` Enviar a ${getUserName(row.userId).split(' ')[0]}`,
       icon: <FaWhatsapp />,
       onClick: () => handleSendWhatsapp(row),
     },
     {
-      label: ' Enviar por whatsapp...',
+      label: ' Enviar a...',
       icon: <FaWhatsapp />,
       onClick: () => {},
       children: users.filter(u => u._id !== row.userId).map((user) => ({
-  label: user.name,
+        icon: <img   src={user.picture} alt="profile" className={styles2.userIcon}/>,
+  label: ` ${user.name}`,
   onClick: () => handleSendWhatsappToUser(row, user),
 })),
     },
