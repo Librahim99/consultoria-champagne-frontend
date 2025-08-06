@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FaUsers,
@@ -11,8 +11,11 @@ import {
   FaBars // Nueva import para la solapa
 } from 'react-icons/fa';
 import styles from './Sidebar.module.css';
+import { UserContext } from '../../contexts/UserContext';
+import { ranks } from '../../utils/enums';
 
 const Sidebar: React.FC = () => {
+  const { userRank, userId } = useContext(UserContext);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseEnter = () => setIsHovered(true);
@@ -26,12 +29,12 @@ const Sidebar: React.FC = () => {
     >
       <ul>
         <li><Link to="/dashboard"><FaClock /> Dashboard</Link></li>
-        <li><Link to="/users"><FaUsers /> Usuarios</Link></li>
+        {userRank === ranks.TOTALACCESS && (<li><Link to="/users"><FaUsers /> Usuarios</Link></li>)}
         <li><Link to="/clients"><FaBuilding /> Clientes</Link></li>
-        <li><Link to="/incidents"><FaExclamationTriangle /> Incidencias</Link></li>
+        {userRank === ranks.TOTALACCESS &&(<li><Link to="/incidents"><FaExclamationTriangle /> Incidencias</Link></li>)}
         <li><Link to="/pending-tasks"><FaTasks /> Pendientes</Link></li>
         <li><Link to="/assistances"><FaHeadset /> Asistencias</Link></li>
-        <li><Link to="/admin/bot"><FaRobot /> Admin Bot</Link></li>
+        {userRank === ranks.TOTALACCESS &&(<li><Link to="/admin/bot"><FaRobot /> Admin Bot</Link></li>)}
       </ul>
       {/* Nueva solapa indicadora */}
       <div className={styles.sidebarHintContainer} onMouseEnter={handleMouseEnter} title="Abrir menú lateral">
