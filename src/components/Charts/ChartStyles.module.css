@@ -1,28 +1,57 @@
 .chartCard {
-  background-color: var(--card-background);
+  background: var(--card-background);
   border-radius: 16px;
-  padding: 1.5rem 1.8rem;
-  box-shadow: var(--elevation-medium);
-  transition: all 0.3s ease;
-  min-height: 340px;
-  display: flex;
-  flex-direction: column;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .chartTitle {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 1rem;
   color: var(--text-color);
-  border-left: 4px solid var(--primary);
-  padding-left: 0.6rem;
 }
 
 .tooltip {
-  background-color: var(--bg-panel);
+  background-color: var(--tooltip-bg, #1f2937);
+  color: var(--tooltip-text, #fff);
   padding: 0.75rem 1rem;
-  border-radius: 10px;
-  font-size: 0.85rem;
-  color: var(--text-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease-in-out;
 }
+
+.tooltipTitle {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.tooltipValue {
+  font-size: 13px;
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filterInput {
+  padding: 4px 8px;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--background-secondary);
+  color: var(--text-color);
+}
+

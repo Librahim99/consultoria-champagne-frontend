@@ -16,6 +16,7 @@ import {
   FaChartPie
 } from 'react-icons/fa';
 import styles from './Dashboard.module.css';
+import PendientesPorEstado from '../../components/Charts/PendientesPorEstadoChart';
 import IncidentesPorDiaChart from '../../components/Charts/IncidentesPorDiaChart';
 import AsistenciasPorUsuarioChart from '../../components/Charts/AsistenciasPorUsuarioChart';
 
@@ -50,6 +51,7 @@ const Dashboard: React.FC = () => {
 
   const [incidentesPorDia, setIncidentesPorDia] = useState([]);
   const [asistenciasPorUsuario, setAsistenciasPorUsuario] = useState([]);
+  const [pendientesPorEstado, setPendientesPorEstado] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -84,11 +86,11 @@ const Dashboard: React.FC = () => {
 
       const [resInc, resAsis] = await Promise.all([
         axios.get(`${process.env.REACT_APP_API_URL}/api/incidents/metricas-dashboard`, config),
-        axios.get(`${process.env.REACT_APP_API_URL}/api/assistances/por-usuario`, config)
+        axios.get(`${process.env.REACT_APP_API_URL}/api/pending/por-estado`, config)
       ]);
 
       setIncidentesPorDia(resInc.data.porDia || []);
-      setAsistenciasPorUsuario(resAsis.data || []);
+      setPendientesPorEstado(resAsis.data || []);
     } catch (error) {
       console.error('❌ Error al cargar gráficos:', error);
     }
@@ -105,6 +107,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
   console.log("Incidentes por Día:", incidentesPorDia);
   console.log("Asistencias por Usuario:", asistenciasPorUsuario);
+  console.log("Pendientes por Estado:", pendientesPorEstado);
 }, [incidentesPorDia, asistenciasPorUsuario]);
 
 
@@ -188,7 +191,8 @@ const Dashboard: React.FC = () => {
       {/* 📊 Gráficos */}
       <section className={styles.charts}>
         <IncidentesPorDiaChart data={incidentesPorDia} />
-        <AsistenciasPorUsuarioChart data={asistenciasPorUsuario} />
+        <AsistenciasPorUsuarioChart />
+        <PendientesPorEstado data={pendientesPorEstado} />
       </section>
 
       {/* 📅 Modal de Google Meet */}
