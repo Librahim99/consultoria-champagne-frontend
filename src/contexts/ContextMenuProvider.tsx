@@ -58,21 +58,31 @@ const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean; positi
           onMouseLeave={() => !isMobile && handleMouseLeave()}
         >
           <button
-            className={`${styles.menuItem} ${item.disabled ? styles.disabled : ''}`}
-            onClick={() => {
-              if (item.children) {
-                handleToggleSubmenu(index);
-              } else if (item.onClick) {
-                item.onClick();
-                hideMenu();
-              }
-            }}
-            disabled={item.disabled}
-          >
-            {item.icon && <span className={styles.menuIcon}>{item.icon}</span>}
-            {item.label}
-            {item.children && <FaAngleRight style={{ marginLeft: 'auto' }} />}
-          </button>
+  className={`${styles.menuItem} ${item.disabled ? styles.disabled : ''}`}
+  onClick={() => {
+    if (item.children) {
+      handleToggleSubmenu(index);
+    } else if (item.onClick) {
+      item.onClick();
+      hideMenu();
+    }
+  }}
+  onContextMenu={(e) => {
+    e.preventDefault(); // Evita el menú contextual del navegador
+    if (item.children) {
+      handleToggleSubmenu(index);
+    } else if (item.onClick) {
+      item.onClick();
+      hideMenu();
+    }
+  }}
+  disabled={item.disabled}
+  onMouseEnter={() => !isMobile && item.children && setActiveSub(index)}
+>
+  {item.icon && <span className={styles.menuIcon}>{item.icon}</span>}
+  {item.label}
+  {item.children && <FaAngleRight style={{ marginLeft: 'auto' }} />}
+</button>
           <AnimatePresence>
             {item.children && activeSub === index && (
               <motion.div
