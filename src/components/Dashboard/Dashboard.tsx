@@ -17,7 +17,7 @@ import {
   FaChartPie
 } from 'react-icons/fa';
 import styles from './Dashboard.module.css';
-import PendientesPorUsuarioChart from '../../components/Charts/PendientesPorUsuarioChart';
+import PendientesPorEstado from '../../components/Charts/PendientesPorEstadoChart';
 import IncidentesPorDiaChart from '../../components/Charts/IncidentesPorDiaChart';
 import AsistenciasPorUsuarioChart from '../../components/Charts/AsistenciasPorUsuarioChart';
 
@@ -60,63 +60,50 @@ const Dashboard: React.FC = () => {
   const [asistenciaStats, setAsistenciaStats] = useState<AsistenciaStats | null>(null);
   const [incidentesPorDia, setIncidentesPorDia] = useState([]);
   const [asistenciasPorUsuario, setAsistenciasPorUsuario] = useState([]);
+  const [pendientesPorEstado, setPendientesPorEstado] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
   const fetchStats = useCallback(async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const config = { headers: { Authorization: `Bearer ${token}` } };
+    try {
+      const token = localStorage.getItem('token');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
 
-    const endpoints = ['users', 'clients', 'incidents', 'pending', 'assistances'];
-    const responses = await Promise.all(
-      endpoints.map(endpoint =>
-        axios.get(`${process.env.REACT_APP_API_URL}/api/${endpoint}`, config)
-      )
-    );
+      const endpoints = ['users', 'clients', 'incidents', 'pending', 'assistances'];
+      const responses = await Promise.all(
+        endpoints.map(endpoint => axios.get(`${process.env.REACT_APP_API_URL}/api/${endpoint}`, config))
+      );
 
-    setStats({
-      users: responses[0].data.length,
-      clients: responses[1].data.length,
-      incidents: responses[2].data.length,
-      pendings: responses[3].data.length,
-      assistances: responses[4].data.length
-    });
+      setStats({
+        users: responses[0].data.length,
+        clients: responses[1].data.length,
+        incidents: responses[2].data.length,
+        pendings: responses[3].data.length,
+        assistances: responses[4].data.length
+      });
+    } catch (error) {
+      console.error('❌ Error al obtener estadísticas:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    const asistenciaExtra = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/assistances/dashboard/asistencias`,
-      config
-    );
-    setAsistenciaStats(asistenciaExtra.data);
-  } catch (error) {
-    console.error('❌ Error al obtener estadísticas:', error);
-  } finally {
-    setLoading(false);
-  }
-}, []);
+  const fetchGraficos = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
 
- const [pendientesPorUsuario, setPendientesPorUsuario] = useState([]);
-const [pendientesPorEstado, setPendientesPorEstado] = useState([]);
+      const [resInc, resAsis] = await Promise.all([
+        axios.get(`${process.env.REACT_APP_API_URL}/api/incidents/metricas-dashboard`, config),
+        axios.get(`${process.env.REACT_APP_API_URL}/api/pending/por-estado`, config)
+      ]);
 
-const fetchGraficos = useCallback(async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const config = { headers: { Authorization: `Bearer ${token}` } };
-
-    const [resInc, resAsis, resPend] = await Promise.all([
-      axios.get(`${process.env.REACT_APP_API_URL}/api/incidents/metricas-dashboard`, config),
-      axios.get(`${process.env.REACT_APP_API_URL}/api/assistances/por-usuario`, config),
-      axios.get(`${process.env.REACT_APP_API_URL}/api/pending/metricas-dashboard`, config)
-    ]);
-
-    setIncidentesPorDia(resInc.data.porDia || []);
-    setAsistenciasPorUsuario(resAsis.data || []);
-    setPendientesPorUsuario(resPend.data.porUsuario || []);
-    setPendientesPorEstado(resPend.data.porEstado || []);
-  } catch (error) {
-    console.error('❌ Error al cargar gráficos:', error);
-  }
-}, []);
+      setIncidentesPorDia(resInc.data.porDia || []);
+      setPendientesPorEstado(resAsis.data || []);
+    } catch (error) {
+      console.error('❌ Error al cargar gráficos:', error);
+    }
+  }, []);
 
   useEffect(() => {
     fetchStats();
@@ -126,14 +113,11 @@ const fetchGraficos = useCallback(async () => {
     fetchGraficos();
   }, [fetchGraficos]);
 
-
-useEffect(() => {
-  console.log("🎯 incidentesPorDia", incidentesPorDia);
-  console.log("🎯 asistenciasPorUsuario", asistenciasPorUsuario);
-  console.log("🎯 pendientesPorUsuario", pendientesPorUsuario);
-  console.log("🎯 pendientesPorEstado", pendientesPorEstado);
-}, [incidentesPorDia, asistenciasPorUsuario, pendientesPorUsuario, pendientesPorEstado]);
-
+  useEffect(() => {
+  console.log("Incidentes por Día:", incidentesPorDia);
+  console.log("Asistencias por Usuario:", asistenciasPorUsuario);
+  console.log("Pendientes por Estado:", pendientesPorEstado);
+}, [incidentesPorDia, asistenciasPorUsuario]);
 
 
   if (loading) return <Spinner />;
@@ -216,16 +200,11 @@ useEffect(() => {
       </section>
 
       {/* 📊 Gráficos */}
-      <section className={styles.chartsGrid}>
-  <div className={styles.chartCard}>
-    <h3>🙋‍♂️ Asistencias por Usuario</h3>
-    <AsistenciasPorUsuarioChart data={asistenciasPorUsuario} />
-  </div>
-  <div className={styles.chartCard}>
-    <h3>📌 Pendientes por Estado</h3>
-    <PendientesPorEstadoChart data={pendientesPorEstado} />
-  </div>
-</section>
+      <section className={styles.charts}>
+        <IncidentesPorDiaChart data={incidentesPorDia} />
+        <AsistenciasPorUsuarioChart />
+        <PendientesPorEstado data={pendientesPorEstado} />
+      </section>
       {/* 📅 Modal de Google Meet */}
       <Modal
         isOpen={modalOpen}
