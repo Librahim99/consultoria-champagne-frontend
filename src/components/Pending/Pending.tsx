@@ -276,8 +276,7 @@ const PendingTask: React.FC = () => {
     {
       label: ' Nuevo Pendiente',
       icon: <FaPlus />,
-      onClick: handleNewPending,
-      disabled: userRank !== ranks.TOTALACCESS,
+      onClick: handleNewPending
     }
   ]
    showMenu(e.clientX, e.clientY, menuItems) 
@@ -288,14 +287,12 @@ const PendingTask: React.FC = () => {
     {
       label: ' Nuevo Pendiente',
       icon: <FaPlus />,
-      onClick: handleNewPending,
-      disabled: userRank !== ranks.TOTALACCESS,
+      onClick: handleNewPending
     },
     {
       label: ' Modificar',
       icon: <FaEdit />,
-      onClick: () => handleEdit(row),
-      disabled: userRank !== ranks.TOTALACCESS,
+      onClick: () => handleEdit(row)
     },
     {
       label: ` Enviar a ${getUserName(row.userId).split(' ')[0]}`,
