@@ -23,8 +23,8 @@
 }
 
 .tableWrapper {
-  min-height: 67vh;
-  max-height: 67vh;
+  min-height: 60vh;
+  max-height: 60vh;
   overflow-y: auto;
   overflow-x: auto;
   padding: 0 15px;
@@ -110,13 +110,13 @@
 .dragHandle {
   cursor: move;
   font-size: 0.75rem;
-  color: var(--secondary-text-color);
+  color: var(--text-color);
   transition: color 0.3s ease;
   padding: 0.1rem;
 }
 
 .dragHandle:hover {
-  color: var(--primary-light);
+  color: var(--background-color);
 }
 
 .sortButton {
