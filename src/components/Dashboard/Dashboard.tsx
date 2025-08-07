@@ -6,7 +6,7 @@ import Modal from '../Modal/Modal';
 import CrearMeetForm from '../../components/GoogleAPIs/CrearMeetForm';
 import { UserContext } from '../../contexts/UserContext';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { UserRank } from '../../utils/enums';
+import { ranks, UserRank } from '../../utils/enums';
 import PendientesPorEstadoChart from '../../components/Charts/PendientesPorEstadoChart';
 import {
   FaUser,
@@ -143,7 +143,8 @@ const Dashboard: React.FC = () => {
       title: 'Incidencias',
       description: `${stats.incidents} pendientes`,
       icon: <FaBug />,
-      bg: 'linear-gradient(135deg, #f59e0b, #b45309)'
+      bg: 'linear-gradient(135deg, #f59e0b, #b45309)',
+      show: ['CEO', 'Jefe de Consultoría'].includes(userRank)
     },
     {
   to: '/assistances',
@@ -172,17 +173,17 @@ const Dashboard: React.FC = () => {
             Accedé a tus herramientas de control en un solo lugar.
           </p>
         </div>
-        <div className={styles.headerAction}>
+         {userRank === ranks.TOTALACCESS && (<div className={styles.headerAction}>
           <button className={styles.meetBtn} onClick={() => setModalOpen(true)}>
             <FaVideo className={styles.meetIcon} /> Crear Reunión
           </button>
-        </div>
+        </div>)}
       </header>
 
       <section className={styles.shortcuts}>
         {shortcuts.map(
           (s, i) =>
-            (s.show === undefined || s.show) && (
+            (s.show === undefined || s.show)  && (
               <Link
                 key={i}
                 to={s.to}

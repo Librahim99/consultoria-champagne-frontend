@@ -62,7 +62,7 @@ const Clients: React.FC = () => {
   }
 
   const handleDelete =useCallback(async (client: Client) => {
-    if (userRank !== ranks.TOTALACCESS) {
+    if (userRank === ranks.GUEST) {
       setError('No tienes permisos para eliminar');
       return;
     }
@@ -109,13 +109,13 @@ const Clients: React.FC = () => {
         label: ' Nuevo Cliente',
         icon: <FaPlus />,
         onClick: handleNewClient,
-        disabled: userRank !== ranks.TOTALACCESS,
+        disabled: userRank === ranks.GUEST,
       },
       {
         label: ' Modificar',
         icon: <FaEdit />,
         onClick: () => handleEdit(row),
-        disabled: userRank !== ranks.TOTALACCESS,
+        disabled: userRank === ranks.GUEST,
       },
       {
         label: ' Ver Pendientes',
@@ -158,7 +158,7 @@ const Clients: React.FC = () => {
         label: ' Nuevo Cliente',
         icon: <FaPlus />,
         onClick: handleNewClient,
-        disabled: userRank !== ranks.TOTALACCESS,
+        disabled: userRank === ranks.GUEST,
       }
     ]
      showMenu(e.clientX, e.clientY, menuItems) 
@@ -176,8 +176,8 @@ const Clients: React.FC = () => {
     rowData={clients}
     columnDefs={[
       { field: 'common', headerName: 'Común', sortable: true, filterable: true },
-      { field: 'name', headerName: 'Nombre', sortable: true, filterable: true },
-      { field: 'lastUpdate', headerName: 'Última Actualización', sortable: true, filterable: true }
+      { field: 'name', headerName: 'Nombre', sortable: true, filterable: true, cellRenderer: (data) => data.vip ? `${data.name || ''} ★` : data.name || '', },
+      { field: 'lastUpdate', headerName: 'Última Actualización', sortable: true, filterable: true, valueFormatter: (value) => value ? new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '' }
     ]}
     pagination={true}
     defaultPageSize={15}

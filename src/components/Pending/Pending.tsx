@@ -82,7 +82,7 @@ const PendingTask: React.FC = () => {
 }, []);
 
   const handleEdit = useCallback((pending: Pending) => {
-  if (userRank !== ranks.TOTALACCESS) {
+  if (userRank === ranks.GUEST) {
     setError('No tienes permisos para editar');
     return;
   }
@@ -212,7 +212,7 @@ const PendingTask: React.FC = () => {
   }, [pendings, userRank]);
 
   const handleNewPending = useCallback(() => {
-    if (userRank !== ranks.TOTALACCESS) {
+    if (userRank === ranks.GUEST) {
       setError('No tienes permisos para crear');
       return;
     }
@@ -281,7 +281,7 @@ const PendingTask: React.FC = () => {
       label: ' Nuevo Pendiente',
       icon: <FaPlus />,
       onClick: handleNewPending,
-      disabled: userRank !== ranks.TOTALACCESS,
+      disabled: userRank  === ranks.GUEST
     },
     {
       label: ' Importar Pendientes',
@@ -298,14 +298,12 @@ const PendingTask: React.FC = () => {
     {
       label: ' Nuevo Pendiente',
       icon: <FaPlus />,
-      onClick: handleNewPending,
-      disabled: userRank !== ranks.TOTALACCESS,
+      onClick: handleNewPending
     },
     {
       label: ' Modificar',
       icon: <FaEdit />,
-      onClick: () => handleEdit(row),
-      disabled: userRank !== ranks.TOTALACCESS,
+      onClick: () => handleEdit(row)
     },
     {
       label: ` Enviar a ${getUserName(row.userId).split(' ')[0]}`,
@@ -430,7 +428,7 @@ const PendingTask: React.FC = () => {
         />
       </div>
       <Modal
-  isOpen={showAddForm && userRank === ranks.TOTALACCESS}
+  isOpen={showAddForm}
   onClose={() => setShowAddForm(false)}
   title={editingPending ? 'Editar Tarea Pendiente' : 'Agregar Tarea Pendiente'}> 
   <form onSubmit={handleSubmit} className="modalForm">

@@ -3,17 +3,21 @@
   --primary-dark: #0056b3;
   --primary-light: #00aaff;
   --error: #e53935;
+  --modal-bg: #e1e1e1;
   --success: #28a745;
   --background-color: #f0f2f5;
   --text-color: #050505;
   --secondary-text-color: #555;
   --card-background: #ffffff;
   --border-color: #ddd;
+  --area-text-background: #ddd ;
+  --button-color: #fff;
   --button-background: #007bff;
   --button-hover: #0056b3;
   --cancel-button-background: #e53935;
   --cancel-button-hover: #c82333;
   --shadow-color: rgba(0, 0, 0, 0.15);
+  --shadow-size: 0 30px 80px;
   --hover-bg: rgba(0, 0, 0, 0.05);
   --qr-bg: #ffffff;
   --qr-fg: #000000;
@@ -23,11 +27,14 @@
   --ag-row-hover: #f0f0f0;
   --ag-header-background: #004b87;
   --ag-header-foreground: #ffffff;
+  --transparency: #ffffff00;
 }
 
 [data-theme='dark'] {
+  --modal-bg: #1e1e1e;
   --background-color: #121212;
   --text-color: #e4e6eb;
+  --area-text-background: #222 ;
   --secondary-text-color: #aaa;
   --card-background: #242526;
   --border-color: #444;
@@ -45,6 +52,12 @@
   --ag-row-hover: #333;
   --ag-header-background: #003d80;
   --ag-header-foreground: #ffffff;
+}
+
+/* Estilo para Firefox */
+html {
+  scrollbar-width: thin; /* 'auto' o 'thin' */
+  scrollbar-color: var(--button-background) var(--transparency); /* Color del pulgar y pista */
 }
 
 body {
