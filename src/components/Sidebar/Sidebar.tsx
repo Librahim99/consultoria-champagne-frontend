@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FaUsers,
@@ -14,20 +14,16 @@ import styles from './Sidebar.module.css';
 import { UserContext } from '../../contexts/UserContext';
 import { ranks } from '../../utils/enums';
 
-interface SidebarProps {
-  isOpen: boolean;
-  setIsOpen: (open: boolean) => void;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
+const Sidebar: React.FC = () => {
   const { userRank, userId } = useContext(UserContext);
+  const [isHovered, setIsHovered] = useState(false);
 
-  const handleMouseEnter = () => setIsOpen(true);
-  const handleMouseLeave = () => setIsOpen(false);
+  const handleMouseEnter = () => setIsHovered(true);
+  const handleMouseLeave = () => setIsHovered(false);
 
   return (
     <div
-      className={`${styles.sidebar} ${isOpen ? styles.visible : ''}`}
+      className={`${styles.sidebar} ${isHovered ? styles.visible : ''}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
