@@ -1,6 +1,6 @@
 .sidebar {
   position: fixed;
-  left: -240px; /* Cambiado de -180px para ocultar completamente (width 200px) */
+  left: 0;
   top: 0;
   bottom: 0;
   width: 200px;
@@ -8,16 +8,16 @@
   color: var(--sidebar-text);
   padding: 0px 16px;
   box-shadow: 2px 0 8px var(--shadow-color);
-  transition: left 0.3s ease;
+  transition: transform 0.3s ease;
+  transform: translateX(-240px); /* Ocultar completamente */
   z-index: 1000;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-
 .sidebar.visible {
-  left: 0;
+  transform: translateX(0);
   opacity: 100;
 }
 
@@ -112,24 +112,53 @@
   z-index: 999;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .sidebar {
     width: 100vw;
-    left: -112vw;
+    transform: translateX(-100vw);
+    padding: 0; /* Quitar padding lateral para full width */
+    height: 100vh; /* Ocupar toda la altura */
+    justify-content: center; /* Centrar verticalmente si hay pocas opciones */
   }
 
   .sidebar.visible {
-    left: 0;
+    transform: translateX(0);
   }
 
-  .sidebarHintContainer{
-    left: 112vw; /* Ajuste para mobile */
+  .sidebar ul {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Ocupar toda la altura disponible */
+    margin: 0;
+    padding: 80px 0; /* Padding vertical para espacio */
   }
 
+  .sidebar li {
+    flex: 1; /* Cada li ocupa espacio equitativo */
+    margin-bottom: 0; /* Quitar margin para distribución flex */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px; /* Mínimo para comodidad táctil */
+  }
+
+  .sidebar a {
+    font-size: 1.5rem; /* Fuente más grande para visibilidad */
+    padding: 20px; /* Más padding para áreas táctiles */
+    height: 100%; /* Ocupar full height del li */
+    width: 100%; /* Ocupar full width */
+    justify-content: center; /* Centrar contenido */
+    gap: 15px; /* Más espacio entre ícono y texto */
+    border-radius: 0; /* Quitar radius para look full-screen */
+    transition: background-color 0.2s ease;
+  }
+
+  .sidebar a svg {
+    font-size: 2rem; /* Íconos más grandes */
+  }
+
+  .sidebarHintContainer,
   .sidebarHint {
-    left: 112vw; /* Ajuste para mobile */
-    padding: 6px 3px;
-    font-size: 1rem;
+    display: none; /* Ocultar hint en mobile */
   }
 }
