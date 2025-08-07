@@ -78,7 +78,7 @@ const PendingTask: React.FC = () => {
   }, [userRank, error]);
 
   const handleEdit = useCallback((pending: Pending) => {
-  if (userRank !== ranks.TOTALACCESS) {
+  if (userRank === ranks.GUEST) {
     setError('No tienes permisos para editar');
     return;
   }
@@ -208,7 +208,7 @@ const PendingTask: React.FC = () => {
   }, [pendings, userRank]);
 
   const handleNewPending = useCallback(() => {
-    if (userRank !== ranks.TOTALACCESS) {
+    if (userRank === ranks.GUEST) {
       setError('No tienes permisos para crear');
       return;
     }
