@@ -242,7 +242,7 @@ const handleCustomDateSubmit = useCallback(() => {
 
     const lastUpdate = new Date(data.lastUpdate);
     const expirationDate = new Date(lastUpdate);
-    expirationDate.setDate(lastUpdate.getDate() + 60);
+    expirationDate.setDate(lastUpdate.getDate() + 63);
     const today = new Date();
     const daysLeft = Math.floor((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
