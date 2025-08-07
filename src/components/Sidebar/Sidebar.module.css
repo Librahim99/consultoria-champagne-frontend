@@ -1,6 +1,6 @@
 .sidebar {
   position: fixed;
-  left: -240px; /* Cambiado de -180px para ocultar completamente (width 200px) */
+  left: 0;
   top: 0;
   bottom: 0;
   width: 200px;
@@ -8,16 +8,16 @@
   color: var(--sidebar-text);
   padding: 0px 16px;
   box-shadow: 2px 0 8px var(--shadow-color);
-  transition: left 0.3s ease;
+  transition: transform 0.3s ease;
+  transform: translateX(-240px); /* Ocultar completamente */
   z-index: 1000;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-
 .sidebar.visible {
-  left: 0;
+  transform: translateX(0);
   opacity: 100;
 }
 
@@ -117,19 +117,15 @@
   .sidebar {
     width: 100vw;
     left: -112vw;
+    transform: translateX(-100vw);
   }
 
   .sidebar.visible {
-    left: 0;
+    transform: translateX(0);
   }
 
-  .sidebarHintContainer{
-    left: 112vw; /* Ajuste para mobile */
-  }
-
+  .sidebarHintContainer,
   .sidebarHint {
-    left: 112vw; /* Ajuste para mobile */
-    padding: 6px 3px;
-    font-size: 1rem;
+    display: none; /* Ocultar hint en mobile */
   }
 }
