@@ -244,7 +244,7 @@ const handleCustomDateSubmit = useCallback(() => {
     const expirationDate = new Date(lastUpdate);
     expirationDate.setDate(lastUpdate.getDate() + 63);
     const today = new Date();
-    const daysLeft = Math.floor((expirationDate.getTime() - today.getTime()) / (1000 * 63 * 63 * 24));
+    const daysLeft = Math.floor((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
     if (daysLeft < 0) {
       return <span className={styles.redText}>Vencida</span>;
