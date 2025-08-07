@@ -14,9 +14,10 @@
 }
 
 .menuItem {
-  display: block;
+  display: flex;
   width: 100%;
   padding: 8px 16px;
+  justify-content: space-between;
   background: none;
   border: none;
   text-align: left;

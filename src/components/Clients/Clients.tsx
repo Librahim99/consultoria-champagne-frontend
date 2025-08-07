@@ -32,6 +32,10 @@ const Clients: React.FC = () => {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  // Nuevos estados para el modal de fecha personalizada
+const [showDateModal, setShowDateModal] = useState(false);
+const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+const [customDate, setCustomDate] = useState<string>(new Date().toISOString().split('T')[0]); // Fecha actual por default
   const { register, handleSubmit, formState: { errors }, reset } = useForm({ resolver: yupResolver(schema) });
 
   useEffect(() => {
@@ -39,7 +43,8 @@ const Clients: React.FC = () => {
     const fetchClients = async () => {
       try {
         const res = await axios.get<Client[]>(`${process.env.REACT_APP_API_URL}/api/clients`, { headers: { Authorization: `Bearer ${token}` } });
-        setClients(res.data);
+        const clientes = res.data.sort((a: Client, b: Client) => parseInt(a.common) - parseInt(b.common))
+        setClients(clientes);
       } catch (err: any) {
         setError(err.response?.data?.message || 'Error al cargar clientes');
       } finally {
@@ -49,17 +54,17 @@ const Clients: React.FC = () => {
     fetchClients();
   }, []);
 
-  const handleEdit = (client: Client) => {
-    setEditingClient(client);
-    reset({ name: client.name, common: client.common, vip: client.vip, active: client.active });
-    setShowForm(true);
-  };
+  const handleEdit = useCallback((client: Client) => {
+  setEditingClient(client);
+  reset({ name: client.name, common: client.common, vip: client.vip, active: client.active });
+  setShowForm(true);
+}, [reset]); // Dependencias: reset (de useForm)
 
-  const handleNewClient = () => {
-    setEditingClient(null)
-    reset({name: null, common: null, vip: false, active: true})
-    setShowForm(true);
-  }
+ const handleNewClient = useCallback(() => {
+  setEditingClient(null);
+  reset({ name: null, common: null, vip: false, active: true });
+  setShowForm(true);
+}, [reset]);
 
   const handleDelete =useCallback(async (client: Client) => {
     if (userRank === ranks.GUEST) {
@@ -78,6 +83,43 @@ const Clients: React.FC = () => {
       toast.error(err.response?.data?.message || 'Error al eliminar cliente');
     }
   }, [clients, userRank])
+
+// Nueva función para actualizar lastUpdate
+const handleUpdateLicense = async (client: Client, newDate: string) => {
+  if (userRank === ranks.GUEST) {
+    toast.error('No tienes permisos para actualizar');
+    return;
+  }
+  const token = localStorage.getItem('token');
+  try {
+    // Actualización optimista en el state local
+    // const updatedClient = { ...client, lastUpdate: newDate }; // newDate ya es YYYY-MM-DD
+    // setClients(clients.map(c => c._id === client._id ? updatedClient : c));
+
+    const res = await axios.patch(`${process.env.REACT_APP_API_URL}/api/clients/${client._id}/update-license`, 
+      { lastUpdate: newDate }, // Enviar como string YYYY-MM-DD
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setClients(clients.map(c => c._id === client._id ? res.data : c));
+    toast.success(`Fecha de licencia actualizada para ${client.name} al ${newDate}`);
+  } catch (err: any) {
+    setClients(clients.map(c => c._id === client._id ? client : c));
+    toast.error(err.response?.data?.message || 'Error al actualizar fecha');
+  }
+};
+
+const openDateModal = useCallback((client: Client) => {
+  setSelectedClient(client);
+  setCustomDate(new Date().toISOString().split('T')[0]); // Reset a hoy
+  setShowDateModal(true);
+}, []);
+
+const handleCustomDateSubmit = useCallback(() => {
+  if (selectedClient && customDate) {
+    handleUpdateLicense(selectedClient, customDate); // Enviar customDate directamente (YYYY-MM-DD)
+    setShowDateModal(false);
+  }
+}, [selectedClient, customDate, handleUpdateLicense]);
 
   const onSubmit = async (data: any) => {
     const token = localStorage.getItem('token');
@@ -118,6 +160,29 @@ const Clients: React.FC = () => {
         disabled: userRank === ranks.GUEST,
       },
       {
+  label: ' Actualizar Licencia',
+  icon: <FaClock />,
+  disabled: userRank === ranks.GUEST,
+  children: [
+    {
+      label: 'Fecha de hoy',
+      onClick: () => handleUpdateLicense(row, new Date().toISOString().split('T')[0]),
+    },
+    {
+      label: 'Fecha de ayer',
+      onClick: () => {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        handleUpdateLicense(row, yesterday.toISOString().split('T')[0]);
+      },
+    },
+    {
+      label: 'Otra fecha',
+      onClick: () => openDateModal(row),
+    },
+  ]
+},
+      {
         label: ' Ver Pendientes',
         icon: <FaTasks />,
         onClick: () => {},
@@ -136,18 +201,12 @@ const Clients: React.FC = () => {
         disabled: true
       },
       {
-        label: ' Actualizar fecha de licencia',
-        icon: <FaClock />,
-        onClick: () => {},
-        disabled: true
-      },
-      {
         label: ' Eliminar',
         icon: <FaTrash />,
         onClick: () => handleDelete(row),
         disabled: userRank !== ranks.TOTALACCESS,
       },
-    ], [userRank, clients]);
+    ], [userRank, handleUpdateLicense, openDateModal, handleDelete, handleEdit, handleNewClient]);
   
 
   const getContextMenu = useCallback((e: React.MouseEvent) => {
@@ -177,7 +236,24 @@ const Clients: React.FC = () => {
     columnDefs={[
       { field: 'common', headerName: 'Común', sortable: true, filterable: true },
       { field: 'name', headerName: 'Nombre', sortable: true, filterable: true, cellRenderer: (data) => data.vip ? `${data.name || ''} ★` : data.name || '', },
-      { field: 'lastUpdate', headerName: 'Última Actualización', sortable: true, filterable: true, valueFormatter: (value) => value ? new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '' }
+      { field: 'lastUpdate', headerName: 'Última Actualización', sortable: true, filterable: true, valueFormatter: (value) => value ? new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '' },
+      { field: 'licenseDays', headerName: 'Dias de Licencia', sortable: false, filterable: false, cellRenderer: ( data ) => {
+    if (!data.lastUpdate) return 'N/A';
+
+    const lastUpdate = new Date(data.lastUpdate);
+    const expirationDate = new Date(lastUpdate);
+    expirationDate.setDate(lastUpdate.getDate() + 60);
+    const today = new Date();
+    const daysLeft = Math.floor((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysLeft < 0) {
+      return <span className={styles.redText}>Vencida</span>;
+    }
+    if (daysLeft <= 15) {
+      return <span className={styles.yellowText}>{daysLeft} días</span>;
+    }
+    return <span className={styles.greenText}>{daysLeft} días</span>;
+  } }
     ]}
     pagination={true}
     defaultPageSize={15}
@@ -211,6 +287,22 @@ const Clients: React.FC = () => {
           <button type="button" onClick={toggleForm}>Cancelar</button>
         </form>
       </Modal>
+      {/* Nuevo Modal para fecha personalizada */}
+<Modal isOpen={showDateModal} onClose={() => setShowDateModal(false)} title={selectedClient?.name}>
+  <div className="modalForm">
+    <div className="formGroup">
+      <label>Fecha *</label>
+      <input 
+        type="date" 
+        value={customDate} 
+        onChange={(e) => setCustomDate(e.target.value)} 
+        max={new Date().toISOString().split('T')[0]} // No permitir fechas futuras
+      />
+    </div>
+    <button type="button" onClick={handleCustomDateSubmit} disabled={!customDate}>Actualizar</button>
+    <button type="button" onClick={() => setShowDateModal(false)}>Cancelar</button>
+  </div>
+</Modal>
     </div>
   );
 };
