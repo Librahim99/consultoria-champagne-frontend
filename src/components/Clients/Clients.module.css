@@ -13,6 +13,16 @@
   color: var(--text-color);
 }
 
+.redText{
+  color: #e05151
+}
+.yellowText{
+  color: #ffeb9c
+}
+.greenText{
+  color: #a0f2bb
+}
+
 .error {
   color: var(--error);
   font-size: 0.9rem;

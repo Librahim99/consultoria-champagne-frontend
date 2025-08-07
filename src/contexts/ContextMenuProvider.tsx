@@ -78,9 +78,12 @@ const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean; positi
             }}
             disabled={item.disabled}
           >
+            <span>
             {item.icon && <span className={styles.menuIcon}>{item.icon}</span>}
-            {item.label}
-            {item.children && <FaAngleRight style={{ marginLeft: '105px' }} />}
+            {item.label} 
+            </span>
+
+            {item.children && <FaAngleRight style={{ }} />}
           </button>
           <AnimatePresence>
             {item.children && activeSub === index && (

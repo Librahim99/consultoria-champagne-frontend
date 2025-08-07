@@ -21,6 +21,7 @@ export interface Client {
   name: string;
   common: string;
   lastUpdate: string;
+  lastUpdateUser:string;
   vip: boolean;
   active: boolean;
   email: string[];
