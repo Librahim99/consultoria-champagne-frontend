@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { incident_status, ranks } from '../../utils/enums';
@@ -7,10 +7,11 @@ import styles from './Pending.module.css';
 import CustomTable from '../CustomTable/CustomTable';
 import { useContextMenu } from '../../contexts/UseContextMenu';
 import { toast } from 'react-toastify';
-import { FaEdit, FaTrash, FaWhatsapp, FaPlus, FaEye } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaWhatsapp, FaPlus, FaEye, FaFileCsv } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../Modal/Modal';
 import styles2 from '../CustomContextMenu/CustomContextMenu.module.css';
+import ImportCSVModal from '../ImportacionCSV/ImportarCSV';
 
 // Función para mapear valores legibles a claves del enum
 const mapStatusToKey = (value: string): keyof typeof incident_status | '' => {
@@ -41,41 +42,44 @@ const PendingTask: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const navigate = useNavigate();
+  const [showImportModal, setShowImportModal] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError('No token found in localStorage');
-      return;
-    }
+  const token = localStorage.getItem('token');
+  if (!token) {
+    setError('No se encontró el token de autenticación');
+    return;
+  }
 
+  try {
+    const decoded: DecodedToken = jwtDecode(token);
+    setUserRank(decoded.rank);
+    setLoggedInUserId(decoded.id);
+    setNewPending(prev => ({ ...prev, userId: decoded.id }));
+  } catch (decodeError) {
+    console.error('Error decoding token:', decodeError);
+    setError('Token inválido o corrupto');
+    return;
+  }
+
+  const fetchData = async () => {
     try {
-      const decoded: DecodedToken = jwtDecode(token);
-      setUserRank(decoded.rank);
-      setLoggedInUserId(decoded.id);
-      setNewPending(prev => ({ ...prev, userId: decoded.id }));
-    } catch (decodeError) {
-      console.error('Error decoding token:', decodeError);
-      setError('Token inválido o corrupto');
+      const [clientsRes, usersRes, pendingsRes] = await Promise.all([
+        axios.get<Client[]>(`${process.env.REACT_APP_API_URL}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get<User[]>(`${process.env.REACT_APP_API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get<Pending[]>(`${process.env.REACT_APP_API_URL}/api/pending`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+      setClients(clientsRes.data);
+      setUsers(usersRes.data);
+      setPendings(pendingsRes.data);
+    } catch (err: any) {
+      console.error('Fetch Error Details:', err.response?.data || err.message, err.response?.status);
+      setError(err.response?.data?.message || 'Error al cargar datos');
     }
+  };
 
-    const fetchData = async () => {
-      try {
-        const [clientsRes, usersRes, pendingsRes] = await Promise.all([
-          axios.get<Client[]>(`${process.env.REACT_APP_API_URL}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get<User[]>(`${process.env.REACT_APP_API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get<Pending[]>(`${process.env.REACT_APP_API_URL}/api/pending`, { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-        setClients(clientsRes.data);
-        setUsers(usersRes.data);
-        setPendings(pendingsRes.data);
-      } catch (err: any) {
-        console.error('Fetch Error Details:', err.response?.data || err.message, err.response?.status);
-        setError(err.response?.data?.message || 'Error al cargar datos');
-      }
-    };
-    if (userRank && !error) fetchData();
-  }, [userRank, error]);
+  fetchData();
+}, []);
 
   const handleEdit = useCallback((pending: Pending) => {
   if (userRank === ranks.GUEST) {
@@ -276,7 +280,14 @@ const PendingTask: React.FC = () => {
     {
       label: ' Nuevo Pendiente',
       icon: <FaPlus />,
-      onClick: handleNewPending
+      onClick: handleNewPending,
+      disabled: userRank  === ranks.GUEST
+    },
+    {
+      label: ' Importar Pendientes',
+      icon: <FaFileCsv/>,
+      onClick: () => setShowImportModal(true),
+      disabled: userRank  === ranks.GUEST
     }
   ]
    showMenu(e.clientX, e.clientY, menuItems) 
@@ -316,6 +327,12 @@ const PendingTask: React.FC = () => {
       disabled: !row.incidentId,
     },
     {
+      label: ' Importar Pendientes',
+      icon: <FaFileCsv/>,
+      onClick: () => setShowImportModal(true),
+      disabled: userRank  === ranks.GUEST
+    },
+    {
       label: ' Eliminar',
       icon: <FaTrash />,
       onClick: () => handleDelete(row),
@@ -332,6 +349,22 @@ const PendingTask: React.FC = () => {
     const user = users.find(u => u._id === userId);
     return user ? user.name : 'Desconocido';
   };
+
+  const fetchPendings = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/pending`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    setPendings(res.data);
+  } catch (error: any) {
+    console.error('❌ Error al cargar pendientes:', error);
+    setError(error.response?.data?.message || 'Error al cargar pendientes');
+  }
+};
+
 
   return (
     <div className={styles.container}>
@@ -397,8 +430,7 @@ const PendingTask: React.FC = () => {
       <Modal
   isOpen={showAddForm}
   onClose={() => setShowAddForm(false)}
-  title={editingPending ? 'Editar Tarea Pendiente' : 'Agregar Tarea Pendiente'}
->
+  title={editingPending ? 'Editar Tarea Pendiente' : 'Agregar Tarea Pendiente'}> 
   <form onSubmit={handleSubmit} className="modalForm">
     <div className="formGroup">
       <label>Cliente *</label>
@@ -431,11 +463,23 @@ const PendingTask: React.FC = () => {
       <input type="text" name="observation" value={newPending.observation || ''} onChange={handleInputChange} />
     </div>
     <button type="submit">{editingPending ? 'Actualizar' : 'Crear'} Tarea Pendiente</button>
+    
     <button type="button" onClick={() => setShowAddForm(false)}>Cancelar</button>
   </form>
 </Modal>
+<Modal
+  isOpen={showImportModal}
+  onClose={() => setShowImportModal(false)}
+  title="Importar Pendientes desde CSV"
+>
+  <ImportCSVModal
+  isOpen={showImportModal}
+  onClose={() => setShowImportModal(false)}
+  onSuccess={fetchPendings}
+/>
+</Modal>
     </div>
   );
-};
+}
 
 export default PendingTask;

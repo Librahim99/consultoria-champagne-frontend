@@ -93,6 +93,22 @@
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
 
+.importButton {
+  margin-bottom: 1rem;
+  padding: 10px 20px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.importButton:hover {
+  background-color: #00a5bd;
+}
+
 .gridWrapper {
   height: 600px;
   width: 100%;
