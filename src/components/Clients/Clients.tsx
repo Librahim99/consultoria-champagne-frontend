@@ -39,7 +39,8 @@ const Clients: React.FC = () => {
     const fetchClients = async () => {
       try {
         const res = await axios.get<Client[]>(`${process.env.REACT_APP_API_URL}/api/clients`, { headers: { Authorization: `Bearer ${token}` } });
-        setClients(res.data);
+        const clientes = res.data.sort((a: Client, b: Client) => parseInt(a.common) - parseInt(b.common))
+        setClients(clientes);
       } catch (err: any) {
         setError(err.response?.data?.message || 'Error al cargar clientes');
       } finally {
@@ -177,7 +178,8 @@ const Clients: React.FC = () => {
     columnDefs={[
       { field: 'common', headerName: 'Común', sortable: true, filterable: true },
       { field: 'name', headerName: 'Nombre', sortable: true, filterable: true, cellRenderer: (data) => data.vip ? `${data.name || ''} ★` : data.name || '', },
-      { field: 'lastUpdate', headerName: 'Última Actualización', sortable: true, filterable: true, valueFormatter: (value) => value ? new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '' }
+      { field: 'lastUpdate', headerName: 'Última Actualización', sortable: true, filterable: true, valueFormatter: (value) => value ? new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '' },
+      { field: 'licenseDays', headerName: 'Dias de licenciaaaaaaaaa', sortable: true, filterable: true, cellRenderer: (data) => (data.lastUpdate) }
     ]}
     pagination={true}
     defaultPageSize={15}

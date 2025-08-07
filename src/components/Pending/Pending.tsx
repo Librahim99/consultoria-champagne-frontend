@@ -395,7 +395,7 @@ const PendingTask: React.FC = () => {
         />
       </div>
       <Modal
-  isOpen={showAddForm && userRank === ranks.TOTALACCESS}
+  isOpen={showAddForm}
   onClose={() => setShowAddForm(false)}
   title={editingPending ? 'Editar Tarea Pendiente' : 'Agregar Tarea Pendiente'}
 >
