@@ -137,6 +137,29 @@
   z-index: 1000;
 }
 
+.clientText{
+  color: var(--text-color);
+  margin: 5px 0
+}
+
 .fab:hover {
   background-color: #27ae60;
+}
+
+.exportButton {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.exportButton:hover {
+  background-color: #0056b3;
 }

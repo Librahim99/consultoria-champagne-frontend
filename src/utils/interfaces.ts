@@ -65,6 +65,7 @@ export interface Assistance {
   timeSpent: number;
   incidentId: string | null;
   pendingId: string | null;
+  sequenceNumber?: number;
 }
 
 // Interfaz para pendiente

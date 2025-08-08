@@ -5,9 +5,10 @@ import { type Assistance, Client, User, DecodedToken } from '../../utils/interfa
 import styles from './Assistance.module.css';
 import CustomTable from '../CustomTable/CustomTable';
 import { ranks } from '../../utils/enums';
-import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa'; // Agregado FaPlus para Nueva Asistencia
+import { FaEdit, FaTrash, FaPlus, FaFileExport } from 'react-icons/fa'; // Agregado FaPlus para Nueva Asistencia
 import Modal from '../Modal/Modal';
 import { toast } from 'react-toastify';
+import { useContextMenu } from '../../contexts/UseContextMenu';
 
 const Assistances: React.FC = () => {
   const [assistances, setAssistances] = useState<Assistance[]>([]);
@@ -18,10 +19,14 @@ const Assistances: React.FC = () => {
     incidentId: null, pendingId: null,
   });
   const [showAddForm, setShowAddForm] = useState(false);
+  
+    const { showMenu } = useContextMenu();
   const [userRank, setUserRank] = useState<string>('');
   const [loggedInUserId, setLoggedInUserId] = useState<string>('');
   const [clients, setClients] = useState<Client[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [clientSearch, setClientSearch] = useState('');
+const [filteredClient, setFilteredClient] = useState<Client | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -100,6 +105,57 @@ const Assistances: React.FC = () => {
     setShowAddForm(true);
   }, [userRank]);
 
+  const handleExport = useCallback(() => {
+  if (!loggedInUserId) {
+    toast.error('Usuario no identificado');
+    return;
+  }
+
+  const userAssistances = assistances.filter(a => a.userId === loggedInUserId);
+
+  if (userAssistances.length === 0) {
+    toast.info('No hay asistencias para exportar');
+    return;
+  }
+
+  const userName = getUserName(loggedInUserId);
+  const today = new Date();
+  const fechaCabecera = today.toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit'
+  }).replace(/\//g, '-');
+
+  let content = `►►►► FECHA: ${fechaCabecera} 00:00 ◄◄◄◄ \n`;
+
+  userAssistances
+    .sort((a, b) => (b.sequenceNumber ?? 0) - (a.sequenceNumber ?? 0)) // ordenar descendente
+    .forEach((a) => {
+      const clientName = getClientName(a.clientId);
+      const nro = a.sequenceNumber ?? 'SIN NRO';
+      const duracion = `${a.timeSpent} Minutos`;
+      const detalle = a.detail.trim();
+
+      content += `\nNRO: ${nro}\n`;
+      content += `CLIENTE: ${clientName}\n`;
+      content += `EJECUTIVO: ${userName}\n`;
+      content += `DETALLE: ${detalle}\n`;
+      content += `DURACION: ${duracion}\n\n`;
+    });
+
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `Asistencias_${fechaCabecera.replace(/-/g, '_')}.txt`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  toast.success('Asistencias exportadas en formato TXT');
+}, [assistances, loggedInUserId]);
+
+
   // Nueva función para manejar Nueva Asistencia
   const handleNewAssistance = useCallback(() => {
     if (userRank === ranks.GUEST) {
@@ -129,6 +185,25 @@ const Assistances: React.FC = () => {
     }
   }, [assistances, userRank]);
 
+const getContextMenu = useCallback((e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const menuItems = [
+    {
+      label: ' Nueva Asistencia',
+      icon: <FaPlus />,
+      onClick: handleNewAssistance
+    },
+    {
+      label: ' Exportar Asistencias',
+      icon: <FaFileExport />,
+      onClick: () => handleExport()
+    }
+  ]
+   showMenu(e.clientX, e.clientY, menuItems) 
+  },[showMenu,handleNewAssistance, handleExport])
+
+
   // Actualizado: Agregar Nueva Asistencia al menú contextual
   const getRowContextMenu = (row: Assistance) => [
     {
@@ -140,6 +215,11 @@ const Assistances: React.FC = () => {
       label: ' Modificar',
       icon: <FaEdit />,
       onClick: () => handleEdit(row)
+    },
+    {
+      label: ' Exportar Asistencias',
+      icon: <FaFileExport />,
+      onClick: () => handleExport()
     },
     {
       label: ' Eliminar',
@@ -168,7 +248,7 @@ const Assistances: React.FC = () => {
         setNewAssistance({ _id: '', clientId: '', userId: loggedInUserId, date: new Date().toISOString(), detail: '', contact: '', timeSpent: 0, incidentId: null, pendingId: null });
         setShowAddForm(true);
       }}>+</button>
-      <div style={{ width: '100%' }}>
+      <div onContextMenu={(e) => getContextMenu(e)} style={{ width: '100%' }}>
         <CustomTable
           rowData={assistances}
           columnDefs={[
@@ -190,17 +270,42 @@ const Assistances: React.FC = () => {
       </div>
       <Modal
         isOpen={showAddForm}
-        onClose={() => setShowAddForm(false)}
+        onClose={() => {setShowAddForm(false); setFilteredClient(null); setClientSearch('')}}
         title={editingAssistance ? 'Editar Asistencia' : 'Agregar Asistencia'}
       >
         <form onSubmit={handleSubmit} className="modalForm">
           <div className="formGroup">
-            <label>Cliente *</label>
-            <select name="clientId" value={newAssistance.clientId || ''} onChange={handleInputChange} required>
-              <option value="">Seleccione un cliente</option>
-              {clients.map((client) => <option key={client._id} value={client._id}>{client.name}</option>)}
-            </select>
-          </div>
+  <label>Cliente *</label>
+  <input
+    type="text"
+    placeholder="Buscar cliente..."
+    value={clientSearch}
+    onChange={(e) => {
+      const val = e.target.value;
+      setClientSearch(val);
+      const match = clients.find(c =>
+        c.name.toLowerCase().includes(val.toLowerCase()) ||
+        (c.common && c.common.toLowerCase().includes(val.toLowerCase()))
+      );
+      
+      
+      if (match) {
+        setFilteredClient(match);
+        setNewAssistance(prev => ({ ...prev, clientId: match._id }));
+      } else {
+        setFilteredClient(null);
+        setNewAssistance(prev => ({ ...prev, clientId: '' }));
+      }
+      if(val == '') setFilteredClient(null)
+    }}
+    required
+  />
+  {filteredClient && (
+    <div className={styles.clientText}>
+      ➤ {filteredClient.name}
+    </div>
+  )}
+</div>
           <div className="formGroup">
             <label>Usuario *</label>
             <select name="userId" value={newAssistance.userId || ''} onChange={handleInputChange} required>

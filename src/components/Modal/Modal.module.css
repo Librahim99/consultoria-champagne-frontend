@@ -14,7 +14,7 @@
 .modalContent {
   position: relative;
   width: 100%;
-  max-width: 480px;
+  max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
   background-color: var(--card-background);
@@ -96,7 +96,7 @@
 .modalForm input,
 .modalForm select,
 .modalForm textarea {
-  width: 100%;
+  width: 94%;
   padding: 10px 14px;
   border: 1px solid var(--sidebar-text);
   border-radius: 10px;
@@ -104,6 +104,10 @@
   color: var(--text-color);
   font-size: 0.95rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modalForm select{
+  width: 100%;
 }
 
 .modalForm textarea {
