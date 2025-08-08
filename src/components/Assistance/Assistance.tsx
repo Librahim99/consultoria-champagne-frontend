@@ -137,11 +137,13 @@ const [filteredClient, setFilteredClient] = useState<Client | null>(null);
       const nro = a.sequenceNumber ?? 'SIN NRO';
       const duracion = `${a.timeSpent} Minutos`;
       const detalle = a.detail.trim();
+      const contact = a.contact.trim()
 
       content += `\nNRO: ${nro}\n`;
       content += `CLIENTE: ${clientName}\n`;
       content += `EJECUTIVO: ${userName}\n`;
       content += `DETALLE: ${detalle}\n`;
+      content += `USUARIO: ${contact}\n`; 
       content += `DURACION: ${duracion}\n\n`;
     });
 
