@@ -88,6 +88,8 @@ const [filteredClient, setFilteredClient] = useState<Client | null>(null);
         setAssistances([...assistances, res.data]);
       }
       setShowAddForm(false);
+      setFilteredClient(null)
+      setClientSearch('')
       setNewAssistance({ _id: '', clientId: '', userId: loggedInUserId, date: new Date().toISOString(), detail: '', contact: '', timeSpent: 0, incidentId: null, pendingId: null });
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al guardar asistencia');
