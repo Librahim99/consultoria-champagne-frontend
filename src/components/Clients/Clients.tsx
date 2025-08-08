@@ -9,12 +9,12 @@ import { ThemeContext } from '../../contexts/ThemeContext';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import ReactTooltip from 'react-tooltip';
 import CustomTable from '../CustomTable/CustomTable';
 import { ranks } from '../../utils/enums';
 import { useContextMenu } from '../../contexts/UseContextMenu';
 import { FaClock, FaEdit, FaExclamationTriangle, FaHeadset, FaPlus, FaTasks, FaTrash } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import moment from 'moment-timezone';
 
 const schema = yup.object({
   name: yup.string().required('Nombre requerido').min(3, 'Mínimo 3 caracteres'),
@@ -35,7 +35,7 @@ const Clients: React.FC = () => {
   // Nuevos estados para el modal de fecha personalizada
 const [showDateModal, setShowDateModal] = useState(false);
 const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-const [customDate, setCustomDate] = useState<string>(new Date().toISOString().split('T')[0]); // Fecha actual por default
+const [customDate, setCustomDate] = useState<string>(moment.tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DD'));
   const { register, handleSubmit, formState: { errors }, reset } = useForm({ resolver: yupResolver(schema) });
 
   useEffect(() => {
@@ -84,7 +84,6 @@ const [customDate, setCustomDate] = useState<string>(new Date().toISOString().sp
     }
   }, [clients, userRank])
 
-// Nueva función para actualizar lastUpdate
 const handleUpdateLicense = async (client: Client, newDate: string) => {
   if (userRank === ranks.GUEST) {
     toast.error('No tienes permisos para actualizar');
@@ -92,25 +91,31 @@ const handleUpdateLicense = async (client: Client, newDate: string) => {
   }
   const token = localStorage.getItem('token');
   try {
+    // Validar fecha
+    if (!moment(newDate, 'YYYY-MM-DD', true).isValid()) {
+      throw new Error('Fecha inválida');
+    }
     // Actualización optimista en el state local
-    // const updatedClient = { ...client, lastUpdate: newDate }; // newDate ya es YYYY-MM-DD
-    // setClients(clients.map(c => c._id === client._id ? updatedClient : c));
+    const adjustedDate = moment.tz(newDate, 'YYYY-MM-DD', 'America/Argentina/Buenos_Aires').startOf('day').toISOString();
+    const updatedClient = { ...client, lastUpdate: adjustedDate };
+    setClients(clients.map(c => c._id === client._id ? updatedClient : c));
 
     const res = await axios.patch(`${process.env.REACT_APP_API_URL}/api/clients/${client._id}/update-license`, 
-      { lastUpdate: newDate }, // Enviar como string YYYY-MM-DD
+      { lastUpdate: newDate },
       { headers: { Authorization: `Bearer ${token}` } }
     );
     setClients(clients.map(c => c._id === client._id ? res.data : c));
-    toast.success(`Fecha de licencia actualizada para ${client.name} al ${newDate}`);
+    toast.success(`Fecha de licencia actualizada para ${client.name} al ${moment.tz(newDate, 'America/Argentina/Buenos_Aires').format('DD/MM/YYYY')}`);
   } catch (err: any) {
     setClients(clients.map(c => c._id === client._id ? client : c));
     toast.error(err.response?.data?.message || 'Error al actualizar fecha');
+    console.error('Error en PATCH /update-license:', err.response?.data || err);
   }
 };
 
 const openDateModal = useCallback((client: Client) => {
   setSelectedClient(client);
-  setCustomDate(new Date().toISOString().split('T')[0]); // Reset a hoy
+  setCustomDate(moment.tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DD')); // Reset a hoy en UTC-3
   setShowDateModal(true);
 }, []);
 
@@ -159,25 +164,27 @@ const handleCustomDateSubmit = useCallback(() => {
         onClick: () => handleEdit(row),
         disabled: userRank === ranks.GUEST,
       },
-      {
-  label: ' Actualizar Licencia',
+    {
+  label: ' Actualizar fecha de licencia',
   icon: <FaClock />,
   disabled: userRank === ranks.GUEST,
   children: [
     {
-      label: 'Fecha de hoy',
-      onClick: () => handleUpdateLicense(row, new Date().toISOString().split('T')[0]),
-    },
-    {
-      label: 'Fecha de ayer',
+      label: 'Hoy',
       onClick: () => {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        handleUpdateLicense(row, yesterday.toISOString().split('T')[0]);
+        const today = moment.tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DD');
+        handleUpdateLicense(row, today);
       },
     },
     {
-      label: 'Otra fecha',
+      label: 'Ayer',
+      onClick: () => {
+        const yesterday = moment.tz('America/Argentina/Buenos_Aires').subtract(1, 'days').format('YYYY-MM-DD');
+        handleUpdateLicense(row, yesterday);
+      },
+    },
+    {
+      label: 'Otra',
       onClick: () => openDateModal(row),
     },
   ]
@@ -236,7 +243,9 @@ const handleCustomDateSubmit = useCallback(() => {
     columnDefs={[
       { field: 'common', headerName: 'Común', sortable: true, filterable: true },
       { field: 'name', headerName: 'Nombre', sortable: true, filterable: true, cellRenderer: (data) => data.vip ? `${data.name || ''} ★` : data.name || '', },
-      { field: 'lastUpdate', headerName: 'Última Actualización', sortable: true, filterable: true, valueFormatter: (value) => value ? new Date(value).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '' },
+      { field: 'lastUpdate', headerName: 'Última Actualización', sortable: true, filterable: true, valueFormatter: (value) => value 
+    ? moment.tz(value, 'America/Argentina/Buenos_Aires').format('DD/MM/YYYY') 
+    : ''},
       { field: 'licenseDays', headerName: 'Dias de Licencia', sortable: false, filterable: false, cellRenderer: ( data ) => {
     if (!data.lastUpdate) return 'N/A';
 
@@ -296,7 +305,9 @@ const handleCustomDateSubmit = useCallback(() => {
         type="date" 
         value={customDate} 
         onChange={(e) => setCustomDate(e.target.value)} 
-        max={new Date().toISOString().split('T')[0]} // No permitir fechas futuras
+        max={moment.tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DD')}
+        min={moment.tz('America/Argentina/Buenos_Aires').subtract(1, 'year').format('YYYY-MM-DD')}
+        data-tip="Selecciona la fecha de última actualización"
       />
     </div>
     <button type="button" onClick={handleCustomDateSubmit} disabled={!customDate}>Actualizar</button>

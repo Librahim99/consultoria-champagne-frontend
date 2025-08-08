@@ -46,7 +46,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = ({ isOpen, onClose, onSucc
           assignedTo: row[6]?.trim() || null,
           date: row[7]?.trim() || new Date()
         }));
-            console.log(parsedPendings)
         
         const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/pending/import-array`, parsedPendings);
 
