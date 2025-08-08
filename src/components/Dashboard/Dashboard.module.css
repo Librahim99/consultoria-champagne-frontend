@@ -3,7 +3,6 @@
 /* 🧱 CONTENEDOR PRINCIPAL       */
 /* ============================== */
 .container {
-  padding: 2rem;
   min-height: 100vh;
   background-color: var(--background-color);
   display: flex;
@@ -121,29 +120,41 @@
 .shortcuts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.75rem;
-  margin-top: 1.5rem;
+  gap: 2rem;
+  margin-top: 2rem;
+  padding: 0 1rem;
 }
 
 .shortcutCard {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1.4rem 1.8rem;
-  border-radius: 18px;
+  padding: 1.5rem 2rem;
+  border-radius: 20px;
   text-decoration: none;
   color: #fff;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
   background-size: 200% 200%;
   background-position: 0% 50%;
-  transition: background-position 0.5s, transform 0.25s ease, box-shadow 0.25s ease;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
-  backdrop-filter: var(--glass-blur);
+  transition:
+    background-position 0.4s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px); /* Glassmorphism */
+  will-change: transform, box-shadow;
+  cursor: pointer;
 }
 
 .shortcutCard:hover {
-  transform: translateY(-4px);
   background-position: 100% 50%;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.2);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+}
+
+.shortcutCard:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .shortcutIcon {

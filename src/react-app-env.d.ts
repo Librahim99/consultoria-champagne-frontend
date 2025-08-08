@@ -4,3 +4,8 @@ declare module 'react-tooltip' {
   const ReactTooltip: FC<any>;
   export default ReactTooltip;
 }
+
+declare module 'stream-consumers' {
+  const value: any;
+  export = value;
+}
