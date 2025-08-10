@@ -17,9 +17,52 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
+const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+
 const App: React.FC = () => {
+  if (!googleClientId) {
+    console.warn('Google Client ID not found. Google OAuth features will be disabled.');
+  }
+
   return (
-    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
+    <>
+      {googleClientId ? (
+        <GoogleOAuthProvider clientId={googleClientId}>
+          <AppContent />
+        </GoogleOAuthProvider>
+      ) : (
+        <AppContent />
+      )}
+    </>
+  );
+};
+
+const AppContent: React.FC = () => {
+  return (
+    <UserContextProvider>
+      <ThemeContextProvider>
+        <Router>
+          <div className={styles.app}>
+            <ToastContainer position="top-right" autoClose={2000} />
+            <Routes>
+              <Route path="/" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route element={<Layout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/clients" element={<Clients />} />
+                <Route path="/incidents" element={<Incidents />} />
+                <Route path="/pending-tasks" element={<Pending />} />
+                <Route path="/assistances" element={<Assistance />} />
+                <Route path="/admin/bot" element={<AdminBot />} />
+              </Route>
+            </Routes>
+          </div>
+        </Router>
+      </ThemeContextProvider>
+    </UserContextProvider>
+  );
+};
       <UserContextProvider>
         <ThemeContextProvider>
           <Router>

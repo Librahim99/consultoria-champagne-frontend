@@ -9,6 +9,7 @@ import styles from './Auth.module.css';
 import logoImage from '../../assets/logo-mantis.png';
 import LoginGoogle from './LoginGoogle';
 
+const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 interface FormData {
   username: string;
@@ -127,10 +128,12 @@ const Login: React.FC = () => {
               {loading ? 'Ingresando...' : 'Iniciar Sesión'}
             </button>
           </form>
-                {/* Google login aquí */}
+          {/* Google login aquí */}
+          {googleClientId && (
             <div style={{ marginTop: '20px' }}>
-                    <LoginGoogle />
-             </div>
+              <LoginGoogle />
+            </div>
+          )}
 
           <div className={styles.link}>
             <p>¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link></p>
