@@ -63,30 +63,5 @@ const AppContent: React.FC = () => {
     </UserContextProvider>
   );
 };
-      <UserContextProvider>
-        <ThemeContextProvider>
-          <Router>
-            <div className={styles.app}>
-              <ToastContainer position="top-right" autoClose={2000} />
-              <Routes>
-                <Route path="/" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route element={<Layout />}>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/users" element={<Users />} />
-                  <Route path="/clients" element={<Clients />} />
-                  <Route path="/incidents" element={<Incidents />} />
-                  <Route path="/pending-tasks" element={<Pending />} />
-                  <Route path="/assistances" element={<Assistance />} />
-                  <Route path="/admin/bot" element={<AdminBot />} />
-                </Route>
-              </Routes>
-            </div>
-          </Router>
-        </ThemeContextProvider>
-      </UserContextProvider>
-    </GoogleOAuthProvider>
-  );
-};
 
 export default App;
