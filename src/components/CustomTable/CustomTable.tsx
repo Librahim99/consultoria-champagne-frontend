@@ -389,7 +389,7 @@ const [statusFilter, setStatusFilter] = useState('pending_inprogress');
             value={parseInt(columnWidths[col.field] || '150')}
             onChange={(e) => updateColumnWidth(col.field, `${e.target.value}px`)}
             style={{ width: '60px', marginLeft: 'auto' }}
-            min={100}
+            min={40}
             title="Ancho en px"
           />
         </div>
@@ -466,7 +466,7 @@ const [statusFilter, setStatusFilter] = useState('pending_inprogress');
                   key={col.field}
                   style={{
                     width: columnWidths[col.field] || '150px',
-                    minWidth: '100px',
+                    minWidth: '40px',
                     maxWidth: columnWidths[col.field] || '150px', // Forzar máximo al ancho definido
                   }}
                   title={col.headerName}
@@ -545,7 +545,7 @@ const [statusFilter, setStatusFilter] = useState('pending_inprogress');
                         title={displayValue}
                         style={{
                           width: columnWidths[col.field] || '150px',
-                          minWidth: '100px',
+                          minWidth: '40px',
                           maxWidth: columnWidths[col.field] || '150px', // Forzar máximo al ancho definido
                         }}
                       >
