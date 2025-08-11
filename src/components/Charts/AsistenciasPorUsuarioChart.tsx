@@ -61,8 +61,8 @@ const AsistenciasPorUsuarioChart: React.FC = () => {
   if (!data?.length) {
   return (
     <div className={styles.chartCard}>
-      <h3 className={styles.chartTitle}>🙋‍♂️ Asistencias por Usuario</h3>
-      <p style={{ padding: '1rem', color: 'var(--text-secondary)', fontSize: '14px' }}>
+      <h3 className={styles.chartTitle}>🙋‍♂️ Asistencias por Usuario 🙋‍♂️</h3>
+      <p style={{ padding: '0.2rem', color: 'var(--text-secondary)', fontSize: '12px' }}>
         🚫 No hay asistencias para el rango de fechas seleccionado.
       </p>
     </div>
@@ -72,7 +72,7 @@ const AsistenciasPorUsuarioChart: React.FC = () => {
   return (
     <div className={styles.chartCard}>
       <div className={styles.chartHeader}>
-        <h3 className={styles.chartTitle}>🙋‍♂️ Asistencias por Usuario</h3>
+        <h3 className={styles.chartTitle}>🙋‍♂️ Asistencias por Usuario 🙋‍♂️</h3>
         <div className={styles.filters}>
           <label>
             📅 Desde:&nbsp;
