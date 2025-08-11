@@ -272,42 +272,43 @@
   font-size: 1.2rem;
 }
 
-:root {
-  --card-text: #ffffff;
-  --card-text-light: #0f172a; /* slate-900 */
-  --ring: 2px;
-  --ring-dark: rgba(255,255,255,0.9);
-  --ring-light: rgba(15,23,42,0.85);
-  --glass: rgba(255,255,255,0.06);
-  --glass-strong: rgba(255,255,255,0.12);
-  --shadow: 0 10px 30px rgba(0,0,0,0.25);
-  --shadow-hover: 0 18px 44px rgba(0,0,0,0.32);
-}
-
 .shortcuts {
   display: flex;
   align-self: center;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  justify-content: center;
   gap: clamp(1rem, 2.2vw, 2.4rem);
   margin-top: clamp(1rem, 2vw, 1.6rem);
 }
 
-/* Card con borde degradado premium + glass + shimmer */
-/* Card con vidrio transparente + borde degradado + hover moderno */
+
 .shortcutCard {
   position: relative;
-  display: inline-flex;       /* para que la pill se ajuste al contenido */
+  display: inline-flex;
   align-items: center;
-  gap: 1rem;
-  --icon-size: 2.6rem;
-  --icon-gap: 0.8rem;
-  padding: 0.4rem 1.5rem;
-  border-radius: 9999px;      /* píldora / pill */
+  justify-content: center;          /* centro real del icono */
+  width: 4.25rem;                   /* ≥ 44px a11y */
+  height: 4.25rem;
+  padding: 0;                       /* sin padding extra */
+  border-radius: 9999px;            /* círculo */
   text-decoration: none;
   color: white;
   isolation: isolate;
-  min-height: max(3rem, var(--icon-size) + 0.8rem); /* altura consistente */
-
+  background-color: rgba(255, 255, 255, 255);
+  background-image: var(--bg);      /* degradado existente */
+  background-size: 180% 180%;
+  background-position: 0% 50%;
+  background-blend-mode: overlay;
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  transform-origin: center;
+  transition: transform 320ms cubic-bezier(.2,.8,.2,1),
+              box-shadow 300ms ease,
+              background-position 450ms ease;
+  cursor: pointer;
+  outline: none;
+  overflow: hidden;
 
   /* Fondo transparente con overlay sutil del degradado */
   background-color: rgba(255, 255, 255, 0.08);
