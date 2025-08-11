@@ -33,6 +33,7 @@ const [filteredClient, setFilteredClient] = useState<Client | null>(null);
 const [isLoading, setIsLoading] = useState(false);
 const [userFilter, setUserFilter] = useState('me');
 const [dateFilter, setDateFilter] = useState('month');
+const [disableSubmit, setDisableSubmimt] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -86,7 +87,11 @@ const [dateFilter, setDateFilter] = useState('month');
 
     if (!newAssistance.clientId || !newAssistance.detail || !newAssistance.contact || !newAssistance.timeSpent) {
       toast.error('Faltan campos requeridos')
+      return
     }
+
+    setDisableSubmimt(true)
+    
 
     const assistanceToSend = { ...newAssistance, userId: loggedInUserId };
     try {
@@ -96,11 +101,15 @@ const [dateFilter, setDateFilter] = useState('month');
         });
         setAssistances(assistances.map(a => (a._id === editingAssistance._id ? res.data : a)));
         setEditingAssistance(null);
+        toast.success('Asistencia modificada con exito')
+        setDisableSubmimt(false)
       } else {
         const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/assistances`, assistanceToSend, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setAssistances([...assistances, res.data]);
+        toast.success('Asistencia creada con exito')
+        setDisableSubmimt(false)
       }
       setShowAddForm(false);
       setFilteredClient(null)
@@ -560,7 +569,8 @@ onFilterChange={handleFilterChange}
             <label>Tiempo Gastado (min) *</label>
             <input type="number" name="timeSpent" value={newAssistance.timeSpent} onChange={handleInputChange} required />
           </div>
-          <button type="submit">{editingAssistance ? 'Actualizar' : 'Crear Asistencia'}</button>
+           {!disableSubmit && <button type="submit">{editingAssistance ? 'Actualizar' : 'Crear Asistencia'}</button>}
+           {disableSubmit && <button>Cargando...</button>}
         </form>
       </Modal>
     </div>
