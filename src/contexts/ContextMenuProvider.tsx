@@ -11,6 +11,7 @@ interface MenuItem {
   disabled?: boolean;
   icon?: React.ReactNode;
   children?: MenuItem[];
+  hide?: boolean
 }
 
 interface ContextMenuContextType {
@@ -51,6 +52,8 @@ const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean; positi
   return (
     <div ref={menuRef}>
       {items.map((item, index) => (
+        !item.hide &&
+        (
         <div
           key={index}
           style={{ position: 'relative' }}
@@ -104,7 +107,7 @@ const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean; positi
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </div>)
       ))}
     </div>
   );
