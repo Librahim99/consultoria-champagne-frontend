@@ -77,7 +77,7 @@ const CustomTable: React.FC<CustomTableProps> = ({
   const filterRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const resizeRef = useRef<{ field: string; startX: number; startWidth: number } | null>(null);
   const [userFilter, setUserFilter] = useState('me');
-const [dateFilter, setDateFilter] = useState('week');
+const [dateFilter, setDateFilter] = useState('month');
 const [statusFilter, setStatusFilter] = useState('pending_inprogress');
 
   const getDefaultColumns = useCallback(() => ({
