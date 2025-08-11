@@ -114,72 +114,191 @@
   font-size: 1.2rem;
 }
 
-/* ============================== */
-/* ⚡ SHORTCUTS DASHBOARD        */
-/* ============================== */
+:root {
+  --card-text: #ffffff;
+  --card-text-light: #0f172a; /* slate-900 */
+  --ring: 2px;
+  --ring-dark: rgba(255,255,255,0.9);
+  --ring-light: rgba(15,23,42,0.85);
+  --glass: rgba(255,255,255,0.06);
+  --glass-strong: rgba(255,255,255,0.12);
+  --shadow: 0 10px 30px rgba(0,0,0,0.25);
+  --shadow-hover: 0 18px 44px rgba(0,0,0,0.32);
+}
+
 .shortcuts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 2rem;
+  gap: 1.6rem;
   margin-top: 2rem;
   padding: 0 1rem;
 }
 
+/* Card con borde degradado premium + glass + shimmer */
+/* Card con vidrio transparente + borde degradado + hover moderno */
 .shortcutCard {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1.5rem 2rem;
+  padding: 1.4rem 1.6rem;
   border-radius: 20px;
   text-decoration: none;
   color: #fff;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  background-size: 200% 200%;
+  isolation: isolate;
+
+  /* Fondo transparente con overlay sutil del degradado */
+  background-color: rgba(255, 255, 255, 0.08);
+  background-image: var(--bg);
+  background-size: 180% 180%;
   background-position: 0% 50%;
+  background-blend-mode: overlay;
+
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+
+  transform-origin: center;
   transition:
-    background-position 0.4s ease,
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px); /* Glassmorphism */
+    transform 320ms cubic-bezier(.2,.8,.2,1),
+    box-shadow 300ms ease,
+    background-position 450ms ease;
   will-change: transform, box-shadow;
   cursor: pointer;
+  outline: none;
+  overflow: hidden; /* para el shimmer */
 }
 
-.shortcutCard:hover {
-  background-position: 100% 50%;
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+
+/* Borde degradado con máscara (no deforma el layout) */
+.shortcutCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;               /* grosor del borde */
+  background: var(--bg);      /* usa el mismo degradado */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  opacity: .95;
 }
 
-.shortcutCard:active {
-  transform: scale(0.98);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+
+/* Shimmer sutil */
+.shortcutCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.18), transparent);
+  transform: translateX(-120%);
+  transition: transform 800ms ease;
+  pointer-events: none;
+  mix-blend-mode: screen;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .shortcutCard:hover {
+    transform: scale(1.048);
+    background-position: 100% 50%;
+    box-shadow: var(--shadow-hover);
+  }
+  .shortcutCard:hover::after {
+    transform: translateX(120%);
+  }
+}
+
+.shortcutCard:active { transform: scale(0.985); }
+
+/* Foco accesible (dark/light) */
+@media (prefers-color-scheme: dark) {
+  .shortcutCard:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 var(--ring) var(--ring-dark), var(--shadow-hover);
+  }
+}
+@media (prefers-color-scheme: light) {
+  .shortcutCard { color: var(--card-text-light); }
+  .shortcutCard:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 var(--ring) var(--ring-light), var(--shadow-hover);
+  }
+}
+
+/* Motion-safe */
+@media (prefers-reduced-motion: reduce) {
+  .shortcutCard, .shortcutCard::after { transition: none; }
+  .shortcutCard:hover, .shortcutCard:active { transform: none; }
+}
+
+/* Ícono con “badge” glass */
 .shortcutIcon {
   font-size: 2.6rem;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.15));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1rem;
+  background: var(--glass-strong);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15));
 }
 
+/* Texto */
 .shortcutInfo {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
-
 .shortcutInfo h3 {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   margin: 0;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.25;
+  letter-spacing: 0.2px;
+  text-wrap: balance;
 }
-
 .shortcutInfo p {
-  margin-top: 4px;
+  margin-top: 6px;
   font-size: 0.95rem;
   opacity: 0.9;
   font-weight: 500;
+  text-wrap: pretty;
+  color: rgba(255,255,255,0.92);
+}
+@media (prefers-color-scheme: light) {
+  .shortcutInfo p { color: rgba(15,23,42,0.8); }
+}
+
+/* Truncamiento seguro */
+.shortcutInfo h3,
+.shortcutInfo p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Motion-safe */
+@media (prefers-reduced-motion: reduce) {
+  .shortcutCard,
+  .shortcutCard::after {
+    transition: none;
+  }
+  .shortcutCard:hover,
+  .shortcutCard:active {
+    transform: none;
+  }
+}
+
+/* Grid fino en móviles */
+@media (max-width: 420px) {
+  .shortcuts { gap: 1rem; }
+  .shortcutCard { padding: 1.1rem 1.2rem; }
 }
 
 /* ============================== */

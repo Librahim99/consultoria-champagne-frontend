@@ -123,52 +123,54 @@ const Dashboard: React.FC = () => {
   if (loading) return <Spinner />;
 
   const shortcuts: Shortcut[] = [
-    {
-      to: '/users',
-      title: 'Usuarios',
-      description: `${stats.users} registrados`,
-      icon: <FaUser />,
-      bg: 'linear-gradient(135deg, #3b82f6, #1e40af)',
-      show: ['CEO', 'Jefe de Consultoría'].includes(userRank)
-    },
-    {
-      to: '/clients',
-      title: 'Clientes',
-      description: `${stats.clients} activos`,
-      icon: <FaUsers />,
-      bg: 'linear-gradient(135deg, #10b981, #047857)'
-    },
-    {
-      to: '/incidents',
-      title: 'Incidencias',
-      description: `${stats.incidents} pendientes`,
-      icon: <FaBug />,
-      bg: 'linear-gradient(135deg, #f59e0b, #b45309)',
-      show: ['CEO', 'Jefe de Consultoría'].includes(userRank)
-    },
-    {
-  to: '/assistances',
-  title: 'Asistencias',
-  description: asistenciaStats
-    ? `${stats.assistances} registradas • ${asistenciaStats.cantidadHoy} hoy • ${asistenciaStats.totalHorasHoy}h`
-    : `${stats.assistances} registradas`,
-  icon: <FaClipboardCheck />,
-  bg: 'linear-gradient(135deg, #6366f1, #4f46e5)'
-},
-    {
-      to: '/pending-tasks',
-      title: 'Pendientes',
-      description: `${stats.pendings} en espera`,
-      icon: <FaChartPie />,
-      bg: 'linear-gradient(135deg, #ec4899, #db2777)'
-    }
-  ];
+  {
+    to: '/users',
+    title: 'Usuarios',
+    description: `${stats.users} registrados`,
+    icon: <FaUser />,
+    bg: 'linear-gradient(135deg, #1c4780ff, #1e3a8a)', // azul con profundidad
+    show: ['CEO', 'Jefe de Consultoría'].includes(userRank)
+  },
+  {
+    to: '/clients',
+    title: 'Clientes',
+    description: `${stats.clients} activos`,
+    icon: <FaUsers />,
+    bg: 'linear-gradient(135deg, #187f59ff, #065f46)' // verde esmeralda vibrante
+  },
+  {
+    to: '/incidents',
+    title: 'Incidencias',
+    description: `${stats.incidents} pendientes`,
+    icon: <FaBug />,
+    bg: 'linear-gradient(135deg, #8f6e1cff, #92400e)', // dorado moderno
+    show: ['CEO', 'Jefe de Consultoría'].includes(userRank)
+  },
+  {
+    to: '/assistances',
+    title: 'Asistencias',
+    description: asistenciaStats
+      ? `${stats.assistances} registradas • ${asistenciaStats.cantidadHoy} hoy • ${asistenciaStats.totalHorasHoy}h`
+      : `${stats.assistances} registradas`,
+    icon: <FaClipboardCheck />,
+    bg: 'linear-gradient(135deg, #3c2277ff, #4c1d95)' // púrpura sofisticado
+  },
+  {
+    to: '/pending-tasks',
+    title: 'Pendientes',
+    description: `${stats.pendings} en espera`,
+    icon: <FaChartPie />,
+    bg: 'linear-gradient(135deg, #521b38ff, #831843)' // fucsia elegante
+  }
+];
+
+  
 
   return (
     <div className={styles.container} data-theme={theme}>
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <h1 className={styles.title}>📊 Portal de Gestión Mantis 📊</h1>
+          <h1 className={styles.title}>📊 Consultoría Mantis 📊</h1>
           <p className={styles.subtitle}>
             Accedé a tus herramientas de control en un solo lugar.
           </p>
@@ -180,25 +182,29 @@ const Dashboard: React.FC = () => {
         </div>)}
       </header>
 
-      <section className={styles.shortcuts}>
-        {shortcuts.map(
-          (s, i) =>
-            (s.show === undefined || s.show)  && (
-              <Link
-                key={i}
-                to={s.to}
-                className={styles.shortcutCard}
-                style={{ backgroundImage: s.bg }}
-              >
-                <div className={styles.shortcutIcon}>{s.icon}</div>
-                <div className={styles.shortcutInfo}>
-                  <h3>{s.title}</h3>
-                  <p>{s.description}</p>
-                </div>
-              </Link>
-            )
-        )}
-      </section>
+      <section className={styles.shortcuts} role="list">
+  {shortcuts.map(
+    (s, i) =>
+      (s.show === undefined || s.show) && (
+        <Link
+          key={i}
+          to={s.to}
+          role="listitem"
+          className={styles.shortcutCard}
+          aria-label={`${s.title}: ${s.description}`}
+          data-id={`shortcut-${s.title.toLowerCase().replace(/\s+/g, '-')}`}
+          // En vez de backgroundImage directo, exponemos --bg (mantengo compat con backgroundImage por si lo preferís)
+          style={{ ['--bg' as any]: s.bg, backgroundImage: s.bg }}
+        >
+          <span className={styles.shortcutIcon} aria-hidden="true">{s.icon}</span>
+          <span className={styles.shortcutInfo}>
+            <h3>{s.title}</h3>
+            <p>{s.description}</p>
+          </span>
+        </Link>
+      )
+  )}
+</section>
 
       {/* 📊 Gráficos */}
       <section className={styles.charts}>
