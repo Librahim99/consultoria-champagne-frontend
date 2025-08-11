@@ -1,16 +1,36 @@
 .container {
-  padding: 2rem;
+  padding: 1rem;
+  min-height: calc(100vh - 2rem); /* ocupa alto total menos el padding */
+  width: 100%; /* ancho completo */
+  height: fit-content;
   background-color: var(--background-color);
-  border-radius: 8px;
-  box-shadow: 0 4px 6px var(--shadow-color);
+
+  /* Opcional: que crezca para ocupar espacio disponible */
+  display: flex;
+  flex-direction: column;
 }
 
+
+/* ------------------------------ */
+/* Título                         */
+/* ------------------------------ */
 .title {
   font-size: 2rem;
   font-weight: 600;
   text-align: center;
   margin-bottom: 2rem;
   color: var(--text-color);
+}
+
+.title::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 3px;
+  margin: .4rem auto 0;
+  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+  border-radius: 9999px;
+  opacity: .4;
 }
 
 .redText{
@@ -23,34 +43,63 @@
   color: #a0f2bb
 }
 
+/* ------------------------------ */
+/* Mensajes de error              */
+/* ------------------------------ */
 .error {
-  color: var(--error);
-  font-size: 0.9rem;
+  margin: 0 auto 1rem;
+  max-width: 1100px;
+  padding: .75rem 1rem;
+  border-radius: var(--radius-lg);
+  color: #ffecec;
+  background: linear-gradient(180deg, rgba(220,38,38,.20), rgba(220,38,38,.10));
+  border: 1px solid rgba(220,38,38,.35);
+  box-shadow: 0 6px 16px rgba(220,38,38,.18);
   text-align: center;
-  margin-bottom: 1rem;
+  font-size: .95rem;
 }
 
-.button {
-  background-color: var(--button-background);
-  color: var(--text-color);
+/* ------------------------------ */
+/* Botones                        */
+/* ------------------------------ */
+.button,
+.importButton {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  padding: .75rem 1.2rem;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 5px;
-  cursor: pointer;
+  border-radius: var(--radius-md);
   font-size: 1rem;
-  transition: background-color 0.3s;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  transition: transform .18s ease, box-shadow .25s ease, background .25s ease;
 }
 
-.button:hover {
-  background-color: var(--button-hover);
+.button:hover,
+.importButton:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-med);
+  background: linear-gradient(135deg, var(--primary-light, #2f6df6), var(--primary));
+}
+
+.button:active,
+.importButton:active {
+  transform: translateY(0);
+}
+
+.button:focus-visible,
+.importButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--ring-size) rgba(255,255,255,.9), var(--shadow-med);
 }
 
 .cancelButton {
-  background-color: var(--cancel-button-background);
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: #fff;
 }
-
 .cancelButton:hover {
-  background-color: var(--cancel-button-hover);
+  background: linear-gradient(135deg, #9ca3af, #6b7280);
 }
 
 .modal {

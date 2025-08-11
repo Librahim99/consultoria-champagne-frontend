@@ -159,7 +159,7 @@
 /* HINT (compat) */
 .sidebarHintContainer {
   position: absolute;
-  left: calc(var(--sidebar-width) + 40px);
+  left: calc(var(--sidebar-width) + 32px);
   width: 0.5vw;
   height: 100vh;
   cursor: pointer;

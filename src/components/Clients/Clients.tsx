@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import { Client } from '../../utils/interfaces';
 import styles from './Clients.module.css';
@@ -235,7 +235,7 @@ const handleCustomDateSubmit = useCallback(() => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Clientes</h1>
+      <h1 className={styles.title}> ⭐🧑‍💼 Clientes 👩🏻‍💼⭐ </h1>
       {error && <p className={styles.error}>{error}</p>}
       <div onContextMenu={(e) => getContextMenu(e)} style={{ height: 'auto', width: '100%' }}>
   <CustomTable

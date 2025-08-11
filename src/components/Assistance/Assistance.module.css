@@ -1,8 +1,18 @@
 .container {
-  padding: 2rem;
+  padding: 1rem;
+  min-height: calc(100vh - 2rem); /* ocupa alto total menos el padding */
+  width: 100%; /* ancho completo */
+  height: fit-content;
   background-color: var(--background-color);
+
+  /* Opcional: que crezca para ocupar espacio disponible */
+  display: flex;
+  flex-direction: column;
 }
 
+/* ------------------------------ */
+/* Título                         */
+/* ------------------------------ */
 .title {
   font-size: 2rem;
   font-weight: 600;
@@ -11,77 +21,125 @@
   color: var(--text-color);
 }
 
+.title::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 3px;
+  margin: .4rem auto 0;
+  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+  border-radius: 9999px;
+  opacity: .4;
+}
+
+/* ------------------------------ */
+/* Mensajes de error              */
+/* ------------------------------ */
 .error {
-  color: var(--error);
-  font-size: 0.9rem;
+  margin: 0 auto 1rem;
+  max-width: 1100px;
+  padding: .75rem 1rem;
+  border-radius: var(--radius-lg);
+  color: #ffecec;
+  background: linear-gradient(180deg, rgba(220,38,38,.20), rgba(220,38,38,.10));
+  border: 1px solid rgba(220,38,38,.35);
+  box-shadow: 0 6px 16px rgba(220,38,38,.18);
   text-align: center;
-  margin-bottom: 1rem;
+  font-size: .95rem;
 }
 
-.button {
-  background-color: var(--button-background);
-  color: var(--text-color);
-  padding: 0.75rem 1.5rem;
+/* ------------------------------ */
+/* Botones                        */
+/* ------------------------------ */
+.button,
+.importButton {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  padding: .75rem 1.2rem;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-right: 1rem;
+  box-shadow: var(--shadow-soft);
+  transition: transform .18s ease, box-shadow .25s ease, background .25s ease;
 }
 
-.button:hover {
-  background-color: var(--button-hover);
+.button:hover,
+.importButton:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-med);
+  background: linear-gradient(135deg, var(--primary-light, #2f6df6), var(--primary));
+}
+
+.button:active,
+.importButton:active {
+  transform: translateY(0);
+}
+
+.button:focus-visible,
+.importButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--ring-size) rgba(255,255,255,.9), var(--shadow-med);
 }
 
 .cancelButton {
-  background-color: var(--cancel-button-background);
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: #fff;
 }
-
 .cancelButton:hover {
-  background-color: var(--cancel-button-hover);
+  background: linear-gradient(135deg, #9ca3af, #6b7280);
 }
 
+/* ------------------------------ */
+/* Formulario (en modal)          */
+/* ------------------------------ */
 .formContainer {
   background-color: var(--card-background);
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px var(--shadow-color);
-  max-width: 500px;
-  margin: 2rem auto;
+  padding: clamp(1rem, 2vw, 2rem);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-med);
+  max-width: 720px;
+  margin: 1.25rem auto;
 }
 
 .formContainer h2 {
-  font-size: 1.8rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin: 0 0 1rem;
   color: var(--text-color);
 }
 
 .formGroup {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  gap: .5rem;
   margin-bottom: 1rem;
 }
 
 .formGroup label {
-  font-size: 1rem;
+  font-size: .95rem;
   color: var(--secondary-text-color);
-  margin-bottom: 0.5rem;
 }
 
 .formGroup input,
 .formGroup select,
 .formGroup textarea {
-  padding: 0.75rem;
+  padding: .75rem .9rem;
   border: 1px solid var(--border-color);
-  border-radius: 5px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: border-color .2s ease, box-shadow .25s ease, background .25s ease;
   background-color: var(--card-background);
   color: var(--text-color);
+}
+
+.formGroup textarea { min-height: 110px; resize: vertical; }
+
+.formGroup input:hover,
+.formGroup select:hover,
+.formGroup textarea:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border-color));
 }
 
 .formGroup input:focus,
@@ -89,23 +147,25 @@
 .formGroup textarea:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 0 0 var(--ring-size) color-mix(in srgb, var(--primary) 55%, transparent);
 }
 
-.gridWrapper {
-  height: 600px;
-  width: 100%;
-  margin-bottom: 2rem;
+.importButton {
+  margin-bottom: 1rem;
+  padding: 10px 20px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
 }
 
-.agGrid {
-  height: 100%;
-  width: 100%;
-  --ag-border-color: var(--ag-border-color);
-  --ag-row-hover-background-color: var(--ag-row-hover);
-  --ag-header-background-color: var(--ag-header-background);
-  --ag-header-foreground-color: var(--ag-header-foreground);
+.importButton:hover {
+  background-color: #00a5bd;
 }
+
 
 @media (max-width: 600px) {
   .container {
