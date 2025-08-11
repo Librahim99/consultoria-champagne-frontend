@@ -1,32 +1,179 @@
-.card {
+:root {
+  --card-text: #ffffff;
+  --card-text-light: #0f172a; /* slate-900 */
+  --ring: 2px;
+  --ring-dark: rgba(255,255,255,0.9);
+  --ring-light: rgba(15,23,42,0.85);
+  --glass: rgba(255,255,255,0.06);
+  --glass-strong: rgba(255,255,255,0.12);
+  --shadow: 0 10px 30px rgba(0,0,0,0.25);
+  --shadow-hover: 0 18px 44px rgba(0,0,0,0.32);
+}
+
+.shortcuts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.6rem;
+  margin-top: 1rem;
+  padding: 0 1rem;
+
+}
+
+/* Card con borde degradado premium + glass + shimmer */
+.shortcutCard {
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 1.25rem;
-  border-radius: 1rem;
-  color: white;
+  gap: 1rem;
+  padding: 1rem 1rem;
+  border-radius: 20px;
   text-decoration: none;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  color: var(--card-text);
+  isolation: isolate;
+
+  /* Capa 1: degradado (inyectado por --bg) */
+  /* Capa 2: overlay glass para “profundidad” */
+  background-image:
+    var(--bg),
+    linear-gradient(0deg, var(--glass), var(--glass));
+  background-blend-mode: lighten, normal;
+  background-size: 180% 180%;
+  background-position: 0% 50%;
+  box-shadow: var(--shadow);
+
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  backdrop-filter: saturate(140%) blur(10px);
+
+  transition:
+    transform 300ms ease,
+    box-shadow 300ms ease,
+    background-position 450ms ease;
+  will-change: transform, box-shadow;
+  cursor: pointer;
+  outline: none;
 }
 
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.25);
+/* Borde degradado con máscara (no deforma el layout) */
+.shortcutCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px; /* grosor del borde */
+  background: var(--bg);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.95;
 }
 
-.icon {
-  font-size: 2.25rem;
-  margin-right: 1rem;
+/* Shimmer sutil */
+.shortcutCard::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(60% 40% at 0% 0%, rgba(255,255,255,0.22), transparent 60%);
+  transform: translate3d(-10%, -10%, 0) rotate(3deg);
+  border-radius: 40px;
+  filter: blur(10px);
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+  z-index: -1;
 }
 
-.info h3 {
-  font-size: 1.25rem;
+@media (hover: hover) and (pointer: fine) {
+  .shortcutCard:hover {
+    transform: translateY(-6px) scale(1.015);
+    box-shadow: var(--shadow-hover);
+    background-position: 100% 50%;
+  }
+  .shortcutCard:hover::after { opacity: 0.5; }
+}
+
+.shortcutCard:active { transform: scale(0.985); }
+
+/* Foco accesible (dark/light) */
+@media (prefers-color-scheme: dark) {
+  .shortcutCard:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 var(--ring) var(--ring-dark), var(--shadow-hover);
+  }
+}
+@media (prefers-color-scheme: light) {
+  .shortcutCard { color: var(--card-text-light); }
+  .shortcutCard:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 var(--ring) var(--ring-light), var(--shadow-hover);
+  }
+}
+
+/* Ícono con “badge” glass */
+.shortcutIcon {
+  font-size: 2.6rem;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1rem;
+  background: var(--glass-strong);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15));
+}
+
+/* Texto */
+.shortcutInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.shortcutInfo h3 {
+  font-size: 1rem;
   margin: 0;
   font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.2px;
+  text-wrap: balance;
 }
-
-.info p {
-  margin: 4px 0 0;
+.shortcutInfo p {
+  margin-top: 6px;
   font-size: 0.95rem;
   opacity: 0.9;
+  font-weight: 500;
+  text-wrap: pretty;
+  color: rgba(255,255,255,0.92);
+}
+@media (prefers-color-scheme: light) {
+  .shortcutInfo p { color: rgba(15,23,42,0.8); }
+}
+
+/* Truncamiento seguro */
+.shortcutInfo h3,
+.shortcutInfo p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Motion-safe */
+@media (prefers-reduced-motion: reduce) {
+  .shortcutCard,
+  .shortcutCard::after {
+    transition: none;
+  }
+  .shortcutCard:hover,
+  .shortcutCard:active {
+    transform: none;
+  }
+}
+
+/* Grid fino en móviles */
+@media (max-width: 420px) {
+  .shortcuts { gap: 1rem; }
+  .shortcutCard { padding: 1.1rem 1.2rem; }
 }

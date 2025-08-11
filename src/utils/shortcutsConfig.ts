@@ -10,7 +10,7 @@ export const getDashboardShortcuts = (stats: any, userRank: UserRank) => [
     title: 'Usuarios',
     description: `${stats.users} registrados`,
     icon: FaUser,
-    bg: 'linear-gradient(135deg, #3b82f6, #1e40af)',
+    bg: 'linear-gradient(135deg, #1e437dff, #1e40af)',
     visible: hasAccess(userRank, [ranks.TOTALACCESS, ranks.CONSULTORCHIEF]),
   },
   {
@@ -19,7 +19,7 @@ export const getDashboardShortcuts = (stats: any, userRank: UserRank) => [
     title: 'Clientes',
     description: `${stats.clients} activos`,
     icon: FaUsers,
-    bg: 'linear-gradient(135deg, #10b981, #047857)',
+    bg: 'linear-gradient(135deg, #104734ff, #047857)',
     visible: true,
   },
   {
@@ -28,7 +28,7 @@ export const getDashboardShortcuts = (stats: any, userRank: UserRank) => [
     title: 'Incidencias',
     description: `${stats.incidents} pendientes`,
     icon: FaBug,
-    bg: 'linear-gradient(135deg, #f59e0b, #b45309)',
+    bg: 'linear-gradient(135deg, #62491eff, #b45309)',
     visible: true,
   },
   {
@@ -37,7 +37,7 @@ export const getDashboardShortcuts = (stats: any, userRank: UserRank) => [
     title: 'Asistencias',
     description: `${stats.assistances} registradas`,
     icon: FaClipboardCheck,
-    bg: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+    bg: 'linear-gradient(135deg, #242561ff, #4f46e5)',
     visible: true,
   },
   {
@@ -46,7 +46,7 @@ export const getDashboardShortcuts = (stats: any, userRank: UserRank) => [
     title: 'Pendientes',
     description: `${stats.pendings} en espera`,
     icon: FaChartPie,
-    bg: 'linear-gradient(135deg, #ec4899, #db2777)',
+    bg: 'linear-gradient(135deg, #4e1733ff, #db2777)',
     visible: true,
   },
 ];
