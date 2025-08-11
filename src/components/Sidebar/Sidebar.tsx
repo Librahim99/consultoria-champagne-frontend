@@ -8,11 +8,12 @@ import {
   FaHeadset,
   FaExclamationTriangle,
   FaRobot,
-  FaBars // Nueva import para la solapa
+  FaBars 
 } from 'react-icons/fa';
 import styles from './Sidebar.module.css';
 import { UserContext } from '../../contexts/UserContext';
 import { ranks } from '../../utils/enums';
+import { NavLink } from 'react-router-dom';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -29,7 +30,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       onMouseLeave={window.innerWidth > 768 ? () => setIsOpen(false) : undefined}
     >
       <ul>
-        <li><Link to="/dashboard" onClick={window.innerWidth <= 768 ? () => setIsOpen(false) : undefined}><FaClock /> Dashboard</Link></li>
+        <li><NavLink
+   to="/dashboard"
+   className={({ isActive }) => (isActive ? styles.active : undefined)}
+   onClick={window.innerWidth <= 768 ? () => setIsOpen(false) : undefined}
+ ><FaClock /> Dashboard</NavLink></li>
         {userRank === ranks.TOTALACCESS && (<li><Link to="/users" onClick={window.innerWidth <= 768 ? () => setIsOpen(false) : undefined}><FaUsers /> Usuarios</Link></li>)}
         <li><Link to="/clients" onClick={window.innerWidth <= 768 ? () => setIsOpen(false) : undefined}><FaBuilding /> Clientes</Link></li>
         {userRank === ranks.TOTALACCESS &&(<li><Link to="/incidents" onClick={window.innerWidth <= 768 ? () => setIsOpen(false) : undefined}><FaExclamationTriangle /> Incidencias</Link></li>)}
