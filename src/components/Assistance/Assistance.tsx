@@ -63,6 +63,17 @@ const [dateFilter, setDateFilter] = useState('week');
     if (userRank && !error) fetchData();
   }, [userRank, error]);
 
+
+  const getClientName = (clientId: string | null) => {
+    const client = clients.find(c => c._id === clientId);
+    return client ? client.name : 'Desconocido';
+  };
+
+  const getUserName = (userId: string | null) => {
+    const user = users.find(u => u._id === userId);
+    return user ? user.name : 'Desconocido';
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setNewAssistance(prev => ({ ...prev, [name]: value === '' ? null : value }));
@@ -169,7 +180,7 @@ const today = new Date();
   document.body.removeChild(link);
 
   toast.success('Asistencias del dia exportadas en formato TXT');
-}, [assistances, loggedInUserId]);
+}, [assistances, loggedInUserId, getClientName, getUserName]);
 
 
 
@@ -236,7 +247,7 @@ const handleExportAll = useCallback(() => {
   document.body.removeChild(link);
 
   toast.success(`Exportadas ${assistances.length} asistencias visibles en formato TXT`);
-}, [assistances]);
+}, [assistances, getClientName, getUserName]);
 
 
 const handleExportExcel = useCallback(() => {
@@ -314,7 +325,7 @@ XLSX.utils.book_append_sheet(workbook, worksheet, 'Asistencias');
   URL.revokeObjectURL(url);
 
   toast.success(`Exportadas ${assistances.length} asistencias visibles en formato Excel`);
-}, [assistances]);
+}, [assistances, getClientName, getUserName]);
 
 
   // Nueva función para manejar Nueva Asistencia
@@ -424,15 +435,7 @@ const getContextMenu = useCallback((e: React.MouseEvent) => {
     }
   ];
 
-  const getClientName = (clientId: string | null) => {
-    const client = clients.find(c => c._id === clientId);
-    return client ? client.name : 'Desconocido';
-  };
-
-  const getUserName = (userId: string | null) => {
-    const user = users.find(u => u._id === userId);
-    return user ? user.name : 'Desconocido';
-  };
+  
 
 
   const fetchAssistances = useCallback(async () => {
