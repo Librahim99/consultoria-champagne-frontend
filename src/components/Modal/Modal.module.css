@@ -157,6 +157,40 @@
   background: #333;
 }
 
+/* Estilos para accesos minimizados */
+.accessMinimized {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  background-color: var(--area-text-background);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.accessMinimized:hover {
+  background-color: var(--button-hover);
+}
+
+.accessMinimized span {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.accessMinimized button {
+  padding: 0.3rem;
+  font-size: 0.8rem;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.accessMinimized button:hover {
+  color: var(--primary);
+}
+
 /* ------------------ RESPONSIVE ------------------ */
 @media (max-height: 600px) {
   .modalContent {

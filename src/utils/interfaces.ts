@@ -15,6 +15,13 @@ export interface User {
   updatedAt?: string;
 }
 
+//Accesos
+export interface AccessInterface  {
+  name: string;
+  ID: string;
+  password: string
+}
+
 // Interfaz para el cliente
 export interface Client {
   _id: string;
@@ -25,6 +32,7 @@ export interface Client {
   vip: boolean;
   active: boolean;
   email: string[];
+  access?: AccessInterface[]
 }
 
 // Interfaz para el incidente
@@ -81,3 +89,5 @@ export interface Pending {
   assignedUserId: string | null;
   completionDate: string | null;
 }
+
+
