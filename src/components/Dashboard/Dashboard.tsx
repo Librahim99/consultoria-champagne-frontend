@@ -127,7 +127,7 @@ const Dashboard: React.FC = () => {
       title: 'Usuarios',
       description: `${stats.users} registrados`,
       icon: <FaUser />,
-      bg: 'linear-gradient(135deg, #3b82f6, #1e40af)',
+      bg: 'linear-gradient(135deg, #2457a9ff, #132972ff)',
       show: ['CEO', 'Jefe de Consultoría'].includes(userRank)
     },
     {
@@ -135,14 +135,14 @@ const Dashboard: React.FC = () => {
       title: 'Clientes',
       description: `${stats.clients} activos`,
       icon: <FaUsers />,
-      bg: 'linear-gradient(135deg, #10b981, #047857)'
+      bg: 'linear-gradient(135deg, #0f5b42ff, #355149ff)'
     },
     {
       to: '/incidents',
       title: 'Incidencias',
       description: `${stats.incidents} pendientes`,
       icon: <FaBug />,
-      bg: 'linear-gradient(135deg, #f59e0b, #b45309)',
+      bg: 'linear-gradient(135deg, #865a10ff, #886952ff)',
       show: ['CEO', 'Jefe de Consultoría'].includes(userRank)
     },
     {
@@ -152,14 +152,14 @@ const Dashboard: React.FC = () => {
         ? `${stats.assistances} registradas • ${asistenciaStats.cantidadHoy} hoy • ${asistenciaStats.totalHorasHoy}h`
         : `${stats.assistances} registradas`,
       icon: <FaClipboardCheck />,
-      bg: 'linear-gradient(135deg, #6366f1, #4f46e5)'
+      bg: 'linear-gradient(135deg, #252665ff, #312b98ff)'
     },
     {
       to: '/pending-tasks',
       title: 'Pendientes',
       description: `${stats.pendings} en espera`,
       icon: <FaChartPie />,
-      bg: 'linear-gradient(135deg, #ec4899, #db2777)'
+      bg: 'linear-gradient(135deg, #45132cff, #db2777)'
     }
   ];
 
