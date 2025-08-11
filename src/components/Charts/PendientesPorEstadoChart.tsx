@@ -51,7 +51,7 @@ const PendientesPorEstado: React.FC<Props> = ({ data }) => {
 
   return (
     <div className={styles.chartCard}>
-      <h3 className={styles.chartTitle}>🗂 Pendientes por Estado</h3>
+      <h3 className={styles.chartTitle}> 📚 Pendientes por Estado 📚</h3>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart
   data={data}

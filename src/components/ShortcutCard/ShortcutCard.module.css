@@ -14,8 +14,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.6rem;
-  margin-top: 2rem;
+  margin-top: 1rem;
   padding: 0 1rem;
+
 }
 
 /* Card con borde degradado premium + glass + shimmer */
@@ -24,7 +25,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1.4rem 1.6rem;
+  padding: 1rem 1rem;
   border-radius: 20px;
   text-decoration: none;
   color: var(--card-text);
@@ -132,7 +133,7 @@
   min-width: 0;
 }
 .shortcutInfo h3 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin: 0;
   font-weight: 700;
   line-height: 1.25;
