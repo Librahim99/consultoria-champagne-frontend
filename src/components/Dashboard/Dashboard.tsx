@@ -118,7 +118,6 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     fetchStats();
   }, [fetchStats, userId]);
-
   if (loading) return <Spinner />;
 
   const shortcuts: Shortcut[] = [

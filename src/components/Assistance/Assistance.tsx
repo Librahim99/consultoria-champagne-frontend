@@ -5,10 +5,13 @@ import { type Assistance, Client, User, DecodedToken } from '../../utils/interfa
 import styles from './Assistance.module.css';
 import CustomTable from '../CustomTable/CustomTable';
 import { ranks } from '../../utils/enums';
-import { FaEdit, FaTrash, FaPlus, FaFileExport } from 'react-icons/fa'; // Agregado FaPlus para Nueva Asistencia
+import { FaEdit, FaTrash, FaPlus, FaFileExport, FaFileArchive, FaFileExcel } from 'react-icons/fa'; // Agregado FaPlus para Nueva Asistencia
 import Modal from '../Modal/Modal';
 import { toast } from 'react-toastify';
 import { useContextMenu } from '../../contexts/UseContextMenu';
+import Spinner from '../Spinner/Spinner';
+import moment from 'moment'; // Para formatear fechas (ya tienes moment-timezone en package.json)
+import * as XLSX from 'xlsx'; // Para exportar a Excel
 
 const Assistances: React.FC = () => {
   const [assistances, setAssistances] = useState<Assistance[]>([]);
@@ -27,6 +30,9 @@ const Assistances: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [clientSearch, setClientSearch] = useState('');
 const [filteredClient, setFilteredClient] = useState<Client | null>(null);
+const [isLoading, setIsLoading] = useState(false);
+const [userFilter, setUserFilter] = useState('me');
+const [dateFilter, setDateFilter] = useState('week');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -43,14 +49,12 @@ const [filteredClient, setFilteredClient] = useState<Client | null>(null);
 
     const fetchData = async () => {
       try {
-        const [clientsRes, usersRes, assistancesRes] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_API_URL}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${process.env.REACT_APP_API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${process.env.REACT_APP_API_URL}/api/assistances`, { headers: { Authorization: `Bearer ${token}` } }),
+        const [clientsRes, usersRes] = await Promise.all([
+          axios.get(`${process.env.REACT_APP_API_URL}/api/clients/minimal`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/users/minimal`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
         setClients(clientsRes.data);
         setUsers(usersRes.data);
-        setAssistances(assistancesRes.data);
       } catch (err: any) {
         console.error('Fetch Error:', err.response?.data || err.message);
         setError(err.response?.data?.message || 'Error al cargar datos');
@@ -107,13 +111,22 @@ const [filteredClient, setFilteredClient] = useState<Client | null>(null);
     setShowAddForm(true);
   }, [userRank]);
 
+
   const handleExport = useCallback(() => {
   if (!loggedInUserId) {
     toast.error('Usuario no identificado');
     return;
   }
+const today = new Date();
+  today.setHours(0, 0, 0, 0); // Establece el inicio del día
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1); // Fin del día
 
-  const userAssistances = assistances.filter(a => a.userId === loggedInUserId);
+  const userAssistances = assistances.filter(a => 
+    a.userId === loggedInUserId && 
+    new Date(a.date) >= today && 
+    new Date(a.date) < tomorrow
+  );
 
   if (userAssistances.length === 0) {
     toast.info('No hay asistencias para exportar');
@@ -121,7 +134,6 @@ const [filteredClient, setFilteredClient] = useState<Client | null>(null);
   }
 
   const userName = getUserName(loggedInUserId);
-  const today = new Date();
   const fechaCabecera = today.toLocaleDateString('es-AR', {
     day: '2-digit',
     month: '2-digit',
@@ -129,6 +141,7 @@ const [filteredClient, setFilteredClient] = useState<Client | null>(null);
   }).replace(/\//g, '-');
 
   let content = `►►►► FECHA: ${fechaCabecera} 00:00 ◄◄◄◄ \n`;
+      content += `EJECUTIVO: ${userName}\n`;
 
   userAssistances
     .sort((a, b) => (b.sequenceNumber ?? 0) - (a.sequenceNumber ?? 0)) // ordenar descendente
@@ -138,13 +151,12 @@ const [filteredClient, setFilteredClient] = useState<Client | null>(null);
       const duracion = `${a.timeSpent} Minutos`;
       const detalle = a.detail.trim();
       const contact = a.contact.trim()
-
+      content += '------------------------';
       content += `\nNRO: ${nro}\n`;
       content += `CLIENTE: ${clientName}\n`;
-      content += `EJECUTIVO: ${userName}\n`;
       content += `DETALLE: ${detalle}\n`;
       content += `USUARIO: ${contact}\n`; 
-      content += `DURACION: ${duracion}\n\n`;
+      content += `DURACION: ${duracion}\n`;
     });
 
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -156,8 +168,153 @@ const [filteredClient, setFilteredClient] = useState<Client | null>(null);
   link.click();
   document.body.removeChild(link);
 
-  toast.success('Asistencias exportadas en formato TXT');
+  toast.success('Asistencias del dia exportadas en formato TXT');
 }, [assistances, loggedInUserId]);
+
+
+
+const handleExportAll = useCallback(() => {
+  if (assistances.length === 0) {
+    toast.info('No hay asistencias visibles para exportar');
+    return;
+  }
+  
+  // Ordenar por fecha ascendente
+  const sortedAssistances = [...assistances].sort((a: Assistance, b: Assistance) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  // Agrupar por fecha y dentro por usuario
+  const groupedByDate = sortedAssistances.reduce((acc: {[key: string]: {[key: string]: Assistance[]}}, a: Assistance) => {
+    const dateKey = moment(a.date).format('DD-MM-YY');
+    const userKey = a.userId; // O getUserName(a.userId) si querés el nombre como clave
+
+    if (!acc[dateKey]) acc[dateKey] = {};
+    if (!acc[dateKey][userKey]) acc[dateKey][userKey] = [];
+    acc[dateKey][userKey].push(a);
+
+    return acc;
+  }, {});
+
+  let content = '';
+
+  Object.keys(groupedByDate).sort().forEach(dateKey => {
+    content += `►►►► FECHA: ${dateKey} ◄◄◄◄ \n\n`;
+
+    Object.keys(groupedByDate[dateKey]).sort().forEach(userKey => {
+      const userAssistances = groupedByDate[dateKey][userKey];
+      const userName = getUserName(userKey) || 'Desconocido';
+
+      content += `EJECUTIVO: ${userName} (${dateKey})\n`;
+
+      userAssistances.forEach((a: Assistance) => {
+        const clientName = getClientName(a.clientId) || 'Sin cliente';
+        const nro = a.sequenceNumber !== null && a.sequenceNumber !== undefined ? a.sequenceNumber : 'SIN NRO';
+        const duracion = `${a.timeSpent} Minutos`;
+        const detalle = a.detail.trim();
+        const contact = a.contact.trim();
+        content += '------------------------';
+        content += `\nNRO: ${nro}\n`;
+        content += `CLIENTE: ${clientName}\n`;
+        content += `DETALLE: ${detalle}\n`;
+        content += `USUARIO: ${contact}\n`;
+        content += `DURACION: ${duracion}\n`;
+      });
+
+      content += `\nTotal asistencias de ${userName}: ${userAssistances.length}\n\n`;
+    });
+  });
+
+  const todayFormatted = moment().format('DD-MM-YY');
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `Asistencias_Todas_${todayFormatted.replace(/-/g, '_')}.txt`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  toast.success(`Exportadas ${assistances.length} asistencias visibles en formato TXT`);
+}, [assistances]);
+
+
+const handleExportExcel = useCallback(() => {
+  if (assistances.length === 0) {
+    toast.info('No hay asistencias visibles para exportar');
+    return;
+  }
+
+  const sortedAssistances = [...assistances].sort((a: Assistance, b: Assistance) => {
+    const dateComparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+    if (dateComparison !== 0) return dateComparison;
+    const userAName = getUserName(a.userId) || '';
+    const userBName = getUserName(b.userId) || '';
+    return userAName.localeCompare(userBName);
+  });
+
+  const excelData = sortedAssistances.map((a: Assistance) => ({
+    Fecha: moment(a.date).format('DD-MM-YYYY'),
+    Usuario: getUserName(a.userId) || 'Desconocido',
+    Cliente: getClientName(a.clientId) || 'Sin cliente',
+    Detalle: a.detail.trim(),
+    Contacto: a.contact.trim(),
+    Duración: `${a.timeSpent} Minutos`,
+    Numero: a.sequenceNumber !== null && a.sequenceNumber !== undefined ? a.sequenceNumber : 'SIN NRO',
+  }));
+
+// Crear worksheet vacío
+const worksheet = XLSX.utils.aoa_to_sheet([]);
+
+// Agregar título en A1, fusionado A1:G1
+XLSX.utils.sheet_add_aoa(worksheet, [['Reporte de Asistencias - Consultoría Champagne']], { origin: 'A1' });
+worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }]; // Fusiona A1 a G1
+
+// Agregar encabezados en A2
+XLSX.utils.sheet_add_aoa(worksheet, [['Fecha', 'Usuario', 'Cliente', 'Detalle', 'Contacto', 'Duración', 'Numero']], { origin: -1 });
+
+['A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2'].forEach(cell => {
+  worksheet[cell] = { ...worksheet[cell], s: { font: { bold: true } } };
+});
+
+// Agregar datos en A3 (json_to_sheet sin origin, datos se escriben después de las filas existentes)
+// const excelDataWithOffset = excelData.map((row, index) => ({ ...row, __rowNum__: index + 3 })); // Añadimos offset para debug
+XLSX.utils.sheet_add_json(worksheet, excelData, { origin: -1, skipHeader: true });
+
+// Congelar encabezado (título y encabezados) hasta fila 2
+worksheet['!freeze'] = { xSplit: 0, ySplit: 2 };
+
+// Auto-ancho de columnas
+const maxWidths = [
+  12, // Fecha
+  20, // Usuario
+  20, // Cliente
+  30, // Detalle
+  15, // Contacto
+  10, // Duración
+  10, // Numero
+];
+worksheet['!cols'] = maxWidths.map(w => ({ wch: w }));
+
+
+
+const workbook = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(workbook, worksheet, 'Asistencias');
+
+  const todayFormatted = moment().format('DD-MM-YY');
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `Reporte_de_Asistencias_${dateFilter === 'week' ? 'Semanal' : (dateFilter === 'month' ? 'Mensual' : 'Historico')}_${todayFormatted.replace(/-/g, '_')}.xlsx`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  toast.success(`Exportadas ${assistances.length} asistencias visibles en formato Excel`);
+}, [assistances]);
 
 
   // Nueva función para manejar Nueva Asistencia
@@ -194,24 +351,41 @@ const getContextMenu = useCallback((e: React.MouseEvent) => {
       e.stopPropagation();
       const menuItems = [
     {
-      label: ' Nueva Asistencia',
+      label: ' Nueva asistencia',
       icon: <FaPlus />,
       onClick: handleNewAssistance
     },
     {
-      label: ' Exportar Asistencias',
+      label: ' Exportar mis asistencias',
       icon: <FaFileExport />,
       onClick: () => handleExport()
+    },
+     {
+      label: ' Exportar Asistencias',
+      icon: <FaFileExport />,
+      onClick: () => {},
+      children: [
+        {
+      label: ' Texto',
+      icon: <FaFileArchive />,
+      onClick: () => handleExportAll()
+    },
+    {
+      label: ' Excel',
+      icon: <FaFileExcel />,
+      onClick: () => handleExportExcel()
     }
   ]
+    },
+  ]
    showMenu(e.clientX, e.clientY, menuItems) 
-  },[showMenu,handleNewAssistance, handleExport])
+  },[showMenu,handleNewAssistance, handleExport, handleExportAll])
 
 
   // Actualizado: Agregar Nueva Asistencia al menú contextual
   const getRowContextMenu = (row: Assistance) => [
     {
-      label: ' Nueva Asistencia',
+      label: ' Nueva asistencia',
       icon: <FaPlus />,
       onClick: handleNewAssistance
     },
@@ -221,9 +395,26 @@ const getContextMenu = useCallback((e: React.MouseEvent) => {
       onClick: () => handleEdit(row)
     },
     {
-      label: ' Exportar Asistencias',
+      label: ' Exportar mis asistencias',
       icon: <FaFileExport />,
       onClick: () => handleExport()
+    },
+    {
+      label: ' Exportar Asistencias',
+      icon: <FaFileExport />,
+      onClick: () => {},
+      children: [
+        {
+      label: ' Texto',
+      icon: <FaFileArchive />,
+      onClick: () => handleExportAll()
+    },
+    {
+      label: ' Excel',
+      icon: <FaFileExcel />,
+      onClick: () => handleExportExcel()
+    }
+  ]
     },
     {
       label: ' Eliminar',
@@ -243,6 +434,35 @@ const getContextMenu = useCallback((e: React.MouseEvent) => {
     return user ? user.name : 'Desconocido';
   };
 
+
+  const fetchAssistances = useCallback(async () => {
+  setIsLoading(true);
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No token found');
+    const res = await axios.get<Assistance[]>(`${process.env.REACT_APP_API_URL}/api/assistances`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { userFilter, dateFilter }
+    });
+    setAssistances(res.data);
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || 'Error fetching assistances';
+    setError(errorMsg);
+    toast.error(errorMsg);
+  } finally {
+    setIsLoading(false);
+  }
+}, [userFilter, dateFilter]);
+
+useEffect(() => {
+  fetchAssistances();
+}, [fetchAssistances]); // Se dispara cuando fetchAssistances cambia (i.e., userFilter/dateFilter)
+
+const handleFilterChange = (type: 'user' | 'date' | 'status', value: string) => {
+  if (type === 'user') setUserFilter(value);
+  if (type === 'date') setDateFilter(value);
+};
+ if(!users.length || !assistances || !clients.length) return  <Spinner/>
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Asistencias</h1>
@@ -270,6 +490,10 @@ const getContextMenu = useCallback((e: React.MouseEvent) => {
           customizable={true}
           storageKey="assistanceTable"
           onRowContextMenu={getRowContextMenu}
+          enableUserFilter={true}
+enableDateFilter={true}
+enableStatusFilter={false}
+onFilterChange={handleFilterChange}
         />
       </div>
       <Modal
