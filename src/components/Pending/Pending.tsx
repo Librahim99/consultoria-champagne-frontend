@@ -390,7 +390,7 @@ const handleFilterChange = (type: 'user' | 'date' | 'status', value: string) => 
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Tareas Pendientes</h1>
+      <h1 className={styles.title}> 📚 Tareas Pendientes 📚</h1>
       {error && <p className={styles.error}>{error}</p>}
       <div onContextMenu={(e) => getRowContextMenu2(e)} style={{ height: 'auto', width: '100%' }}>
         <CustomTable

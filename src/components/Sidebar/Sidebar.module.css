@@ -1,6 +1,6 @@
 :root {
   /* Paleta corporativa */
-  --mantis-navy: #0b1b2e;
+  --mantis-navy: #081d36;
   --mantis-navy-2: #0f2744;
   --mantis-ink: #0a1421;
   --mantis-accent: #00a3ff;
@@ -33,7 +33,7 @@
   box-shadow: var(--glow);
   transition: transform var(--sidebar-transition), opacity 220ms var(--ease);
   transform: translateX(calc(var(--sidebar-shift) * -1));
-  opacity: .98;
+  opacity: 0.1;
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -46,7 +46,7 @@
 
 .sidebar.visible {
   transform: translateX(0);
-  opacity: 1;
+  opacity: 0.90;
 }
 
 /* LISTA + “fades” superior/inferior */
