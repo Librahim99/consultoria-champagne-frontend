@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useContext, useEffect, useRef } from 'react';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { FaSortUp, FaSortDown, FaSort, FaCog, FaUndo, FaFilter, FaSync, FaBars } from 'react-icons/fa';
+import { FaSortUp, FaSortDown, FaSort, FaCog, FaUndo, FaFilter, FaSync } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import styles from './CustomTable.module.css';
 import { useContextMenu } from '../../contexts/UseContextMenu';
@@ -36,6 +36,10 @@ interface CustomTableProps {
   storageKey?: string;
   onRefresh?: () => void;
   onRowContextMenu?: (rowData: any) => MenuItem[];
+  enableUserFilter?: boolean;
+enableDateFilter?: boolean;
+enableStatusFilter?: boolean;
+onFilterChange?: (filterType: 'user' | 'date' | 'status', value: string) => void;
 }
 
 const CustomTable: React.FC<CustomTableProps> = ({
@@ -49,7 +53,11 @@ const CustomTable: React.FC<CustomTableProps> = ({
   customizable = false,
   storageKey = 'defaultTable',
   onRefresh,
-  onRowContextMenu
+  onRowContextMenu,
+  enableUserFilter,
+  enableDateFilter,
+  enableStatusFilter,
+  onFilterChange
 }) => {
   const { showMenu } = useContextMenu();
   const { theme } = useContext(ThemeContext);
@@ -68,6 +76,9 @@ const CustomTable: React.FC<CustomTableProps> = ({
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const filterRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const resizeRef = useRef<{ field: string; startX: number; startWidth: number } | null>(null);
+  const [userFilter, setUserFilter] = useState('me');
+const [dateFilter, setDateFilter] = useState('week');
+const [statusFilter, setStatusFilter] = useState('pending_inprogress');
 
   const getDefaultColumns = useCallback(() => ({
     visible: columnDefs.filter(col => !col.hiddenByDefault).map(col => col.field),
@@ -355,6 +366,13 @@ const CustomTable: React.FC<CustomTableProps> = ({
     document.addEventListener('mouseup', handleMouseUp);
   };
 
+  const handleGeneralFilterChange = useCallback((type: 'user' | 'date' | 'status', value: string) => {
+  if (type === 'user') setUserFilter(value);
+  if (type === 'date') setDateFilter(value);
+  if (type === 'status') setStatusFilter(value);
+  onFilterChange?.(type, value);
+}, [onFilterChange]);
+
   const renderConfigMenu = () => (
     <div className={styles.configMenu}>
       <h3>Personalizar Columnas</h3>
@@ -389,6 +407,7 @@ const CustomTable: React.FC<CustomTableProps> = ({
   return (
     <div className={`${styles.tableContainer} ${theme === 'dark' ? styles.dark : styles.light} ${className}`}>
       <div className={styles.controls}>
+        <div className={styles.filtersContainer}> 
         {searchable && (
           <input
             type="text"
@@ -398,6 +417,30 @@ const CustomTable: React.FC<CustomTableProps> = ({
             className={styles.searchInput}
           />
         )}
+        {enableUserFilter && (
+  <select value={userFilter} onChange={(e) => handleGeneralFilterChange('user', e.target.value)} className={styles.filterSelect}>
+    <option value="me">Solo yo</option>
+    <option value="all">Todos</option>
+  </select>
+)}
+{enableDateFilter && (
+  <select value={dateFilter} onChange={(e) => handleGeneralFilterChange('date', e.target.value)} className={styles.filterSelect}>
+    <option value="week">Esta semana</option>
+    <option value="month">Este mes</option>
+    <option value="all">Todos</option>
+  </select>
+)}
+{enableStatusFilter && (
+  <select value={statusFilter} onChange={(e) => handleGeneralFilterChange('status', e.target.value)} className={styles.filterSelect}>
+    <option value="pending_inprogress">Pendiente/En Proceso</option>
+    <option value="tobudget_budgeted">Presupuestar/Presupuestado</option>
+    <option value="test_revision">Prueba/Revisión</option>
+    <option value="solved_cancelled">Resuelto/Cancelado</option>
+    <option value="all">Todos</option>
+  </select>
+)}
+ 
+        </div>
         <div className={styles.buttonsContainer}>
           <button
             className={styles.refreshButton}
@@ -515,14 +558,14 @@ const CustomTable: React.FC<CustomTableProps> = ({
             ) : (
               <tr>
                 <td colSpan={processedColumns.length} className={styles.noData}>
-                  No hay datos disponibles
+                  No hay datos disponibles según los filtros aplicados
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      {pagination && totalPages > 1 && (
+      {pagination && totalPages > 0 && (
         <div className={styles.pagination}>
           <button
             onClick={() => setCurrentPage(1)}
@@ -539,7 +582,7 @@ const CustomTable: React.FC<CustomTableProps> = ({
             Anterior
           </button>
           <span className={styles.paginationInfo}>
-            Página {currentPage} de {totalPages}
+            Página {currentPage} de {totalPages} | Total: {rowData.length} líneas
           </span>
           <button
             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}

@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import Modal from '../Modal/Modal';
 import styles2 from '../CustomContextMenu/CustomContextMenu.module.css';
 import ImportCSVModal from '../ImportacionCSV/ImportarCSV';
+import Spinner from '../Spinner/Spinner';
 
 // Función para mapear valores legibles a claves del enum
 const mapStatusToKey = (value: string): keyof typeof incident_status | '' => {
@@ -43,6 +44,10 @@ const PendingTask: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const navigate = useNavigate();
   const [showImportModal, setShowImportModal] = useState(false);
+  const [userFilter, setUserFilter] = useState('me');
+const [dateFilter, setDateFilter] = useState('week');
+const [statusFilter, setStatusFilter] = useState('pending_inprogress');
+const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
   const token = localStorage.getItem('token');
@@ -64,14 +69,12 @@ const PendingTask: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const [clientsRes, usersRes, pendingsRes] = await Promise.all([
-        axios.get<Client[]>(`${process.env.REACT_APP_API_URL}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get<User[]>(`${process.env.REACT_APP_API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get<Pending[]>(`${process.env.REACT_APP_API_URL}/api/pending`, { headers: { Authorization: `Bearer ${token}` } }),
+      const [clientsRes, usersRes] = await Promise.all([
+        axios.get<Client[]>(`${process.env.REACT_APP_API_URL}/api/clients/minimal`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get<User[]>(`${process.env.REACT_APP_API_URL}/api/users/minimal`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
       setClients(clientsRes.data);
       setUsers(usersRes.data);
-      setPendings(pendingsRes.data);
     } catch (err: any) {
       console.error('Fetch Error Details:', err.response?.data || err.message, err.response?.status);
       setError(err.response?.data?.message || 'Error al cargar datos');
@@ -350,21 +353,40 @@ const PendingTask: React.FC = () => {
     return user ? user.name : 'Desconocido';
   };
 
-  const fetchPendings = async () => {
+const fetchPendings = useCallback(async () => {
+  setIsLoading(true);
   try {
     const token = localStorage.getItem('token');
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/pending`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    if (!token) throw new Error('No token found');
+    const res = await axios.get<Pending[]>(`${process.env.REACT_APP_API_URL}/api/pending`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { userFilter, dateFilter, statusFilter }
     });
     setPendings(res.data);
-  } catch (error: any) {
-    console.error('❌ Error al cargar pendientes:', error);
-    setError(error.response?.data?.message || 'Error al cargar pendientes');
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || 'Error fetching pendings';
+    setError(errorMsg);
+    toast.error(errorMsg);
+  } finally {
+    setIsLoading(false);
   }
+}, [userFilter, dateFilter, statusFilter]);
+
+
+useEffect(() => {
+  fetchPendings();
+}, [fetchPendings]); // Se dispara cuando fetchPendings cambia (i.e., cuando cambian sus deps)
+
+
+const handleFilterChange = (type: 'user' | 'date' | 'status', value: string) => {
+  if (type === 'user') setUserFilter(value);
+  if (type === 'date') setDateFilter(value);
+  if (type === 'status') setStatusFilter(value);
 };
 
+
+
+ if(!users.length || !pendings || !clients.length) return  <Spinner/>
 
   return (
     <div className={styles.container}>
@@ -425,6 +447,10 @@ const PendingTask: React.FC = () => {
           customizable={true}
           storageKey="pendingTable"
           onRowContextMenu={getRowContextMenu}
+          enableUserFilter={true}
+enableDateFilter={true}
+enableStatusFilter={true}
+onFilterChange={handleFilterChange}
         />
       </div>
       <Modal

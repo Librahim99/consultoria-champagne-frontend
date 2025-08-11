@@ -114,9 +114,6 @@ const Dashboard: React.FC = () => {
   }, [fetchGraficos]);
 
   useEffect(() => {
-  console.log("Incidentes por Día:", incidentesPorDia);
-  console.log("Asistencias por Usuario:", asistenciasPorUsuario);
-  console.log("Pendientes por Estado:", pendientesPorEstado);
 }, [incidentesPorDia, asistenciasPorUsuario]);
 
 
