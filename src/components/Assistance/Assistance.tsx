@@ -468,7 +468,7 @@ const handleFilterChange = (type: 'user' | 'date' | 'status', value: string) => 
  if(!users.length || !assistances || !clients.length) return  <Spinner/>
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Asistencias</h1>
+      <h1 className={styles.title}> 🎧 Asistencias 🎧 </h1>
       {error && <p className={styles.error}>{error}</p>}
       <button className={styles.fab} title="Agregar Asistencia" onClick={() => {
         setEditingAssistance(null);

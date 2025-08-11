@@ -14,22 +14,26 @@
 
 .container {
   padding: 1rem;
-  /* min-height: 100vh; */
+  min-height: calc(100vh - 2rem); /* ocupa alto total menos el padding */
+  width: 100%; /* ancho completo */
+  height: fit-content;
   background-color: var(--background-color);
+
+  /* Opcional: que crezca para ocupar espacio disponible */
+  display: flex;
+  flex-direction: column;
 }
+
 
 /* ------------------------------ */
 /* Título                         */
 /* ------------------------------ */
 .title {
-  font-size: clamp(1.25rem, 1.2rem + 1.6vw, 2rem);
+  font-size: 2rem;
+  font-weight: 600;
   text-align: center;
-  margin: 0 0 1.25rem;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  background-image: linear-gradient(90deg, var(--primary), var(--primary-dark));
-  -webkit-background-clip: text;
-  background-clip: text;
+  margin-bottom: 2rem;
+  color: var(--text-color);
 }
 
 .title::after {
@@ -177,30 +181,6 @@
   background-color: #00a5bd;
 }
 
-/* ------------------------------ */
-/* Contenedor de la grilla        */
-/* ------------------------------ */
-.gridWrapper {
-  height: clamp(420px, 65vh, 720px);
-  width: 100%;
-  margin-bottom: 2rem;
-
-  background: var(--card-background);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-med);
-  padding: clamp(.5rem, 1.2vw, 1rem);
-  outline: 1px solid rgba(255,255,255,.06);
-}
-
-/* Variables para AG Grid (si el CustomTable las usa) */
-.agGrid {
-  height: 100%;
-  width: 100%;
-  --ag-border-color: var(--ag-border-color);
-  --ag-row-hover-background-color: var(--ag-row-hover);
-  --ag-header-background-color: var(--ag-header-background);
-  --ag-header-foreground-color: var(--ag-header-foreground);
-}
 
 /* ------------------------------ */
 /* Responsive                     */
