@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Spinner from '../Spinner/Spinner';
@@ -41,35 +41,6 @@ interface AsistenciaStats {
   licenciasPorVencer: number;
 }
 
-// Tipos suaves para datos de métricas
-type IncidenteDia = { fecha?: string; count?: number } | Record<string, any>;
-type PendingEstado = { estado?: string; count?: number } | Record<string, any>;
-
-const BarRow: React.FC<{
-  label: string;
-  value: number;
-  max: number;
-  title?: string;
-}> = ({ label, value, max, title }) => {
-  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
-  return (
-    <div className={styles.barRow} role="group" aria-label={label} title={title || label}>
-      <div className={styles.barLabel}>{label}</div>
-      <div className={styles.barTrack} aria-hidden="true">
-        <div
-          className={styles.barFill}
-          style={{ width: `${pct}%` }}
-          role="progressbar"
-          aria-valuenow={value}
-          aria-valuemin={0}
-          aria-valuemax={max}
-          aria-label={`${label}: ${value}`}
-        />
-      </div>
-      <div className={styles.barValue}>{value}</div>
-    </div>
-  );
-};
 
 const Dashboard: React.FC = () => {
   const { userRank, userId } = useContext(UserContext);
@@ -181,24 +152,23 @@ const Dashboard: React.FC = () => {
       </header>
 
       <section className={styles.shortcuts}>
-        {shortcuts.map(
-          (s, i) =>
-            (s.show === undefined || s.show) && (
-              <Link
-                key={i}
-                to={s.to}
-                className={styles.shortcutCard}
-                style={{ backgroundImage: s.bg }}
-              >
-                <div className={styles.shortcutIcon}>{s.icon}</div>
-                <div className={styles.shortcutInfo}>
-                  <h3>{s.title}</h3>
-                  <p>{s.description}</p>
-                </div>
-              </Link>
-            )
-        )}
-      </section>
+  {shortcuts.map(
+    (s, i) =>
+      (s.show === undefined || s.show) && (
+        <Link
+          key={i}
+          to={s.to}
+          className={styles.shortcutCard}
+          style={{ backgroundImage: s.bg }}
+          aria-label={`${s.title}: ${s.description}`}
+          title={`${s.title}: ${s.description}`}
+        >
+          <div className={styles.shortcutIcon}>{s.icon}</div>
+          {/* Texto removido a pedido: solo logos */}
+        </Link>
+      )
+  )}
+</section>
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Crear Reunión Google Meet">
         <CrearMeetForm onClose={() => setModalOpen(false)} />
