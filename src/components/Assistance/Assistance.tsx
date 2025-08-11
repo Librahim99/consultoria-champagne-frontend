@@ -32,7 +32,7 @@ const Assistances: React.FC = () => {
 const [filteredClient, setFilteredClient] = useState<Client | null>(null);
 const [isLoading, setIsLoading] = useState(false);
 const [userFilter, setUserFilter] = useState('me');
-const [dateFilter, setDateFilter] = useState('week');
+const [dateFilter, setDateFilter] = useState('month');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
