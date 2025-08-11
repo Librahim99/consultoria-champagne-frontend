@@ -45,7 +45,7 @@ const PendingTask: React.FC = () => {
   const navigate = useNavigate();
   const [showImportModal, setShowImportModal] = useState(false);
   const [userFilter, setUserFilter] = useState('me');
-const [dateFilter, setDateFilter] = useState('week');
+const [dateFilter, setDateFilter] = useState('month');
 const [statusFilter, setStatusFilter] = useState('pending_inprogress');
 const [isLoading, setIsLoading] = useState(false);
 
