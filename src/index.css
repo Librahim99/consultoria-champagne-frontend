@@ -90,3 +90,38 @@ body {
     font-size: 0.9rem;
   }
 }
+
+.card{
+  --glass-bg: color-mix(in srgb, var(--card-background) 88%, transparent);
+  --glass-surface: color-mix(in srgb, var(--card-background) 70%, transparent);
+  --ring: 2px;
+  --ring-color: color-mix(in srgb, var(--primary) 65%, transparent);
+  --ring-color-strong: color-mix(in srgb, var(--primary-dark) 80%, transparent);
+  --chip-bg: color-mix(in srgb, var(--background-color) 10%, transparent);
+  --chip-border: color-mix(in srgb, var(--border-color) 70%, transparent);
+  --shadow-1: 0 6px 20px var(--shadow-color);
+  --shadow-2: 0 20px 50px color-mix(in srgb, var(--shadow-color) 70%, transparent);
+  display:grid; grid-template-rows:auto 1fr;
+  background:var(--glass-bg); color:var(--text-color);
+  border-radius:18px; box-shadow:var(--shadow-1), inset 0 1px 0 rgba(255,255,255,.06);
+  position:relative; overflow:hidden;
+  inline-size:100%; min-inline-size:0;
+  content-visibility:auto;
+  contain: layout style paint;
+  /* altura intrínseca para evitar “estirones” */
+  contain-intrinsic-size: auto 350px;
+  -webkit-backdrop-filter:blur(10px) saturate(140%); backdrop-filter:blur(10px) saturate(140%);
+}
+.card::before{
+  content:""; position:absolute; inset:0; padding:1px; border-radius:inherit;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; opacity:.65;
+}
+@supports not ((backdrop-filter: blur(0)) or (-webkit-backdrop-filter: blur(0))){
+  .card{ background: var(--glass-surface); }
+}
+@media (forced-colors: active){
+  .card{ background: Canvas; box-shadow:none; border: 1px solid CanvasText; }
+  .card::before{ display:none; }
+}

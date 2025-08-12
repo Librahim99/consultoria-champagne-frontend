@@ -76,6 +76,16 @@ export interface Assistance {
   sequenceNumber?: number;
 }
 
+export type AssistanceMetricsRange = 'today' | 'week' | 'month';
+
+export interface AssistanceMetricsResponse {
+  range: AssistanceMetricsRange;
+  days: Array<Record<string, number | string>>;
+  clientNames: string[];
+  start: string;
+  end: string;
+}
+
 // Interfaz para pendiente
 export interface Pending {
   _id: string;
