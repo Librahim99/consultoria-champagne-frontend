@@ -1,8 +1,8 @@
 :root {
   /* Paleta corporativa */
-  --mantis-navy: #081d36;
-  --mantis-navy-2: #0f2744;
-  --mantis-ink: #0a1421;
+  --mantis-navy: #2b1da7;
+  --mantis-navy-2: #0a0b57;
+  --mantis-ink: #0e2006;
   --mantis-accent: #00a3ff;
   --mantis-accent-2: #37b9ff;
   --mantis-text: #eaf2fb;
@@ -33,7 +33,7 @@
   box-shadow: var(--glow);
   transition: transform var(--sidebar-transition), opacity 220ms var(--ease);
   transform: translateX(calc(var(--sidebar-shift) * -1));
-  opacity: 0.1;
+  opacity: 0.2;
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -46,7 +46,7 @@
 
 .sidebar.visible {
   transform: translateX(0);
-  opacity: 0.90;
+  opacity: 0.75;
 }
 
 /* LISTA + “fades” superior/inferior */

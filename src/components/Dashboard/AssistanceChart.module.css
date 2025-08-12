@@ -1,0 +1,312 @@
+/* ============================= */
+/*  AssistanceChart.module.css   */
+/* ============================= */
+
+/* ---------- Card base ---------- */
+.card { composes: card from global; }
+
+/* ---------- Header + toolbar ---------- */
+.cardHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: 12px 16px 6px;
+  z-index: 1;
+}
+.cardTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.02rem;
+  letter-spacing: .1px;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.08));
+}
+.toolbar { display: flex; align-items: center; gap: .45rem; }
+.rangeGroup { display: inline-flex; gap: .45rem; }
+
+/* --- Responsive fino --- */
+@media (max-width: 720px){
+  .toolbar{ gap:.35rem; flex-wrap: wrap; }
+}
+@media (max-width: 520px){
+  /* en pantallas chicas, mostrás primero Filtros y luego Hoy/Semana/Mes */
+  .filterWrap{ order:1; }
+  .rangeGroup{ order:2; }
+  .toolbar{ justify-content:flex-end; }
+}
+
+/* ---------- Botones flotantes ---------- */
+/* comunes (hover/transition/backdrop) */
+:where(.rangeBtn, .filterBtn){
+  transition: transform .12s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+  -webkit-backdrop-filter: blur(6px) saturate(150%);
+  backdrop-filter: blur(6px) saturate(150%);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--shadow-color) 60%, transparent);
+}
+
+/* uniformar altura de botones */
+.rangeBtn, .filterBtn{ line-height: 1; }
+
+.rangeBtn{
+  --bg1: color-mix(in srgb, var(--primary) 35%, transparent);
+  --border: color-mix(in srgb, var(--border-color) 70%, transparent);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: .42rem;
+  padding: .42rem .68rem;
+  border-radius: 80px;
+  cursor: pointer;
+  color: inherit;
+  border: 1px solid var(--border, var(--border-color));
+  background:
+    radial-gradient(100% 100% at 50% 0%, var(--bg1), transparent 70%),
+    var(--glass-surface);
+}
+.rangeBtn::before{
+  content:"";
+  position:absolute; inset:0; padding:1px; border-radius:inherit;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  opacity:.35; pointer-events:none;
+}
+.rangeBtn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--shadow-color) 85%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border-color));
+}
+.rangeBtn.active{
+  color:#fff; border-color:transparent;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--primary) 35%, transparent), var(--shadow-1);
+}
+.rangeBtn:focus-visible,
+.filterBtn:focus-visible{
+  outline:none;
+  box-shadow: 0 0 0 var(--ring) var(--ring-color-strong),
+              0 10px 26px color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+/* ---------- Filtro ---------- */
+.filterWrap { position: relative; }
+.filterBtn{
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .48rem .75rem; border-radius: 12px; cursor: pointer; color: inherit;
+  border: 1px solid var(--chip-border); background: var(--chip-bg);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--shadow-color) 70%, transparent);
+  /* consistencia visual con Licencias */
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  backdrop-filter: blur(8px) saturate(150%);
+}
+.filterBtn:hover{
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--chip-bg) 85%, rgba(255,255,255,.04));
+  border-color: color-mix(in srgb, var(--border-color) 60%, var(--primary) 20%);
+}
+.filterPanel{
+  position: absolute; right: 0; top: calc(100% + .5rem); z-index: 10;
+  min-width: 360px; max-width: 480px; padding: .7rem;
+  border-radius: 14px; background: var(--glass-bg);
+  border: 1px solid var(--chip-border); box-shadow: var(--shadow-2);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+  animation: slideIn .18s ease-out;
+}
+.filterPanel::before{
+  content:""; position:absolute; inset:0; padding:1px; border-radius:inherit;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; opacity:.35;
+}
+@keyframes slideIn{ from{opacity:0; transform:translateY(-6px)} to{opacity:1; transform:translateY(0)} }
+.filterHeader{ display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-bottom:.45rem; }
+.filterShortcuts{ display:inline-flex; gap:.35rem; flex-wrap:wrap; }
+.filterShortcuts>button{
+  padding:.28rem .55rem; border-radius:10px; cursor:pointer; color:inherit;
+  border:1px solid var(--chip-border); background:var(--chip-bg);
+  transition: background .15s ease, transform .12s ease;
+}
+.filterShortcuts>button:hover{
+  background: color-mix(in srgb, var(--chip-bg) 80%, rgba(255,255,255,.05));
+  transform: translateY(-1px);
+}
+.searchWrap{ position:relative; margin-bottom:.45rem; }
+.searchIcon{ position:absolute; left:.6rem; top:50%; transform:translateY(-50%); opacity:.7; }
+.search{
+  width:100%; padding:.5rem .7rem .5rem 2rem; color:inherit;
+  border-radius:10px; border:1px solid var(--chip-border); background:var(--glass-surface);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.search:focus{ outline:none; border-color:color-mix(in srgb, var(--primary) 45%, var(--chip-border)); box-shadow:0 0 0 var(--ring) var(--ring-color); }
+.searchClear{
+  position:absolute; right:.35rem; top:50%; transform:translateY(-50%);
+  border:none; background:transparent; color:inherit; opacity:.75; cursor:pointer;
+}
+.filterList{ list-style:none; margin:0; padding:0; max-height:280px; overflow:auto; scrollbar-width:thin; }
+.item{
+  width:100%; display:grid; grid-template-columns:auto 1fr auto auto;
+  align-items:center; gap:.55rem; padding:.42rem .38rem;
+  border-radius:10px; border:1px dashed transparent; background:transparent; color:inherit; cursor:pointer;
+  transition: background .12s ease, border-color .12s ease, transform .08s ease;
+}
+.item:hover{ background:color-mix(in srgb, var(--chip-bg) 85%, rgba(255,255,255,.04)); }
+.item.on{ border-color: var(--chip-border); }
+.item.off{ opacity:.78; }
+.item:focus-visible{ outline:none; box-shadow:0 0 0 var(--ring) var(--ring-color); }
+.colorDot{ width:.82rem; height:.82rem; border-radius:999px; background:currentColor; }
+.clientName{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.count{ opacity:.68; font-variant-numeric: tabular-nums; }
+.check{ width:1rem; display:inline-flex; justify-content:center; }
+
+/* ---------- Chart / Skeleton ---------- */
+.chartWrap{ grid-row:2; width:100%; height:320px; margin:0; }
+
+.skeleton{
+  --card-h: 350px; --plot-h: 320px; --pad-x: 16px; --pad-y: 12px; --header-h: 44px;
+  --axis: rgba(255,255,255,.18); --grid: rgba(255,255,255,.10);
+  --block: color-mix(in srgb, var(--text-color) 8%, transparent);
+  --chip:  color-mix(in srgb, var(--text-color) 6%, transparent);
+  position: relative; grid-row:2; width:100%; height:var(--card-h); margin:0; border-radius:18px;
+  background: color-mix(in srgb, var(--card-background) 88%, transparent);
+  box-shadow: 0 6px 20px var(--shadow-color), inset 0 1px 0 rgba(255,255,255,.06);
+  -webkit-backdrop-filter: blur(10px) saturate(140%); backdrop-filter: blur(10px) saturate(140%);
+  background-image:
+    repeating-linear-gradient(to bottom, var(--grid) 0 1px, transparent 1px 36px),
+    linear-gradient(to bottom, var(--axis), var(--axis)),
+    linear-gradient(to right,  var(--axis), var(--axis)),
+    linear-gradient(var(--block), var(--block)),
+    linear-gradient(var(--chip), var(--chip)),
+    linear-gradient(var(--chip), var(--chip)),
+    linear-gradient(var(--chip), var(--chip));
+  background-size:
+    calc(100% - (var(--pad-x)*2)) var(--plot-h),
+    1px var(--plot-h),
+    calc(100% - (var(--pad-x)*2)) 1px,
+    180px 14px, 68px 28px, 68px 28px, 88px 28px;
+  background-position:
+    right var(--pad-x) calc(var(--pad-y) + var(--header-h)),
+    calc(var(--pad-x)) calc(var(--pad-y) + var(--header-h)),
+    right var(--pad-x) calc(var(--pad-y) + var(--header-h) + var(--plot-h)),
+    calc(var(--pad-x) + 8px) calc(var(--pad-y) + 6px),
+    right calc(var(--pad-x) + 8px) calc(var(--pad-y) + 4px),
+    right calc(var(--pad-x) + 88px) calc(var(--pad-y) + 4px),
+    right calc(var(--pad-x) + 168px) calc(var(--pad-y) + 4px);
+  background-repeat: no-repeat; overflow: hidden;
+}
+.skeleton::before{
+  content:""; position:absolute; inset:0; padding:1px; border-radius:inherit;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; opacity:.45;
+}
+.skeleton::after{
+  content:""; position:absolute; inset:-25%;
+  background:linear-gradient(120deg, transparent 46%, rgba(255,255,255,.10) 50%, transparent 54%);
+  transform: translateX(-120%); animation: shimmer 1.4s linear infinite;
+  mix-blend-mode: screen; pointer-events: none;
+}
+@keyframes shimmer{ 0%{transform:translateX(-120%)} 100%{transform:translateX(120%)} }
+
+.error{
+  color: var(--error);
+  padding: .6rem .8rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+}
+.empty{ display:flex; align-items:center; justify-content:center; height:var(--plot-h); margin:0; }
+.emptyInner{ text-align:center; opacity:.85; display:flex; flex-direction:column; gap:.25rem; align-items:center; }
+.emptyInner svg{ width:20px; height:20px; }
+@media (prefers-reduced-motion: reduce){ .skeleton::after{ animation:none; opacity:0 } }
+
+/* ---------- Recharts (base) ---------- */
+:global(.recharts-cartesian-grid-horizontal line){ stroke-opacity:.18; stroke-dasharray:3 6; shape-rendering:crispEdges; }
+:global(.recharts-cartesian-grid-vertical line){ opacity:0; shape-rendering:crispEdges; }
+:global(.recharts-xAxis .recharts-cartesian-axis-tick text),
+:global(.recharts-yAxis .recharts-cartesian-axis-tick text){ fill:var(--secondary-text-color); font-size:.85rem; }
+:global(.recharts-surface path.recharts-area-curve){ stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+:global(.recharts-surface path.recharts-area-area){ opacity:.28; }
+:global(.recharts-default-tooltip){
+  border:1px solid color-mix(in srgb, var(--border-color) 70%, transparent) !important;
+  background:color-mix(in srgb, var(--card-background) 85%, transparent) !important;
+  color:var(--text-color) !important; border-radius:12px !important;
+  -webkit-backdrop-filter:blur(8px) saturate(140%); backdrop-filter:blur(8px) saturate(140%);
+}
+:global(.recharts-tooltip-label){ color:var(--text-color) !important; font-weight:600; }
+:global(.recharts-tooltip-item){ color:var(--secondary-text-color) !important; }
+:global(.recharts-tooltip-cursor){ stroke-opacity:.12; }
+@media (hover:hover) and (pointer:fine){ .card:hover::after{ transform:none; opacity:0; } }
+
+/* ---------- Modo MES (curvo) ---------- */
+/* setea “flags” para mes y reutiliza en reglas */
+:where(.card[data-range="month"], .card:has(.rangeGroup>button:nth-child(3).active)){
+  --grid-month-op: .22;
+  --grid-month-dash: 2 6;
+  --tick-month-fs: .82rem;
+  --area-month-stroke: 2.4px;
+  --area-month-opacity: .20;
+  --tt-month-bg: color-mix(in srgb, var(--card-background) 90%, transparent);
+  --tt-month-border: color-mix(in srgb, var(--border-color) 78%, transparent);
+}
+:where(.card[data-range="month"], .card:has(.rangeGroup>button:nth-child(3).active)) :global(.recharts-cartesian-grid-horizontal line){
+  stroke-opacity: var(--grid-month-op); stroke-dasharray: var(--grid-month-dash);
+}
+:where(.card[data-range="month"], .card:has(.rangeGroup>button:nth-child(3).active)) :global(path.recharts-area-curve){ stroke-width: var(--area-month-stroke); }
+:where(.card[data-range="month"], .card:has(.rangeGroup>button:nth-child(3).active)) :global(path.recharts-area-area){ opacity: var(--area-month-opacity); }
+:where(.card[data-range="month"], .card:has(.rangeGroup>button:nth-child(3).active)) :global(.recharts-xAxis .recharts-cartesian-axis-tick text),
+:where(.card[data-range="month"], .card:has(.rangeGroup>button:nth-child(3).active)) :global(.recharts-yAxis .recharts-cartesian-axis-tick text){ font-size: var(--tick-month-fs); }
+:where(.card[data-range="month"], .card:has(.rangeGroup>button:nth-child(3).active)) :global(.recharts-default-tooltip){
+  border-color: var(--tt-month-border) !important;
+  background: var(--tt-month-bg) !important;
+}
+
+/* ====== Detalles de eje / dots / tooltip ====== */
+:global(.recharts-xAxis .recharts-cartesian-axis-line),
+:global(.recharts-yAxis .recharts-cartesian-axis-line){
+  stroke: color-mix(in srgb, var(--text-color) 65%, transparent);
+  stroke-width: 4px;
+  shape-rendering: crispEdges;
+  vector-effect: non-scaling-stroke;
+}
+:global(.recharts-cartesian-axis-tick-line){
+  stroke: color-mix(in srgb, var(--text-color) 40%, transparent);
+  shape-rendering: crispEdges;
+}
+:global(.recharts-active-dot circle){
+  r: 2.6px; stroke: currentColor; stroke-width: 1px; fill: transparent;
+}
+:global(.recharts-tooltip-wrapper){
+  margin-left: 10px; margin-right: 8px; pointer-events: none;
+}
+
+/* --- Intro escalonada (30/60/90d + Filtros) --- */
+@media (prefers-reduced-motion: no-preference){
+  .rangeGroup > .rangeBtn,
+  .toolbar > .filterWrap .filterBtn{
+    opacity: 0;
+    animation: chartToolbarIn .42s cubic-bezier(.2,.8,.2,1) both;
+    will-change: transform, opacity;
+  }
+
+  /* delays: 30d → 60d → 90d → Filtros */
+  .rangeGroup > .rangeBtn:nth-child(1){ animation-delay: .10s; }
+  .rangeGroup > .rangeBtn:nth-child(2){ animation-delay: .20s; }
+  .rangeGroup > .rangeBtn:nth-child(3){ animation-delay: .30s; }
+  .toolbar > .filterWrap .filterBtn{  animation-delay: .40s; }
+}
+
+@keyframes chartToolbarIn{
+  from{ opacity:0; transform: translateY(-6px) scale(.98); }
+  to{   opacity:1; transform: translateY(0)    scale(1); }
+}
+
+.shortcuts .shortcutCard { opacity:0; animation: fadeIn .5s ease both; }
+.shortcuts .shortcutCard:nth-child(1){ animation-delay:.10s; }
+.shortcuts .shortcutCard:nth-child(2){ animation-delay:.20s; }
+.shortcuts .shortcutCard:nth-child(3){ animation-delay:.30s; }
+.shortcuts .shortcutCard:nth-child(4){ animation-delay:.40s; }
+.shortcuts .shortcutCard:nth-child(5){ animation-delay:.50s; }
+.shortcuts .shortcutCard:nth-child(6){ animation-delay:.60s; }

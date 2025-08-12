@@ -466,54 +466,75 @@
 
 /* Grid fino en móviles */
 @media (max-width: 420px) {
-  .shortcuts { gap: 1rem; }
-  .shortcutCard { padding: 1.1rem 1.2rem; }
+  .shortcuts { gap: 0.2rem; }
+  .shortcutCard { padding: 1rem 1rem; }
 }
 
 /* ============================== */
 /* 📈 GRÁFICOS DEL DASHBOARD     */
 /* ============================== */
-.chartsGrid {
-  display: grid;
+
+/* Contenedor de todos los charts */
+.chartsGrid{
+  display: flex; /* fix: antes era flex con propiedades de grid */
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-  padding: 1rem;
-  background-color: var(--card-background);
-  border-radius: 16px;
-  box-shadow: var(--elevation-medium);
+  gap: clamp(0.8rem, 2vw, 1.6rem);
+  margin-top: clamp(0.8rem, 2vw, 1.2rem);
+  padding: clamp(0.8rem, 2vw, 1rem);
+  background: var(--card-background);
+  border-radius: 10px;
+  box-shadow: 0 6px 6px var(--shadow-color);
 }
 
-.charts {
-  display: grid;
+/* Grilla interna de tarjetas de chart */
+.charts{
+  display: block;
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
+  gap: clamp(1rem, 2.5vw, 2rem);
+  margin-top: clamp(1rem, 2.5vw, 2rem);
+  /* Habilita container queries si hay soporte, sin romper nada */
+  container-type: inline-size;
 }
 
-.chartCard {
-  background-color: var(--card-background);
-  padding: 1.8rem;
-  border-radius: 16px;
-  box-shadow: 0 6px 16px var(--shadow-color);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* Tarjeta de cada chart: compone desde la .card global + ajustes locales */
+.chartCard{ 
+  composes: card from global;
+  padding: clamp(1rem, 2.5vw, 1.8rem);
+  display: contents;
+  grid-template-rows: auto 1fr;
+  align-items: start;
   gap: 1rem;
-  height: 350px; /* <--- NUEVO ALTO */
+  /* Altura consistente con el plot: 320px (plot) + 30px~ (título/toolbar) */
+  block-size: 350px;
+  height: 350px; /* fallback */
 }
 
-.chartCard h3 {
+/* Título dentro de la tarjeta */
+.chartCard h3{
   font-size: 1.2rem;
   font-weight: 600;
   color: var(--text-color);
-  margin-bottom: 1rem;
+  margin-block: 0 1rem;
 }
+
+/* Container query para apilar en contenedores estrechos (si hay soporte) */
+@supports (container-type: inline-size){
+  @container (max-width: 760px){
+    .charts{ grid-template-columns: 1fr; }
+    .chartCard{ block-size: 350px; }
+  }
+}
+
+/* Accesibilidad: menos movimiento si el usuario lo prefiere */
+@media (prefers-reduced-motion: reduce){
+  .chartsGrid, .charts, .chartCard{ scroll-behavior: auto; }
+}
+
 
 /* ============================== */
 /* 📱 RESPONSIVE MOBILE          */
 /* ============================== */
-@media (max-width: 768px) {
+@media (max-width: 1px) {
   .title {
     font-size: 2rem;
   }

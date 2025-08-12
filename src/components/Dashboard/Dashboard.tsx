@@ -7,6 +7,8 @@ import CrearMeetForm from '../../components/GoogleAPIs/CrearMeetForm';
 import { UserContext } from '../../contexts/UserContext';
 import { ThemeContext } from '../../contexts/ThemeContext';
 import { ranks } from '../../utils/enums';
+import AssistanceChart from './AssistanceChart';
+import LicenseExpirationsChart from './LicenseExpirationsChart';
 import {
   FaUser,
   FaBug,
@@ -169,6 +171,11 @@ const Dashboard: React.FC = () => {
       )
   )}
 </section>
+
+<section className={styles.chartsGrid}>
+            <LicenseExpirationsChart cycleDays={63} defaultRange={60} /> 
+              <AssistanceChart />
+        </section>
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Crear Reunión Google Meet">
         <CrearMeetForm onClose={() => setModalOpen(false)} />
