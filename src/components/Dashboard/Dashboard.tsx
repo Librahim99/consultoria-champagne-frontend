@@ -57,8 +57,12 @@ const Dashboard: React.FC = () => {
   });
 
   const [asistenciaStats, setAsistenciaStats] = useState<AsistenciaStats | null>(null);
+  const [loadingAssitances, setLoadingAssistances] = useState(true);
+  const [loadingLicenses, setLoadingLicenses] = useState(true);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+
+
 
   const fetchStats = useCallback(async () => {
     try {
@@ -172,9 +176,18 @@ const Dashboard: React.FC = () => {
   )}
 </section>
 
-<section className={styles.chartsGrid}>
-            <LicenseExpirationsChart cycleDays={63} defaultRange={60} /> 
+<section className={styles.ChartsContainer}>
+  <div className={styles.chartsGrid}>
+
+            {/* <LicenseExpirationsChart cycleDays={63} defaultRange={60} setLoading={setLoadingLicenses} />  */}
+              {/* <AssistanceChart setLoading={setLoadingAssistances}/> */}
+  </div >
+  {/* <div className={styles.chartsGrid}>
               <AssistanceChart />
+              <AssistanceChart />
+              <AssistanceChart />
+
+  </div> */}
         </section>
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Crear Reunión Google Meet">

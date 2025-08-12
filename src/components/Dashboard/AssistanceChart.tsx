@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef, Dispatch, SetStateAction } from 'react';
 import axios from 'axios';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine
 } from 'recharts';
 import { FiFilter, FiTrendingUp, FiUsers, FiX, FiSearch } from 'react-icons/fi';
 import styles from './AssistanceChart.module.css';
+import Spinner from '../Spinner/Spinner';
 
 type Range = 'today' | 'week' | 'month';
 
@@ -20,7 +21,9 @@ interface MetricsResponse {
       console.log(token)
 
 
-interface Props { className?: string; }
+interface Props { 
+  setLoading: Dispatch<SetStateAction<boolean>>; 
+}
 
 const TZ = 'America/Argentina/Buenos_Aires';
 const STORAGE_KEY = 'assist-chart:clients';
@@ -29,11 +32,10 @@ const hashHue = (s: string) => { let h = 0; for (let i = 0; i < s.length; i++) h
 const colorFor = (name: string) => `hsl(${hashHue(name)} 70% 55%)`;
 const gradId = (name: string) => `grad-${hashHue(name)}-${name.replace(/\W+/g, '')}`;
 
-const AssistanceChart: React.FC<Props> = ({ className }) => {
+const AssistanceChart: React.FC<Props> = ({ setLoading }) => {
   const [range, setRange] = useState<Range>('week');
   const [rawData, setRawData] = useState<Array<Record<string, number | string>>>([]);
   const [allClients, setAllClients] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   // Panel y filtros
@@ -60,8 +62,6 @@ const AssistanceChart: React.FC<Props> = ({ className }) => {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
-    setLoading(true);
-    setErr(null);
     try {
       const res = await axios.get<MetricsResponse>(
         `${process.env.REACT_APP_API_URL}/api/assistances/metrics`,
@@ -70,6 +70,8 @@ const AssistanceChart: React.FC<Props> = ({ className }) => {
       cacheRef.current[r] = res.data;
       setRawData(res.data.days);
       setAllClients(res.data.clientNames);
+      setLoading(false);
+      setErr(null);
     } catch (e: any) {
       if ((axios as any).isCancel?.(e)) return;
       const apiMsg = e?.response?.data?.message;
@@ -193,7 +195,7 @@ const AssistanceChart: React.FC<Props> = ({ className }) => {
   const captionCls = (styles as any).caption || '';
 
   return (
-    <div className={`${styles.card} ${className || ''}`} data-range={range}>
+    <div className={`${styles.card}`} data-range={range}>
       <div className={styles.cardHeader}>
         <h3 className={styles.cardTitle}><FiTrendingUp /> Tendencia de asistencias</h3>
         <div className={styles.toolbar}>
@@ -249,8 +251,7 @@ const AssistanceChart: React.FC<Props> = ({ className }) => {
       </div>
 
       {err && <div className={styles.error}>{err}</div>}
-      {loading && <div className={styles.skeleton} aria-busy="true" />}
-      {!loading && !err && (
+      { !err && (
         data.length === 0 ? (
           <p className={styles.empty}><span className={styles.emptyInner}><FiTrendingUp /> Sin datos</span></p>
         ) : (

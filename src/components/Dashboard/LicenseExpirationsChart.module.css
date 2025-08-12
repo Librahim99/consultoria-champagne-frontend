@@ -3,7 +3,8 @@
 /* ============================= */
 
 /* ---------- Card base (idéntica a Assistance, con fallbacks/compat) ---------- */
-.card{ composes: card from global; }
+.card{ composes: card from global; max-width: 33%;}
+
 
 /* --- Header + toolbar (alineado a la derecha) --- */
 .cardHeader{
@@ -171,3 +172,21 @@
   opacity:.9;
 }
 
+
+/* ---------- Recharts (base) ---------- */
+:global(.recharts-cartesian-grid-horizontal line){ stroke-opacity:.18; stroke-dasharray:3 6; shape-rendering:crispEdges; }
+:global(.recharts-cartesian-grid-vertical line){ opacity:0; shape-rendering:crispEdges; }
+:global(.recharts-xAxis .recharts-cartesian-axis-tick text),
+:global(.recharts-yAxis .recharts-cartesian-axis-tick text){ fill:var(--secondary-text-color); font-size:.85rem; }
+:global(.recharts-surface path.recharts-area-curve){ stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+:global(.recharts-surface path.recharts-area-area){ opacity:.28; }
+:global(.recharts-default-tooltip){
+  border:1px solid color-mix(in srgb, var(--border-color) 70%, transparent) !important;
+  background:color-mix(in srgb, var(--card-background) 85%, transparent) !important;
+  color:var(--text-color) !important; border-radius:12px !important;
+  -webkit-backdrop-filter:blur(8px) saturate(140%); backdrop-filter:blur(8px) saturate(140%);
+}
+:global(.recharts-tooltip-label){ color:var(--text-color) !important; font-weight:600; }
+:global(.recharts-tooltip-item){ color:var(--secondary-text-color) !important; }
+:global(.recharts-tooltip-cursor){ stroke-opacity:.12; }
+@media (hover:hover) and (pointer:fine){ .card:hover::after{ transform:none; opacity:0; } }

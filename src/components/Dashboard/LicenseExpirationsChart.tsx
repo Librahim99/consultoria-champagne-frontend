@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, Cell } from 'recharts';
 import styles from './LicenseExpirationsChart.module.css';
+import Spinner from '../Spinner/Spinner';
 
 
 type WindowRange = 30 | 60 | 90;
@@ -31,7 +32,7 @@ interface Props {
   defaultRange?: WindowRange;
   /** incluir sólo clientes activos (default true) */
   onlyActive?: boolean;
-
+  setLoading: Dispatch<SetStateAction<boolean>>; 
   /** máximo de barras a mostrar (default 15) */
   maxItems?: number;
   /** umbral de urgencia (default 15 días) */
@@ -69,11 +70,10 @@ const fmtDate = (d: Date) =>
 
 const LicenseExpirationsChart: React.FC<Props> = ({
   className, cycleDays = 365, defaultRange = 60, onlyActive = true,
-  maxItems = 15, urgentDays = 15,
+  maxItems = 15, urgentDays = 15,setLoading
 }) => {
   const [rows, setRows] = useState<ClientRow[]>([]);
   const [err, setErr] = useState<string|null>(null);
-  const [loading, setLoading] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [range, setRange] = useState<WindowRange>(defaultRange);
@@ -81,7 +81,7 @@ const LicenseExpirationsChart: React.FC<Props> = ({
   const panelRef = useRef<HTMLDivElement|null>(null);
 
   const fetchClients = useCallback(async () => {
-    setLoading(true); setErr(null);
+     setErr(null);
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get<ClientRow[]>(
@@ -89,6 +89,7 @@ const LicenseExpirationsChart: React.FC<Props> = ({
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setRows(res.data || []);
+      setLoading(false);
     } catch (e: any) {
       const apiMsg = e?.response?.data?.message;
       setErr(apiMsg || 'Error al obtener clientes');
@@ -183,13 +184,12 @@ const LicenseExpirationsChart: React.FC<Props> = ({
 }, []);
 
 if (err) return <div className={styles.error}>{err}</div>;
-if (loading) return <div className={styles.skeleton} aria-busy="true" />;
 
   return (
     <div className={`${styles.card} ${className || ''}`} data-range={range} aria-label="Vencimientos de licencias">
       <div className={styles.cardHeader}>
         <h3 className={styles.cardTitle}>
-          <ClockIcon /> Vencimientos de licencias — próximos
+          <ClockIcon /> Próximos 15 clientes a vencer
         </h3>
 
         <div className={styles.toolbar}>

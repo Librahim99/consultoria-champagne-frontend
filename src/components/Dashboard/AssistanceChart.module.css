@@ -3,7 +3,7 @@
 /* ============================= */
 
 /* ---------- Card base ---------- */
-.card { composes: card from global; }
+.card { composes: card from global;max-width: 33%; min-height: 100%; }
 
 /* ---------- Header + toolbar ---------- */
 .cardHeader {
