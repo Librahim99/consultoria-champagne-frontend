@@ -16,6 +16,10 @@ interface MetricsResponse {
   end: string;
 }
 
+ const token = localStorage.getItem('token');
+      console.log(token)
+
+
 interface Props { className?: string; }
 
 const TZ = 'America/Argentina/Buenos_Aires';
@@ -59,7 +63,6 @@ const AssistanceChart: React.FC<Props> = ({ className }) => {
     setLoading(true);
     setErr(null);
     try {
-      const token = localStorage.getItem('token');
       const res = await axios.get<MetricsResponse>(
         `${process.env.REACT_APP_API_URL}/api/assistances/metrics`,
         { params: { range: r }, headers: { Authorization: `Bearer ${token}` }, signal: ctrl.signal }
