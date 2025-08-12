@@ -21,6 +21,18 @@ export const incident_status = {
   CANCELLED: 'Cancelado'
 } as const;
 
+export const pending_status = {
+  PENDING: 'Pendiente',
+  IN_PROGRESS: 'En Proceso',
+  TEST:'Prueba',
+  SOLVED: 'Resuelto',
+  DEV: 'En Programación',
+  TO_BUDGET: 'Presupuestar',
+  BUDGETED: 'Presupuestado',
+  REVISION: 'Revisión',
+  CANCELLED: 'Cancelado'
+} as const;
+
 export const incident_types = {
   TICKET: 'Whatsapp Ticket',
   DEV_BUG: 'Falla',

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { incident_status, ranks } from '../../utils/enums';
+import { pending_status, ranks } from '../../utils/enums';
 import { type Pending, Client, User, DecodedToken, Assistance } from '../../utils/interfaces';
 import styles from './Pending.module.css';
 import CustomTable from '../CustomTable/CustomTable';
 import { useContextMenu } from '../../contexts/UseContextMenu';
 import { toast } from 'react-toastify';
-import { FaEdit, FaTrash, FaWhatsapp, FaPlus, FaEye, FaFileCsv } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaWhatsapp, FaPlus, FaEye, FaFileCsv, FaCheckCircle, FaPeopleCarry, FaPeopleArrows } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../Modal/Modal';
 import styles2 from '../CustomContextMenu/CustomContextMenu.module.css';
@@ -15,9 +15,9 @@ import ImportCSVModal from '../ImportacionCSV/ImportarCSV';
 import Spinner from '../Spinner/Spinner';
 
 // Función para mapear valores legibles a claves del enum
-const mapStatusToKey = (value: string): keyof typeof incident_status | '' => {
-  const entry = Object.entries(incident_status).find(([_, val]) => val === value);
-  return entry ? entry[0] as keyof typeof incident_status : '';
+const mapStatusToKey = (value: string): keyof typeof pending_status | '' => {
+  const entry = Object.entries(pending_status).find(([_, val]) => val === value);
+  return entry ? entry[0] as keyof typeof pending_status : '';
 };
 
 const PendingTask: React.FC = () => {
@@ -90,8 +90,8 @@ const [isLoading, setIsLoading] = useState(false);
     return;
   }
   // Mapear status a valor legible, con fallback a 'Pendiente'
-  const statusValue = pending.status && incident_status[pending.status as keyof typeof incident_status] 
-    ? incident_status[pending.status as keyof typeof incident_status] 
+  const statusValue = pending.status && pending_status[pending.status as keyof typeof pending_status] 
+    ? pending_status[pending.status as keyof typeof pending_status] 
     : 'Pendiente';
   // Inicializar newPending con fallbacks para evitar null/undefined
   setNewPending({
@@ -148,7 +148,7 @@ const [isLoading, setIsLoading] = useState(false);
       clientId: res.data.clientId || '',
       userId: res.data.userId || loggedInUserId,
       date: res.data.date ? new Date(res.data.date).toISOString() : new Date().toISOString(),
-      status: res.data.status ? incident_status[res.data.status as keyof typeof incident_status] || res.data.status : 'Pendiente',
+      status: res.data.status ? pending_status[res.data.status as keyof typeof pending_status] || res.data.status : 'Pendiente',
       detail: res.data.detail || '',
       observation: res.data.observation || null,
       incidentId: res.data.incidentId || null,
@@ -168,7 +168,7 @@ const [isLoading, setIsLoading] = useState(false);
       clientId: res.data.clientId || '',
       userId: res.data.userId || loggedInUserId,
       date: res.data.date ? new Date(res.data.date).toISOString() : new Date().toISOString(),
-      status: res.data.status ? incident_status[res.data.status as keyof typeof incident_status] || res.data.status : 'Pendiente',
+      status: res.data.status ? pending_status[res.data.status as keyof typeof pending_status] || res.data.status : 'Pendiente',
       detail: res.data.detail || '',
       observation: res.data.observation || null,
       incidentId: res.data.incidentId || null,
@@ -276,6 +276,50 @@ const [isLoading, setIsLoading] = useState(false);
     }
   }, [navigate]);
 
+  const handleChangeStatus = useCallback(async (id: string, status: string) => {
+    
+    if(!status || !id){
+      toast.error('No se actualizó el estado: Opción no valida')
+      return  
+    }
+    try {
+      const token = localStorage.getItem('token');
+      if(!token){
+      navigate('/')
+      return
+    }
+    status = mapStatusToKey(status)
+      const res = await axios.patch(`${process.env.REACT_APP_API_URL}/api/pending/${id}/status`,{status}, { headers: { Authorization: `Bearer ${token}` } })
+      setPendings(pendings.map(p => (p._id === res.data._id ? res.data : p)))
+      toast.success('Estado actualizado');
+    } catch(err){
+      console.log('Error al actualizar estado', err)
+      toast.success('Error al actualizar estado');
+    }
+  },[pendings, navigate])
+
+  const handleAssign = useCallback(async(pending: Pending, user: User) => {
+    if(!pending || !user){
+      toast.warning('No se seleccionó pendiente o usuario')
+      return
+    }
+    try {
+      const token = localStorage.getItem('token');
+      if(!token){
+      navigate('/')
+      return
+    }
+    const id = pending._id
+    const assignedUserId = user._id
+    const res = await axios.patch(`${process.env.REACT_APP_API_URL}/api/pending/${id}/assign`,{assignedUserId}, { headers: { Authorization: `Bearer ${token}` } })
+    setPendings(pendings.map(p => (p._id === res.data._id ? res.data : p)))
+      toast.success('Pendiente asignado');
+    } catch(err){
+      console.log('Error al asignar pendiente', err)
+      toast.success('Error al asignar pendiente');
+    }
+  },[pendings, navigate])
+
   const getRowContextMenu2 = useCallback((e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
@@ -304,14 +348,31 @@ const [isLoading, setIsLoading] = useState(false);
       onClick: handleNewPending
     },
     {
-      label: ' Modificar',
-      icon: <FaEdit />,
-      onClick: () => handleEdit(row)
+      label: ' Cambiar Estado',
+      icon: <FaCheckCircle />,
+      onClick: () => {},
+      hide: loggedInUserId !== row.userId && loggedInUserId !== row.assignedUserId,
+      children: Object.entries(pending_status).map((status) => ({
+        label: `${status[1]}`,
+        onClick: () => handleChangeStatus(row._id, status[1])
+      }))
+    },
+    {
+      label: ' Asignar',
+      icon: <FaPeopleArrows />,
+      onClick: () => {},
+      hide: loggedInUserId !== row.userId,
+      children: users.filter(u => u._id !== row.userId).map((user) => ({
+        icon: <img   src={user.picture} alt="profile" className={styles2.userIcon}/>,
+  label: ` ${user.name}`,
+  onClick: () => handleAssign(row, user)
+})),
     },
     {
       label: ` Enviar a ${getUserName(row.userId).split(' ')[0]}`,
       icon: <FaWhatsapp />,
       onClick: () => handleSendWhatsapp(row),
+      hide: !getUserNumber(row.userId)
     },
     {
       label: ' Enviar a...',
@@ -321,13 +382,14 @@ const [isLoading, setIsLoading] = useState(false);
         icon: <img   src={user.picture} alt="profile" className={styles2.userIcon}/>,
   label: ` ${user.name}`,
   onClick: () => handleSendWhatsappToUser(row, user),
+  hide: user.number ? false : true
 })),
     },
     {
       label: ' Ver Incidencia',
       icon: <FaEye />,
       onClick: () => handleViewIncidence(row),
-      disabled: !row.incidentId,
+      hide: row.incidentId ? false : true
     },
     {
       label: ' Importar Pendientes',
@@ -336,10 +398,16 @@ const [isLoading, setIsLoading] = useState(false);
       disabled: userRank  === ranks.GUEST
     },
     {
+      label: ' Modificar',
+      icon: <FaEdit />,
+      onClick: () => handleEdit(row),
+      hide: loggedInUserId !== row.userId 
+    },
+    {
       label: ' Eliminar',
       icon: <FaTrash />,
       onClick: () => handleDelete(row),
-      disabled: userRank !== ranks.TOTALACCESS,
+      hide: userRank !== ranks.TOTALACCESS,
     },
   ], [userRank, users, handleNewPending, handleEdit, handleSendWhatsapp, handleSendWhatsappToUser, handleViewIncidence, handleDelete]);
 
@@ -351,6 +419,11 @@ const [isLoading, setIsLoading] = useState(false);
   const getUserName = (userId: string | null) => {
     const user = users.find(u => u._id === userId);
     return user ? user.name : 'Desconocido';
+  };
+
+  const getUserNumber = (userId: string | null) => {
+    const user = users.find(u => u._id === userId);
+    return user.number ? true : false;
   };
 
 const fetchPendings = useCallback(async () => {
@@ -429,7 +502,7 @@ const handleFilterChange = (type: 'user' | 'date' | 'status', value: string) => 
               headerName: 'Estado',
               sortable: true,
               filterable: true,
-              valueFormatter: (value) => incident_status[value as keyof typeof incident_status] || value,
+              valueFormatter: (value) => pending_status[value as keyof typeof pending_status] || value,
             },
             { field: 'detail', headerName: 'Detalle', sortable: true, filterable: true },
             { field: 'observation', headerName: 'Observación', sortable: true, filterable: true },
@@ -475,7 +548,7 @@ onFilterChange={handleFilterChange}
       <label>Estado *</label>
       <select name="status" value={newPending.status || ''} onChange={handleInputChange} required>
         <option value="">Seleccione un estado</option>
-        {Object.values(incident_status).map((value) => (
+        {Object.values(pending_status).map((value) => (
           <option key={value} value={value}>{value}</option>
         ))}
       </select>

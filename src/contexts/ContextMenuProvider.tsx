@@ -26,7 +26,11 @@ export const ContextMenuContext = createContext<ContextMenuContextType>({
 
 const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean; position: { x: number; y: number }; hideMenu: () => void }> = ({ items, isSubmenu, position, hideMenu }) => {
   const [activeSub, setActiveSub] = useState<number | null>(null);
+  const [adjustedStyles, setAdjustedStyles] = useState<{ [key: number]: { top: number; bottom?: string } }>({});
   const menuRef = useRef<HTMLDivElement>(null);
+  const itemDivRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const subRefs = useRef<(HTMLDivElement | null)[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
@@ -49,65 +53,96 @@ const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean; positi
     }
   };
 
+  const visibleItemsCount = items.filter(item => !item.hide).length;
+
+  useEffect(() => {
+    if (activeSub !== null) {
+      const index = activeSub;
+      setTimeout(() => {
+        const button = itemRefs.current[index];
+        const itemDiv = itemDivRefs.current[index];
+        const sub = subRefs.current[index];
+        if (button && itemDiv && sub && menuRef.current) {
+          const paddingTop = parseFloat(window.getComputedStyle(button).paddingTop) || 8;
+          const paddingBottom = parseFloat(window.getComputedStyle(menuRef.current).paddingBottom) || 8;
+          const parentH = menuRef.current.offsetHeight || 0;
+          const subH = sub.offsetHeight || 0;
+          const buttonTop = itemDiv.offsetTop || 0;
+          const subVisibleCount = items[index].children?.filter(child => !child.hide).length || 0;
+          const isUpward = subVisibleCount >= visibleItemsCount;
+          let calculatedTop :any;
+          if (isUpward) {
+            calculatedTop = parentH - buttonTop - subH + (paddingBottom * 2) + 2; // Ajuste para corregir décalage "más arriba"
+          } else {
+            calculatedTop = -paddingTop;
+          }
+          setAdjustedStyles(prev => ({ ...prev, [index]: { top: calculatedTop, bottom: 'auto' } }));
+        }
+      }, 0); // Espera al mount completo
+    }
+  }, [activeSub, items]);
+
   return (
     <div ref={menuRef}>
       {items.map((item, index) => (
-        !item.hide &&
-        (
-        <div
-          key={index}
-          style={{ position: 'relative' }}
-          onMouseEnter={() => !isMobile && handleMouseEnter(index)}
-          onMouseLeave={() => !isMobile && handleMouseLeave()}
-        >
-          <button
-            className={`${styles.menuItem} ${item.disabled ? styles.disabled : ''}`}
-            onClick={() => {
-              if (item.children) {
-                handleToggleSubmenu(index);
-              } else if (item.onClick) {
-                item.onClick();
-                hideMenu();
-              }
-            }}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              if (item.children) {
-                handleToggleSubmenu(index);
-              } else if (item.onClick) {
-                item.onClick();
-                hideMenu();
-              }
-            }}
-            disabled={item.disabled}
+        !item.hide && (
+          <div
+            key={index}
+            ref={(el) => (itemDivRefs.current[index] = el)}
+            style={{ position: 'relative' }}
+            onMouseEnter={() => !isMobile && handleMouseEnter(index)}
+            onMouseLeave={() => !isMobile && handleMouseLeave()}
           >
-            <span>
-            {item.icon && <span className={styles.menuIcon}>{item.icon}</span>}
-            {item.label} 
-            </span>
-
-            {item.children && <FaAngleRight style={{ }} />}
-          </button>
-          <AnimatePresence>
-            {item.children && activeSub === index && (
-              <motion.div
-                className={`${styles.contextMenu} ${styles.submenu} ${isSubmenu ? styles.dark : ''}`}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.15 }}
-                style={{
-                  position: 'absolute',
-                  left: position.x + (isSubmenu ? 200 : 400) > window.innerWidth ? '-100%' : '100%', // Abre a la izquierda si no hay espacio
-                  top: 0,
-                  transformOrigin: position.x + (isSubmenu ? 200 : 400) > window.innerWidth ? 'top right' : 'top left', // Ancla esquina según dirección
-                }}
-              >
-                <RenderMenuItems items={item.children} isSubmenu={true} position={position} hideMenu={hideMenu} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>)
+            <button
+              ref={(el) => (itemRefs.current[index] = el)}
+              className={`${styles.menuItem} ${item.disabled ? styles.disabled : ''}`}
+              onClick={() => {
+                if (item.children) {
+                  handleToggleSubmenu(index);
+                } else if (item.onClick) {
+                  item.onClick();
+                  hideMenu();
+                }
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                if (item.children) {
+                  handleToggleSubmenu(index);
+                } else if (item.onClick) {
+                  item.onClick();
+                  hideMenu();
+                }
+              }}
+              disabled={item.disabled}
+            >
+              <span>
+                {item.icon && <span className={styles.menuIcon}>{item.icon}</span>}
+                {item.label}
+              </span>
+              {item.children && <FaAngleRight />}
+            </button>
+            <AnimatePresence>
+              {item.children && activeSub === index && (
+                <motion.div
+                  ref={(el) => (subRefs.current[index] = el)}
+                  className={`${styles.contextMenu} ${styles.submenu} ${isSubmenu ? styles.dark : ''}`}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.15 }}
+                  style={{
+                    position: 'absolute',
+                    left: position.x + (isSubmenu ? 200 : 400) > window.innerWidth ? '-100%' : '100%',
+                    ...adjustedStyles[index],
+                    transformOrigin: position.x + (isSubmenu ? 200 : 400) > window.innerWidth ? 'top right' : 'top left',
+                  }}
+                >
+                  <RenderMenuItems items={item.children} isSubmenu={true} position={position} hideMenu={hideMenu} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )
       ))}
     </div>
   );
@@ -183,10 +218,10 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setTimeout(() => {
         if (menuRef.current) {
           const menuRect = menuRef.current.getBoundingClientRect();
-          const menuWidth = menuRect.width || 200; // Fallback si no se mide
-          const menuHeight = menuRect.height || 300; // Fallback si no se mide
-          const adjustedX = position.x + menuWidth > window.innerWidth ? position.x - menuWidth : position.x; // Ancla esquina superior-derecha o izquierda al cursor
-          const adjustedY = position.y + menuHeight > window.innerHeight ? position.y - menuHeight : position.y; // Ancla esquina superior o inferior al cursor
+          const menuWidth = menuRect.width || 200;
+          const menuHeight = menuRect.height || 300;
+          const adjustedX = position.x + menuWidth > window.innerWidth ? position.x - menuWidth : position.x;
+          const adjustedY = position.y + menuHeight > window.innerHeight ? position.y - menuHeight : position.y;
           setAdjustedPosition({ x: adjustedX, y: adjustedY });
         }
       }, 0);
@@ -219,7 +254,7 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
               position: 'fixed',
               left: adjustedPosition.x,
               top: adjustedPosition.y,
-              transformOrigin: position.x + 200 > window.innerWidth ? 'top right' : 'top left', // Ancla esquina según dirección
+              transformOrigin: position.x + 200 > window.innerWidth ? 'top right' : 'top left',
             }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}

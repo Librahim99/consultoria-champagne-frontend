@@ -70,6 +70,11 @@ const [disableSubmit, setDisableSubmimt] = useState(false)
     return client ? client.name : 'Desconocido';
   };
 
+  const getClient = (clientId: string | null) => {
+    const client = clients.find(c => c._id === clientId);
+    return client ? client : null;
+  };
+
   const getUserName = (userId: string | null) => {
     const user = users.find(u => u._id === userId);
     return user ? user.name : 'Desconocido';
@@ -127,9 +132,11 @@ const [disableSubmit, setDisableSubmimt] = useState(false)
       return;
     }
     setEditingAssistance(assistance);
+    setFilteredClient(getClient(assistance.clientId))
+    setClientSearch(getClientName(assistance.clientId))
     setNewAssistance(assistance);
     setShowAddForm(true);
-  }, [userRank]);
+  }, [userRank, getClient, getClientName]);
 
 
   const handleExport = useCallback(() => {
@@ -410,11 +417,6 @@ const getContextMenu = useCallback((e: React.MouseEvent) => {
       onClick: handleNewAssistance
     },
     {
-      label: ' Modificar',
-      icon: <FaEdit />,
-      onClick: () => handleEdit(row)
-    },
-    {
       label: ' Exportar mis asistencias',
       icon: <FaFileExport />,
       onClick: () => handleExport()
@@ -437,10 +439,16 @@ const getContextMenu = useCallback((e: React.MouseEvent) => {
   ]
     },
     {
+      label: ' Modificar',
+      icon: <FaEdit />,
+      onClick: () => handleEdit(row),
+      hide: loggedInUserId !== row.userId
+    },
+    {
       label: ' Eliminar',
       icon: <FaTrash />,
       onClick: () => handleDelete(row),
-      disabled: userRank !== ranks.TOTALACCESS,
+      hide: row.userId !== loggedInUserId,
     }
   ];
 
