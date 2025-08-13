@@ -30,7 +30,7 @@ export default function LoginGoogle() {
         });
 
         localStorage.setItem('token', res.data.token);
-        navigate('/dashboard');
+        navigate('/clients');
       } catch (err) {
         console.error('Error al iniciar sesión con Google:', err);
       }

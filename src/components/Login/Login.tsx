@@ -61,7 +61,7 @@ const Login: React.FC = () => {
         localStorage.removeItem('rememberedUser');
       }
 
-      navigate('/dashboard');
+      navigate('/clients');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al iniciar sesión');
     } finally {
@@ -135,9 +135,9 @@ const Login: React.FC = () => {
             </div>
           )}
 
-          <div className={styles.link}>
+          {/* <div className={styles.link}>
             <p>¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link></p>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

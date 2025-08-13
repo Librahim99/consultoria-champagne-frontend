@@ -279,31 +279,31 @@ const Clients: React.FC = () => {
       label: ' Ver Pendientes',
       icon: <FaTasks />,
       onClick: () => {},
-      disabled: true,
+      hide: true,
     },
     {
       label: ' Ver Incidencias',
       icon: <FaExclamationTriangle />,
       onClick: () => {},
-      disabled: true,
+      hide: true,
     },
     {
       label: ' Ver Asistencias',
       icon: <FaHeadset />,
       onClick: () => {},
-      disabled: true,
+      hide: true,
     },
     {
       label: ' Modificar',
       icon: <FaEdit />,
       onClick: () => handleEdit(row),
-      disabled: userRank === ranks.GUEST,
+      hide: userRank === ranks.GUEST,
     },
     {
       label: ' Eliminar',
       icon: <FaTrash />,
       onClick: () => handleDelete(row),
-      disabled: userRank !== ranks.TOTALACCESS,
+      hide: userRank !== ranks.TOTALACCESS,
     },
   ], [userRank, handleUpdateLicense, openDateModal, handleDelete, handleEdit, handleNewClient, handleAccess, openAccessModal]);
 
