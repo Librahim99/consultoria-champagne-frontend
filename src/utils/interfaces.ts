@@ -98,6 +98,7 @@ export interface Pending {
   userId: string;
   assignedUserId: string | null;
   completionDate: string | null;
+  sequenceNumber?: number
 }
 
 

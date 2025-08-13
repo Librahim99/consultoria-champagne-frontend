@@ -314,6 +314,26 @@ const [isLoading, setIsLoading] = useState(false);
     const res = await axios.patch(`${process.env.REACT_APP_API_URL}/api/pending/${id}/assign`,{assignedUserId}, { headers: { Authorization: `Bearer ${token}` } })
     setPendings(pendings.map(p => (p._id === res.data._id ? res.data : p)))
       toast.success('Pendiente asignado');
+
+      try{
+    const message = 
+      `Hola ${user.name}, ${getUserName(loggedInUserId)} te asignó el pendiente N° ${pending?.sequenceNumber} de ${getClientName(pending.clientId)}:\n\n-${pending.detail}.`
+    
+        const number = user.number;
+    if (number) {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/bot/sendMessage`,
+        { number, message },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success('Mensaje enviado correctamente.')
+    }
+      } catch(err){
+
+      }
     } catch(err){
       console.log('Error al asignar pendiente', err)
       toast.success('Error al asignar pendiente');
@@ -513,6 +533,12 @@ const handleFilterChange = (type: 'user' | 'date' | 'status', value: string) => 
               filterable: true,
               valueFormatter: (value) => value ? value : 'Sin número asignado',
             },
+            {
+              field: 'incidentNumber',
+              headerName: 'Incidencia',
+              sortable: true,
+              filterable: true
+            }
           ]}
           pagination={true}
           defaultPageSize={15}
