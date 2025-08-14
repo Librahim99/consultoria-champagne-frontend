@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useContext, useEffect, useRef } from 'react';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { FaSortUp, FaSortDown, FaSort, FaCog, FaUndo, FaFilter, FaSync, FaTrello, FaThList } from 'react-icons/fa';
+import { FaSortUp, FaSortDown, FaSort, FaCog, FaUndo, FaFilter, FaSync, FaTrello, FaThList, FaCompress, FaExpand } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import styles from './CustomTable.module.css';
 import { useContextMenu } from '../../contexts/UseContextMenu';
@@ -44,6 +44,7 @@ enableKanbanView?: boolean;
   kanbanStatuses?: KanbanStatus[];
   onStatusChange?: (id: string, newStatus: string, table: boolean) => void;
   onRowClick?: (row: any) => void;
+  loggedInUserId?: string
 }
 
 interface KanbanStatus {
@@ -70,7 +71,8 @@ const CustomTable: React.FC<CustomTableProps> = ({
   enableKanbanView,
   kanbanStatuses,
   onStatusChange,
-  onRowClick
+  onRowClick,
+  loggedInUserId
 }) => {
   const { showMenu } = useContextMenu();
   const { theme } = useContext(ThemeContext);
@@ -94,6 +96,19 @@ const [dateFilter, setDateFilter] = useState('month');
 const [statusFilter, setStatusFilter] = useState('pending_inprogress');
 const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
 const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+const [allExpanded, setAllExpanded] = useState(false);
+
+
+
+const toggleAllCards = () => {
+  if (allExpanded) {
+    setExpandedCards(new Set()); // Contrae todas
+  } else {
+    const allIds = new Set(rowData.map(row => row._id)); // Expande todas basadas en datos filtrados
+    setExpandedCards(allIds);
+  }
+  setAllExpanded(!allExpanded); // Toggle estado
+};
 
   const getDefaultColumns = useCallback(() => ({
     visible: columnDefs.filter(col => !col.hiddenByDefault).map(col => col.field),
@@ -434,8 +449,13 @@ const groupedData = useMemo(() => {
   return groups;
 }, [viewMode, rowData, kanbanStatuses]);
 
-const handleDragStart = (e: React.DragEvent, id: string) => {
-  e.dataTransfer.setData('pendingId', id);
+const handleDragStart = (e: React.DragEvent, row: any) => {
+  if (loggedInUserId && row.userId !== loggedInUserId && row.assignedUserId !== loggedInUserId) {
+    e.preventDefault(); // No permite arrastrar si no es owner
+    return;
+  }
+  e.dataTransfer.setData('pendingId', row._id);
+  e.dataTransfer.setData('originalStatus', row.status); // Almacena status original para check en drop
 };
 
 const handleDragOver = (e: React.DragEvent) => {
@@ -445,6 +465,10 @@ const handleDragOver = (e: React.DragEvent) => {
 const handleDrop = (e: React.DragEvent, newStatus: string) => {
   e.preventDefault();
   const id = e.dataTransfer.getData('pendingId');
+  const originalStatus = e.dataTransfer.getData('originalStatus');
+  if (originalStatus === newStatus) {
+    return; // No hace nada si suelta en misma columna
+  }
   if (onStatusChange) {
     onStatusChange(id, newStatus, false);
   }
@@ -461,9 +485,24 @@ const handleCardClick = (e: React.MouseEvent, row: any) => {
       }
       return newSet;
     });
-  } else if (onRowClick) {
+  } else if (onRowClick && loggedInUserId && row.userId === loggedInUserId || row.assignedUserId === loggedInUserId) {
     onRowClick(row);
+  } else {
+    e.preventDefault()
   }
+};
+
+const debouncedSearch = useRef<NodeJS.Timeout | null>(null);
+
+const handleGlobalSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const value = e.target.value;
+  if (debouncedSearch.current) {
+    clearTimeout(debouncedSearch.current);
+  }
+  debouncedSearch.current = setTimeout(() => {
+    setGlobalSearch(value);
+    setCurrentPage(1);
+  },1); // Debounce 300ms para evitar re-renders innecesarios durante typing
 };
 
 const getFormatter = (field: string) => columnDefs.find(col => col.field === field)?.valueFormatter;
@@ -483,27 +522,34 @@ const renderKanbanView = () => (
           <div className={styles.kanbanColumnHeader}>{status.label} ({items.length})</div>
           <div className={styles.kanbanColumnBody}>
             {items.map(row => {
-              const isExpanded = expandedCards.has(row._id);
-              const clientFormatter = getFormatter('clientId');
-              const detailFormatter = getFormatter('detail');
-              const clientName = clientFormatter ? clientFormatter(row.clientId) : row.clientId;
-              const detail = detailFormatter ? detailFormatter(row.detail) : row.detail;
-              const truncatedDetail = detail.length > 50 ? `${detail.substring(0, 50)}...` : detail;
-              return (
-                <div
-                  key={row._id}
-                  className={`${styles.kanbanCard} ${isExpanded ? styles.expandedCard : ''}`}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, row._id)}
-                  onClick={(e) => handleCardClick(e, row)}
-                >
-                  <div className={styles.cardTitle}>
-                    {clientName} - {truncatedDetail}
-                  </div>
-                  {isExpanded && <div className={styles.cardDetail}>{detail}</div>}
-                </div>
-              );
-            })}
+  const isExpanded = expandedCards.has(row._id);
+  const clientFormatter = getFormatter('clientId');
+  const detailFormatter = getFormatter('detail');
+  const clientName = clientFormatter ? clientFormatter(row.clientId) : row.clientId;
+  const detail = detailFormatter ? detailFormatter(row.detail) : row.detail;
+  const observation = row.observation || ''; // Asumiendo field 'observation' en row
+  const titleText = `${clientName} - ${detail}`;
+  const truncatedTitle = titleText.length > 40 ? `${titleText.substring(0, 40)}...` : titleText;
+  return (
+    <div
+      key={row._id}
+      className={`${styles.kanbanCard} ${isExpanded ? styles.expandedCard : ''} ${globalSearch && String(clientFormatter(row.clientId) + row.detail).toLowerCase().includes(globalSearch.toLowerCase()) ? styles.highlightedCard : ''}`}
+      draggable={loggedInUserId && (row.userId === loggedInUserId || row.assignedUserId === loggedInUserId )}
+      onDragStart={(e) => handleDragStart(e, row)}
+      onClick={(e) => handleCardClick(e, row)}
+    >
+      <div className={styles.cardTitle}>
+        {truncatedTitle}
+      </div>
+      {isExpanded && (
+        <div className={styles.cardDetail}>
+          <p>{detail}</p>
+          {observation && <p>Observación: {observation}</p>}
+        </div>
+      )}
+    </div>
+  );
+})}
           </div>
         </div>
       );
@@ -551,7 +597,7 @@ const renderKanbanView = () => (
             type="text"
             placeholder="Buscar en la tabla..."
             value={globalSearch}
-            onChange={(e) => setGlobalSearch(e.target.value)}
+            onChange={(e) => handleGlobalSearch(e)}
             className={styles.searchInput}
           />
         )}
@@ -582,9 +628,17 @@ const renderKanbanView = () => (
         <div className={styles.buttonsContainer}>
           {customizable && viewMode === 'table' && (
             <button className={styles.configButton} onClick={() => setShowConfigMenu(!showConfigMenu)}>
-              <FaCog /> Personalizar
+              <FaCog />
             </button>
           )}
+          {viewMode === 'kanban' && (
+    <button
+      className={styles.refreshButton} // Reutiliza estilo para consistencia
+      onClick={toggleAllCards}
+    >
+      {allExpanded ? <FaCompress /> : <FaExpand />}
+    </button>
+  )}
           <button onClick={() => toggleViewMode()} className={styles.refreshButton}>
             {viewMode === 'table' ?  <FaTrello/> : <FaThList/>}
           </button>
@@ -598,7 +652,7 @@ const renderKanbanView = () => (
         </div>
       </div>
       {showConfigMenu && renderConfigMenu()}
-      <div className={styles.tableWrapper}>
+      <div className={`${styles.tableWrapper} ${viewMode === 'kanban' ? styles.kanbanMode : ''}`}>
         {viewMode === 'table' ? (
         <table className={styles.table}>
           <thead>

@@ -25,10 +25,8 @@ export const pending_status = {
   PENDING: 'Pendiente',
   IN_PROGRESS: 'En Proceso',
   TO_BUDGET: 'Presupuestar',
-  BUDGETED: 'Presupuestado',
   DEV: 'En Programación',
   TEST:'Prueba',
-  REVISION: 'Revisión',
   CANCELLED: 'Cancelado',
   SOLVED: 'Resuelto'
 } as const;

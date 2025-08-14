@@ -572,6 +572,7 @@ enableKanbanView={true}
 kanbanStatuses= {Object.entries(pending_status).map(([key, label]) => ({ key, label }))}
 onStatusChange={handleChangeStatus}
 onRowClick={handleEdit}
+loggedInUserId={loggedInUserId}
         />
       </div>
       <Modal

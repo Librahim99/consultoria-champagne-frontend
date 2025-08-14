@@ -494,11 +494,11 @@
 
 .kanbanContainer {
   display: flex;
-  overflow-x: auto;
+  overflow-x: hidden; /* Sin scroll horizontal */
   padding: 0.5rem;
   gap: 1rem;
   height: 100%;
-  flex-wrap: nowrap; /* Por defecto no wrap, pero en media query lo cambiamos */
+  justify-content: space-between; /* Todas columnas mismo espacio */
 }
 
 .kanbanColumn {
@@ -508,14 +508,15 @@
   box-shadow: 0 2px 8px var(--shadow-color);
   display: flex;
   flex-direction: column;
-  min-width: 250px;
-  transition: width 0.3s ease, min-width 0.3s ease;
+  flex: 1; /* Todas columnas mismo tamaño */
+  min-width: 0; /* Evita overflow */
+  transition: none; /* Sin transición horizontal */
   overflow: hidden;
 }
 
 .emptyColumn {
-  min-width: auto;
-  width: auto;
+  /* No minimizar, mantener visible con mismo tamaño */
+  flex: 1;
 }
 
 .kanbanColumnHeader {
@@ -535,15 +536,17 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  overflow-y: auto;
+  overflow-y: auto; /* Scroll interno vertical */
   flex-grow: 1;
+  min-height: 60px; /* Espacio mínimo para 1 card vacía (ajustá según altura de card) */
+  height: auto; /* Relativo a cantidad de cards */
 }
 
 .kanbanCard {
   background-color: var(--hover-bg);
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  padding: 0.5rem;
+  /* padding: 0.5rem; */
   cursor: pointer;
   transition: transform 0.2s ease, height 0.3s ease;
   height: auto;
@@ -562,13 +565,19 @@
 .cardTitle {
   font-weight: 600;
   font-size: 0.9rem;
-  margin-bottom: 0.3rem;
+  /* margin-bottom: 0.3rem; */
+  background-color: var(--button-background); /* Fondo como headers de columnas */
+  color: var(--ag-header-foreground);
+  padding: 0.3rem;
+  border-radius: 4px 4px 0 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .cardDetail {
   font-size: 0.85rem;
   color: var(--secondary-text-color);
   white-space: pre-wrap;
+  margin: 0 0.2rem;
   word-break: break-word;
 }
 
@@ -582,4 +591,9 @@
   .emptyColumn {
     display: none; /* Ocultar columnas vacías en móviles para ahorrar espacio */
   }
+}
+
+.highlightedCard {
+  border: 2px solid #ffd700; /* Borde amarillo para highlight en búsqueda */
+  background-color: rgba(255, 215, 0, 0.1); /* Fondo sutil para ahorrar visual */
 }
