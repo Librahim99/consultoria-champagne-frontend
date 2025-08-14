@@ -48,6 +48,7 @@ const PendingTask: React.FC = () => {
 const [dateFilter, setDateFilter] = useState('month');
 const [statusFilter, setStatusFilter] = useState('pending_inprogress');
 const [isLoading, setIsLoading] = useState(false);
+const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
 
   useEffect(() => {
   const token = localStorage.getItem('token');
@@ -82,6 +83,14 @@ const [isLoading, setIsLoading] = useState(false);
   };
 
   fetchData();
+}, []);
+
+ useEffect(() => {
+    const viewModeKey = `viewMode_pendingTable`;
+    const savedViewMode = localStorage.getItem(viewModeKey) as 'table' | 'kanban' | null;
+    if (savedViewMode) {
+      setViewMode(savedViewMode);
+    }
 }, []);
 
   const handleEdit = useCallback((pending: Pending) => {
@@ -245,6 +254,13 @@ const [isLoading, setIsLoading] = useState(false);
   }
 }, []);
 
+const toggleViewMode = () => {
+  const newMode = viewMode === 'table' ? 'kanban' : 'table';
+  setViewMode(newMode);
+  const viewModeKey = `viewMode_pendingTable`;
+  localStorage.setItem(viewModeKey, newMode);
+};
+
   const handleSendWhatsappToUser = useCallback(async (pending: Pending, user: User) => {
   if (!window.confirm(`¿Enviar resumen a ${user.name} vía WhatsApp?`)) return;
   try {
@@ -276,7 +292,7 @@ const [isLoading, setIsLoading] = useState(false);
     }
   }, [navigate]);
 
-  const handleChangeStatus = useCallback(async (id: string, status: string) => {
+  const handleChangeStatus = useCallback(async (id: string, status: string, table: boolean) => {
     
     if(!status || !id){
       toast.error('No se actualizó el estado: Opción no valida')
@@ -288,7 +304,7 @@ const [isLoading, setIsLoading] = useState(false);
       navigate('/')
       return
     }
-    status = mapStatusToKey(status)
+    if(table) status = mapStatusToKey(status)
       const res = await axios.patch(`${process.env.REACT_APP_API_URL}/api/pending/${id}/status`,{status}, { headers: { Authorization: `Bearer ${token}` } })
       setPendings(pendings.map(p => (p._id === res.data._id ? res.data : p)))
       toast.success('Estado actualizado');
@@ -374,7 +390,7 @@ const [isLoading, setIsLoading] = useState(false);
       hide: loggedInUserId !== row.userId && loggedInUserId !== row.assignedUserId,
       children: Object.entries(pending_status).map((status) => ({
         label: `${status[1]}`,
-        onClick: () => handleChangeStatus(row._id, status[1])
+        onClick: () => handleChangeStatus(row._id, status[1], true)
       }))
     },
     {
@@ -485,7 +501,9 @@ const handleFilterChange = (type: 'user' | 'date' | 'status', value: string) => 
     <div className={styles.container}>
       <h1 className={styles.title}> 📚 Tareas Pendientes 📚</h1>
       {error && <p className={styles.error}>{error}</p>}
-      <div onContextMenu={(e) => getRowContextMenu2(e)} style={{ height: 'auto', width: '100%' }}>
+      <div 
+      onContextMenu={(e) => getRowContextMenu2(e)}
+       style={{ height: 'auto', width: '100%' }}>
         <CustomTable
           rowData={pendings}
           columnDefs={[
@@ -550,6 +568,10 @@ const handleFilterChange = (type: 'user' | 'date' | 'status', value: string) => 
 enableDateFilter={true}
 enableStatusFilter={true}
 onFilterChange={handleFilterChange}
+enableKanbanView={true}
+kanbanStatuses= {Object.entries(pending_status).map(([key, label]) => ({ key, label }))}
+onStatusChange={handleChangeStatus}
+onRowClick={handleEdit}
         />
       </div>
       <Modal

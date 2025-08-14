@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useContext, useEffect, useRef } from 'react';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { FaSortUp, FaSortDown, FaSort, FaCog, FaUndo, FaFilter, FaSync } from 'react-icons/fa';
+import { FaSortUp, FaSortDown, FaSort, FaCog, FaUndo, FaFilter, FaSync, FaTrello, FaThList } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import styles from './CustomTable.module.css';
 import { useContextMenu } from '../../contexts/UseContextMenu';
@@ -40,6 +40,15 @@ interface CustomTableProps {
 enableDateFilter?: boolean;
 enableStatusFilter?: boolean;
 onFilterChange?: (filterType: 'user' | 'date' | 'status', value: string) => void;
+enableKanbanView?: boolean;
+  kanbanStatuses?: KanbanStatus[];
+  onStatusChange?: (id: string, newStatus: string, table: boolean) => void;
+  onRowClick?: (row: any) => void;
+}
+
+interface KanbanStatus {
+  key: string;
+  label: string;
 }
 
 const CustomTable: React.FC<CustomTableProps> = ({
@@ -57,7 +66,11 @@ const CustomTable: React.FC<CustomTableProps> = ({
   enableUserFilter,
   enableDateFilter,
   enableStatusFilter,
-  onFilterChange
+  onFilterChange,
+  enableKanbanView,
+  kanbanStatuses,
+  onStatusChange,
+  onRowClick
 }) => {
   const { showMenu } = useContextMenu();
   const { theme } = useContext(ThemeContext);
@@ -79,6 +92,8 @@ const CustomTable: React.FC<CustomTableProps> = ({
   const [userFilter, setUserFilter] = useState('me');
 const [dateFilter, setDateFilter] = useState('month');
 const [statusFilter, setStatusFilter] = useState('pending_inprogress');
+const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
+const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 
   const getDefaultColumns = useCallback(() => ({
     visible: columnDefs.filter(col => !col.hiddenByDefault).map(col => col.field),
@@ -150,6 +165,16 @@ const [statusFilter, setStatusFilter] = useState('pending_inprogress');
     }
     isInitialLoad.current = false;
   }, [customizable, storageKey, getDefaultColumns]);
+
+  useEffect(() => {
+  if (enableKanbanView) {
+    const viewModeKey = `viewMode_${storageKey}`;
+    const savedViewMode = localStorage.getItem(viewModeKey) as 'table' | 'kanban' | null;
+    if (savedViewMode) {
+      setViewMode(savedViewMode);
+    }
+  }
+}, [enableKanbanView, storageKey]);
 
   const saveConfig = useCallback(() => {
     if (customizable && !isInitialLoad.current && hasUserChangedConfig.current) {
@@ -373,6 +398,119 @@ const [statusFilter, setStatusFilter] = useState('pending_inprogress');
   onFilterChange?.(type, value);
 }, [onFilterChange]);
 
+const toggleViewMode = () => {
+  const newMode = viewMode === 'table' ? 'kanban' : 'table';
+  setViewMode(newMode);
+  const viewModeKey = `viewMode_${storageKey}`;
+  localStorage.setItem(viewModeKey, newMode);
+};
+
+const getTableContextMenu = (e: React.MouseEvent) => {
+  e.preventDefault();
+  const items: MenuItem[] = [];
+  if (enableKanbanView) {
+    items.push({
+      label: `Cambiar a Vista ${viewMode === 'table' ? 'Kanban' : 'Tabla'}`,
+      onClick: toggleViewMode,
+    });
+  }
+  showMenu(e.clientX, e.clientY, items);
+};
+
+
+// Kanban view logic
+const groupedData = useMemo(() => {
+  if (viewMode !== 'kanban') return {};
+  const groups: { [key: string]: any[] } = {};
+  kanbanStatuses.forEach(status => {
+    groups[status.key] = [];
+  });
+  rowData.forEach(item => {
+    const statusKey = item.status; // Asumiendo que status es la clave del enum
+    if (groups[statusKey]) {
+      groups[statusKey].push(item);
+    }
+  });
+  return groups;
+}, [viewMode, rowData, kanbanStatuses]);
+
+const handleDragStart = (e: React.DragEvent, id: string) => {
+  e.dataTransfer.setData('pendingId', id);
+};
+
+const handleDragOver = (e: React.DragEvent) => {
+  e.preventDefault();
+};
+
+const handleDrop = (e: React.DragEvent, newStatus: string) => {
+  e.preventDefault();
+  const id = e.dataTransfer.getData('pendingId');
+  if (onStatusChange) {
+    onStatusChange(id, newStatus, false);
+  }
+};
+
+const handleCardClick = (e: React.MouseEvent, row: any) => {
+  if (e.shiftKey) {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(row._id)) {
+        newSet.delete(row._id);
+      } else {
+        newSet.add(row._id);
+      }
+      return newSet;
+    });
+  } else if (onRowClick) {
+    onRowClick(row);
+  }
+};
+
+const getFormatter = (field: string) => columnDefs.find(col => col.field === field)?.valueFormatter;
+
+const renderKanbanView = () => (
+  <div className={styles.kanbanContainer}>
+    {kanbanStatuses.map(status => {
+      const items = groupedData[status.key] || [];
+      const isEmpty = items.length === 0;
+      return (
+        <div
+          key={status.key}
+          className={`${styles.kanbanColumn} ${isEmpty ? styles.emptyColumn : ''}`}
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, status.key)}
+        >
+          <div className={styles.kanbanColumnHeader}>{status.label} ({items.length})</div>
+          <div className={styles.kanbanColumnBody}>
+            {items.map(row => {
+              const isExpanded = expandedCards.has(row._id);
+              const clientFormatter = getFormatter('clientId');
+              const detailFormatter = getFormatter('detail');
+              const clientName = clientFormatter ? clientFormatter(row.clientId) : row.clientId;
+              const detail = detailFormatter ? detailFormatter(row.detail) : row.detail;
+              const truncatedDetail = detail.length > 50 ? `${detail.substring(0, 50)}...` : detail;
+              return (
+                <div
+                  key={row._id}
+                  className={`${styles.kanbanCard} ${isExpanded ? styles.expandedCard : ''}`}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, row._id)}
+                  onClick={(e) => handleCardClick(e, row)}
+                >
+                  <div className={styles.cardTitle}>
+                    {clientName} - {truncatedDetail}
+                  </div>
+                  {isExpanded && <div className={styles.cardDetail}>{detail}</div>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    })}
+  </div>
+);
+
   const renderConfigMenu = () => (
     <div className={styles.configMenu}>
       <h3>Personalizar Columnas</h3>
@@ -405,7 +543,7 @@ const [statusFilter, setStatusFilter] = useState('pending_inprogress');
   );
 
   return (
-    <div className={`${styles.tableContainer} ${theme === 'dark' ? styles.dark : styles.light} ${className}`}>
+    <div onContextMenu={(e) => getTableContextMenu(e)} className={`${styles.tableContainer}  ${theme === 'dark' ? styles.dark : styles.light} ${className}`}>
       <div className={styles.controls}>
         <div className={styles.filtersContainer}> 
         {searchable && (
@@ -442,6 +580,14 @@ const [statusFilter, setStatusFilter] = useState('pending_inprogress');
  
         </div>
         <div className={styles.buttonsContainer}>
+          {customizable && viewMode === 'table' && (
+            <button className={styles.configButton} onClick={() => setShowConfigMenu(!showConfigMenu)}>
+              <FaCog /> Personalizar
+            </button>
+          )}
+          <button onClick={() => toggleViewMode()} className={styles.refreshButton}>
+            {viewMode === 'table' ?  <FaTrello/> : <FaThList/>}
+          </button>
           <button
             className={styles.refreshButton}
             onClick={resetFilters}
@@ -449,15 +595,11 @@ const [statusFilter, setStatusFilter] = useState('pending_inprogress');
           >
             <FaSync />
           </button>
-          {customizable && (
-            <button className={styles.configButton} onClick={() => setShowConfigMenu(!showConfigMenu)}>
-              <FaCog /> Personalizar
-            </button>
-          )}
         </div>
       </div>
       {showConfigMenu && renderConfigMenu()}
       <div className={styles.tableWrapper}>
+        {viewMode === 'table' ? (
         <table className={styles.table}>
           <thead>
             <tr>
@@ -564,8 +706,11 @@ const [statusFilter, setStatusFilter] = useState('pending_inprogress');
             )}
           </tbody>
         </table>
+        ): (
+  renderKanbanView()
+)}
       </div>
-      {pagination && totalPages > 0 && (
+      {viewMode === 'table' && pagination  && totalPages > 0 && (
         <div className={styles.pagination}>
           <button
             onClick={() => setCurrentPage(1)}

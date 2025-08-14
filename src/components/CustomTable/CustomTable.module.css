@@ -198,8 +198,10 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.85rem;
+  margin-left: 10px;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
+
 
 .refreshButton:hover {
   background-color: var(--button-hover);
@@ -488,4 +490,96 @@
 
 .tooltipValue {
   font-size: 13px;
+}
+
+.kanbanContainer {
+  display: flex;
+  overflow-x: auto;
+  padding: 0.5rem;
+  gap: 1rem;
+  height: 100%;
+  flex-wrap: nowrap; /* Por defecto no wrap, pero en media query lo cambiamos */
+}
+
+.kanbanColumn {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+  min-width: 250px;
+  transition: width 0.3s ease, min-width 0.3s ease;
+  overflow: hidden;
+}
+
+.emptyColumn {
+  min-width: auto;
+  width: auto;
+}
+
+.kanbanColumnHeader {
+  background-color: var(--button-background);
+  color: var(--ag-header-foreground);
+  padding: 0.5rem;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.kanbanColumnBody {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.kanbanCard {
+  background-color: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, height 0.3s ease;
+  height: auto;
+  overflow: hidden;
+}
+
+.kanbanCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.expandedCard {
+  height: auto;
+}
+
+.cardTitle {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+.cardDetail {
+  font-size: 0.85rem;
+  color: var(--secondary-text-color);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .kanbanContainer {
+    flex-wrap: wrap; /* En móviles, apilar columnas si es necesario */
+  }
+  .kanbanColumn {
+    min-width: 100%;
+  }
+  .emptyColumn {
+    display: none; /* Ocultar columnas vacías en móviles para ahorrar espacio */
+  }
 }
