@@ -45,6 +45,12 @@ enableKanbanView?: boolean;
   onStatusChange?: (id: string, newStatus: string, table: boolean) => void;
   onRowClick?: (row: any) => void;
   loggedInUserId?: string
+  userPictures?: UserPicture[]
+}
+
+interface UserPicture {
+  userId: string;
+  picture: string
 }
 
 interface KanbanStatus {
@@ -72,7 +78,8 @@ const CustomTable: React.FC<CustomTableProps> = ({
   kanbanStatuses,
   onStatusChange,
   onRowClick,
-  loggedInUserId
+  loggedInUserId,
+  userPictures
 }) => {
   const { showMenu } = useContextMenu();
   const { theme } = useContext(ThemeContext);
@@ -226,6 +233,17 @@ const toggleAllCards = () => {
     };
   }, []);
 
+  const getPriorityClass = (priority: number) => {
+  switch (priority) {
+    case 1: return styles.priority1;  // Rojo
+    case 2: return styles.priority2;  // Naranja
+    case 3: return styles.priority3;  // Amarillo
+    case 4: return styles.priority4;  // Gris
+    case 5: return styles.priority5;  // Neutro
+    default: return '';
+  }
+};
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -244,6 +262,9 @@ const toggleAllCards = () => {
   }, []);
 
   const processedColumns = useMemo(() => {
+
+
+    
     return columnOrder
       .filter(field => visibleColumns.includes(field))
       .map(field => columnDefs.find(col => col.field === field)!)
@@ -253,7 +274,17 @@ const toggleAllCards = () => {
   const processedData = useMemo(() => {
     let data = [...rowData];
 
+data.sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority - b.priority;  // Asc por priority
+    if (sortConfig) {
+      const direction = sortConfig.direction === 'asc' ? 1 : -1;
+      return (a[sortConfig.key] > b[sortConfig.key] ? direction : -direction);
+    }
+    return 0;
+  });
+
     if (globalSearch) {
+      console.log(data)
       const searchLower = globalSearch.toLowerCase();
       data = data.filter((row) =>
         processedColumns.some((col) => {
@@ -264,6 +295,9 @@ const toggleAllCards = () => {
     }
 
     Object.entries(filters).forEach(([key, value]) => {
+
+ 
+
       if (value) {
         const lowerValue = value.toLowerCase();
         const col = columnDefs.find(c => c.field === key);
@@ -274,6 +308,8 @@ const toggleAllCards = () => {
       }
     });
 
+    
+
     if (sortConfig) {
       data.sort((a, b) => {
         const aValue = a[sortConfig.key] ?? '';
@@ -283,6 +319,8 @@ const toggleAllCards = () => {
         return 0;
       });
     }
+
+   
 
     return data;
   }, [rowData, globalSearch, filters, sortConfig, columnDefs, processedColumns]);
@@ -440,14 +478,14 @@ const groupedData = useMemo(() => {
   kanbanStatuses.forEach(status => {
     groups[status.key] = [];
   });
-  rowData.forEach(item => {
+  processedData.forEach(item => {
     const statusKey = item.status; // Asumiendo que status es la clave del enum
     if (groups[statusKey]) {
       groups[statusKey].push(item);
     }
   });
   return groups;
-}, [viewMode, rowData, kanbanStatuses]);
+}, [viewMode, processedData, kanbanStatuses]);
 
 const handleDragStart = (e: React.DragEvent, row: any) => {
   if (loggedInUserId && row.userId !== loggedInUserId && row.assignedUserId !== loggedInUserId) {
@@ -492,6 +530,11 @@ const handleCardClick = (e: React.MouseEvent, row: any) => {
   }
 };
 
+const getUserPicture = (userid: string) => {
+  const userPicture = userPictures.find((a) => a.userId === userid)
+  return userPicture ? userPicture.picture : null
+}
+
 const debouncedSearch = useRef<NodeJS.Timeout | null>(null);
 
 const handleGlobalSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -525,21 +568,40 @@ const renderKanbanView = () => (
   const isExpanded = expandedCards.has(row._id);
   const clientFormatter = getFormatter('clientId');
   const detailFormatter = getFormatter('detail');
+  const userPicture = getUserPicture(row.userId)
+  const assignedPicture = getUserPicture(row.assignedUserId)
   const clientName = clientFormatter ? clientFormatter(row.clientId) : row.clientId;
   const detail = detailFormatter ? detailFormatter(row.detail) : row.detail;
   const observation = row.observation || ''; // Asumiendo field 'observation' en row
-  const titleText = `${clientName} - ${detail}`;
-  const truncatedTitle = titleText.length > 40 ? `${titleText.substring(0, 40)}...` : titleText;
+  const titleTextClient = clientName.split(' ').slice(1).join(' ')
+  console.log(titleTextClient)
+  const titleTextDetail = detail
+  const truncatedTitleClient = titleTextClient.length > 19 ? `${titleTextClient.substring(0, 19)}` : titleTextClient;
+  const truncatedTitleDetail = titleTextDetail;
   return (
     <div
       key={row._id}
-      className={`${styles.kanbanCard} ${isExpanded ? styles.expandedCard : ''} ${globalSearch && String(clientFormatter(row.clientId) + row.detail).toLowerCase().includes(globalSearch.toLowerCase()) ? styles.highlightedCard : ''}`}
+      className={`${styles.kanbanCard} ${isExpanded ? styles.expandedCard : ''}`}
       draggable={loggedInUserId && (row.userId === loggedInUserId || row.assignedUserId === loggedInUserId )}
       onDragStart={(e) => handleDragStart(e, row)}
       onClick={(e) => handleCardClick(e, row)}
     >
-      <div className={styles.cardTitle}>
-        {truncatedTitle}
+      <div className={`${styles.cardTitle} ${getPriorityClass(row.priority)}`}>
+        <div className={styles.cardTitleText}>
+          <div className={styles.titleTextClientAndPicture}>
+            <div className={styles.titleTextClient}>
+        <span>
+          {truncatedTitleClient}</span>
+            </div>
+        <div className={styles.userPictureContainer}>
+        <img className={styles.userPicture} src={userPicture} alt="user" />
+        {assignedPicture && (<img className={styles.assignedPicture} src={assignedPicture} alt="user" />)}
+        </div>
+          </div>
+        {truncatedTitleDetail}
+        
+        </div>
+        
       </div>
       {isExpanded && (
         <div className={styles.cardDetail}>
@@ -639,9 +701,9 @@ const renderKanbanView = () => (
       {allExpanded ? <FaCompress /> : <FaExpand />}
     </button>
   )}
-          <button onClick={() => toggleViewMode()} className={styles.refreshButton}>
+          {enableKanbanView && <button onClick={() => toggleViewMode()} className={styles.refreshButton}>
             {viewMode === 'table' ?  <FaTrello/> : <FaThList/>}
-          </button>
+          </button>}
           <button
             className={styles.refreshButton}
             onClick={resetFilters}

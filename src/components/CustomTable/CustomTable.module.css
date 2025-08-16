@@ -30,7 +30,6 @@
   padding: 0 15px;
   border-radius: 6px;
   width: 98%;
-  background: linear-gradient(to right, transparent 0%, var(--border-color) 0%) repeat-x;
   background-size: 150px 1px;
   background-position: 0 bottom;
   position: relative;
@@ -43,7 +42,6 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: repeating-linear-gradient(to right, transparent, transparent 149px, var(--border-color) 149px, var(--border-color) 150px);
   pointer-events: none;
   opacity: 0.2;
   z-index: 0;
@@ -563,14 +561,51 @@
 }
 
 .cardTitle {
+  height: 60px;
   font-weight: 600;
   font-size: 0.9rem;
+  display: flex;
+  
   /* margin-bottom: 0.3rem; */
   background-color: var(--button-background); /* Fondo como headers de columnas */
   color: var(--ag-header-foreground);
   padding: 0.3rem;
   border-radius: 4px 4px 0 0;
   border-bottom: 1px solid var(--border-color);
+}
+
+.titleTextClientAndPicture{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.titleTextClient{
+  display: flex;
+  max-height: 20px;
+  overflow: hidden;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  min-width: 100%;
+}
+
+
+.cardTitle:hover .titleTextClient {
+  display: flex;
+  flex-direction: row;
+  /* max-width: 75%; */
+  overflow: hidden;
+  /* justify-content: left; */
+}
+
+.cardTitle:hover .titleTextClient span{
+/* max-width: 75%; */
+overflow: hidden;
+}
+
+.cardTitle:hover .userPictureContainer {
+  display: flex;
 }
 
 .cardDetail {
@@ -597,3 +632,54 @@
   border: 2px solid #ffd700; /* Borde amarillo para highlight en búsqueda */
   background-color: rgba(255, 215, 0, 0.1); /* Fondo sutil para ahorrar visual */
 }
+
+
+.priority1 {
+  background-color: #c63637 !important; /* Rojo para URGENTE E IMPORTANTE */
+  color: #fff;
+}
+.priority2 {
+  background-color: #ff6961 !important; /* Naranja para URGENTE */
+  color: #fff;
+}
+.priority3 {
+  background-color: #ffbfb0 !important; /* Amarillo para IMPORTANTE */
+  color: #000;
+}
+.priority4 {
+  background-color: #42ab49 !important; /* Gris para NO URGENTE NI IMPORTANTE */
+  color: #fff;
+}
+.priority5 {
+  background-color: #6e6b6b !important; /* Neutro para SIN PRIORIDAD */
+  color: var(--ag-header-foreground);
+}
+
+.cardTitleText{
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+}
+
+.userPicture{
+  position: absolute;
+  max-width: 20px;
+  max-height: 20px;
+  border-radius: 50%;
+  right: 0px;
+}
+
+.userPictureContainer{
+  position: relative;
+  display: none;
+}
+
+.assignedPicture{
+  position: absolute;
+  max-width: 20px;
+  max-height: 20px;
+  border-radius: 50%;
+  right: 7px;
+}
+

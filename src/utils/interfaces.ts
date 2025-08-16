@@ -99,6 +99,7 @@ export interface Pending {
   assignedUserId: string | null;
   completionDate: string | null;
   sequenceNumber?: number
+  priority: number;
 }
 
 

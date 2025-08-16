@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { pending_status, ranks } from '../../utils/enums';
+import { pending_status, priority, ranks } from '../../utils/enums';
 import { type Pending, Client, User, DecodedToken, Assistance } from '../../utils/interfaces';
 import styles from './Pending.module.css';
 import CustomTable from '../CustomTable/CustomTable';
 import { useContextMenu } from '../../contexts/UseContextMenu';
 import { toast } from 'react-toastify';
-import { FaEdit, FaTrash, FaWhatsapp, FaPlus, FaEye, FaFileCsv, FaCheckCircle, FaPeopleCarry, FaPeopleArrows } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaWhatsapp, FaPlus, FaEye, FaFileCsv, FaCheckCircle, FaPeopleArrows } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../Modal/Modal';
 import styles2 from '../CustomContextMenu/CustomContextMenu.module.css';
@@ -36,6 +36,7 @@ const PendingTask: React.FC = () => {
     userId: '',
     assignedUserId: null,
     completionDate: null,
+    priority: 5
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [userRank, setUserRank] = useState<string>('');
@@ -114,6 +115,7 @@ const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
     incidentId: pending.incidentId || null,
     assignedUserId: pending.assignedUserId || null,
     completionDate: pending.completionDate || null,
+    priority: pending.priority || 5
   });
   setEditingPending(pending);
   setShowAddForm(true);
@@ -163,6 +165,8 @@ const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
       incidentId: res.data.incidentId || null,
       assignedUserId: res.data.assignedUserId || null,
       completionDate: res.data.completionDate || null,
+      sequenceNumber: res.data.secuenceNumber,
+      priority: res.data.priority
     };
     setPendings(pendings.map(p => (p._id === editingPending._id ? updatedPending : p)));
     setEditingPending(null);
@@ -183,6 +187,8 @@ const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
       incidentId: res.data.incidentId || null,
       assignedUserId: res.data.assignedUserId || null,
       completionDate: res.data.completionDate || null,
+      sequenceNumber: res.data.sequenceNumber,
+      priority: res.data.priority
     };
     setPendings([...pendings, newPendingData]);
     toast.success('Tarea pendiente creada');
@@ -199,6 +205,7 @@ const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
     userId: loggedInUserId,
     assignedUserId: null,
     completionDate: null,
+    priority: 5
   });
 } catch (err: any) {
   setError(err.response?.data?.message || 'Error al guardar pendiente');
@@ -223,6 +230,16 @@ const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
     }
   }, [pendings, userRank]);
 
+const getUserPictures = () => {
+  const data = users.map((u) => {
+    return {
+      userId: u._id,
+      picture: u.picture
+    }
+  })
+  return data
+}
+
   const handleNewPending = useCallback(() => {
     if (userRank === ranks.GUEST) {
       setError('No tienes permisos para crear');
@@ -240,6 +257,7 @@ const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
       userId: loggedInUserId,
       assignedUserId: null,
       completionDate: null,
+      priority: 5
     });
     setShowAddForm(true);
   }, [userRank, loggedInUserId]);
@@ -311,6 +329,27 @@ const toggleViewMode = () => {
     } catch(err){
       console.log('Error al actualizar estado', err)
       toast.success('Error al actualizar estado');
+    }
+  },[pendings, navigate])
+
+  const handleChangePriority = useCallback(async (id: string, priority: string) => {
+    
+    if(!priority || !id){
+      toast.error('No se actualizó la prioridad: Opción no valida')
+      return  
+    }
+    try {
+      const token = localStorage.getItem('token');
+      if(!token){
+      navigate('/')
+      return
+    }
+      const res = await axios.patch(`${process.env.REACT_APP_API_URL}/api/pending/${id}/priority/${priority}`, { headers: { Authorization: `Bearer ${token}` } })
+      setPendings(pendings.map(p => (p._id === res.data._id ? res.data : p)))
+      toast.success('Prioridad actualizada');
+    } catch(err){
+      console.log('Error al actualizar prioridad', err)
+      toast.success('Error al actualizar prioridad');
     }
   },[pendings, navigate])
 
@@ -405,6 +444,16 @@ const toggleViewMode = () => {
 })),
     },
     {
+      label: ' Cambiar Prioridad',
+      icon: <FaEdit/>,
+      onClick: () => {},
+      hide: loggedInUserId !== row.userId && loggedInUserId !== row.assignedUserId,
+      children: Object.entries(priority).map((pr) => ({
+        label: `${pr[1]}`,
+        onClick: () => handleChangePriority(row._id, pr[0])
+      }))
+    },
+    {
       label: ` Enviar a ${getUserName(row.userId).split(' ')[0]}`,
       icon: <FaWhatsapp />,
       onClick: () => handleSendWhatsapp(row),
@@ -447,6 +496,11 @@ const toggleViewMode = () => {
     },
   ], [userRank, users, handleNewPending, handleEdit, handleSendWhatsapp, handleSendWhatsappToUser, handleViewIncidence, handleDelete]);
 
+const getClientNameAndCommon = (clientId: string | null) => {
+    const client = clients.find(c => c._id === clientId);
+    return client ? `[${client.common}] ${client.name}`  : 'Desconocido';
+  };
+
   const getClientName = (clientId: string | null) => {
     const client = clients.find(c => c._id === clientId);
     return client ? client.name : 'Desconocido';
@@ -454,7 +508,7 @@ const toggleViewMode = () => {
 
   const getUserName = (userId: string | null) => {
     const user = users.find(u => u._id === userId);
-    return user ? user.name : 'Desconocido';
+    return user ? user.name : '';
   };
 
   const getUserNumber = (userId: string | null) => {
@@ -512,7 +566,7 @@ const handleFilterChange = (type: 'user' | 'date' | 'status', value: string) => 
               headerName: 'Cliente',
               sortable: true,
               filterable: true,
-              valueFormatter: (value) => getClientName(value),
+              valueFormatter: (value) => getClientNameAndCommon(value),
             },
             {
               field: 'userId',
@@ -556,7 +610,19 @@ const handleFilterChange = (type: 'user' | 'date' | 'status', value: string) => 
               headerName: 'Incidencia',
               sortable: true,
               filterable: true
-            }
+            },
+            {
+  field: 'priority',
+  headerName: 'Prioridad',
+  sortable: true,
+  filterable: true,
+  valueFormatter: (value) => {
+    const levels = Object.entries(priority);
+    console.log(levels)
+    return levels[value - 1][1] || 'SIN PRIORIDAD';
+  },
+}
+
           ]}
           pagination={true}
           defaultPageSize={15}
@@ -573,6 +639,7 @@ kanbanStatuses= {Object.entries(pending_status).map(([key, label]) => ({ key, la
 onStatusChange={handleChangeStatus}
 onRowClick={handleEdit}
 loggedInUserId={loggedInUserId}
+userPictures={getUserPictures()}
         />
       </div>
       <Modal
