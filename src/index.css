@@ -60,6 +60,7 @@ html {
   scrollbar-color: var(--button-background) var(--transparency); /* Color del pulgar y pista */
 }
 
+
 body {
   margin: 0;
   padding: 0;

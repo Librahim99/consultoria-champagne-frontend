@@ -37,7 +37,8 @@ const PendingTask: React.FC = () => {
     userId: '',
     assignedUserId: null,
     completionDate: null,
-    priority: 5
+    priority: 5,
+    sequenceNumber: pendings.length + 1
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [userRank, setUserRank] = useState<string>('');
@@ -118,7 +119,8 @@ const [showDetailModal, setShowDetailModal] = useState(false);
     incidentId: pending.incidentId || null,
     assignedUserId: pending.assignedUserId || null,
     completionDate: pending.completionDate || null,
-    priority: pending.priority || 5
+    priority: pending.priority || 5,
+    sequenceNumber: pendings.length + 1
   });
   
   setEditingPending(pending);
@@ -219,7 +221,8 @@ const handleRowClick = (pending: Pending) => {
     userId: loggedInUserId,
     assignedUserId: null,
     completionDate: null,
-    priority: 5
+    priority: 5,
+    sequenceNumber: pendings.length + 1
   });
 } catch (err: any) {
   setError(err.response?.data?.message || 'Error al guardar pendiente');
@@ -271,7 +274,8 @@ const getUserPictures = () => {
       userId: loggedInUserId,
       assignedUserId: null,
       completionDate: null,
-      priority: 5
+      priority: 5,
+      sequenceNumber: pendings.length + 1
     });
     setShowAddForm(true);
   }, [userRank, loggedInUserId]);
@@ -440,7 +444,7 @@ const toggleViewMode = () => {
       label: ' Cambiar Estado',
       icon: <FaCheckCircle />,
       onClick: () => {},
-      hide: loggedInUserId !== row.userId && loggedInUserId !== row.assignedUserId,
+      hide: (loggedInUserId !== row.userId && loggedInUserId !== row.assignedUserId) && userRank !== ranks.TOTALACCESS,
       children: Object.entries(pending_status).map((status) => ({
         label: `${status[1]}`,
         onClick: () => handleChangeStatus(row._id, status[1], true)
@@ -450,7 +454,7 @@ const toggleViewMode = () => {
       label: ' Asignar',
       icon: <FaPeopleArrows />,
       onClick: () => {},
-      hide: loggedInUserId !== row.userId,
+      hide: loggedInUserId !== row.userId && userRank !== ranks.TOTALACCESS,
       children: users.filter(u => u._id !== row.userId).map((user) => ({
         icon: <img   src={user.picture} alt="profile" className={styles2.userIcon}/>,
   label: ` ${user.name}`,
@@ -461,7 +465,7 @@ const toggleViewMode = () => {
       label: ' Cambiar Prioridad',
       icon: <FaEdit/>,
       onClick: () => {},
-      hide: loggedInUserId !== row.userId && loggedInUserId !== row.assignedUserId,
+      hide: (loggedInUserId !== row.userId && loggedInUserId !== row.assignedUserId) && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF,
       children: Object.entries(priority).map((pr) => ({
         label: `${pr[1]}`,
         onClick: () => handleChangePriority(row._id, pr[0])
@@ -500,7 +504,7 @@ const toggleViewMode = () => {
       label: ' Modificar',
       icon: <FaEdit />,
       onClick: () => handleEdit(row),
-      hide: loggedInUserId !== row.userId 
+      hide: loggedInUserId !== row.userId && userRank !== ranks.TOTALACCESS 
     },
     {
       label: ' Eliminar',
@@ -653,6 +657,7 @@ onStatusChange={handleChangeStatus}
 onRowClick={handleRowClick}
 loggedInUserId={loggedInUserId}
 userPictures={getUserPictures()}
+userRank={userRank}
         />
       </div>
       <Modal
@@ -711,10 +716,12 @@ userPictures={getUserPictures()}
   onClose={() => setShowDetailModal(false)}
   pending={selectedPending!}
   users={users}
+  client={getClientName(selectedPending?.clientId)}
   onUpdate={(updated) => {
     setPendings(pendings.map(p => p._id === updated._id ? updated : p));
   }}
   loggedInUserId={loggedInUserId}
+  userRank={userRank}
 />
     </div>
   );

@@ -4,6 +4,7 @@ import { FaSortUp, FaSortDown, FaSort, FaCog, FaUndo, FaFilter, FaSync, FaTrello
 import { toast } from 'react-toastify';
 import styles from './CustomTable.module.css';
 import { useContextMenu } from '../../contexts/UseContextMenu';
+import { ranks } from '../../utils/enums';
 
 interface Column {
   field: string;
@@ -46,6 +47,7 @@ enableKanbanView?: boolean;
   onRowClick?: (row: any) => void;
   loggedInUserId?: string
   userPictures?: UserPicture[]
+  userRank?: string
 }
 
 interface UserPicture {
@@ -79,7 +81,8 @@ const CustomTable: React.FC<CustomTableProps> = ({
   onStatusChange,
   onRowClick,
   loggedInUserId,
-  userPictures
+  userPictures,
+  userRank
 }) => {
   const { showMenu } = useContextMenu();
   const { theme } = useContext(ThemeContext);
@@ -116,7 +119,6 @@ const toggleAllCards = () => {
   }
   setAllExpanded(!allExpanded); // Toggle estado
 };
-
   const getDefaultColumns = useCallback(() => ({
     visible: columnDefs.filter(col => !col.hiddenByDefault).map(col => col.field),
     order: columnDefs.map(col => col.field),
@@ -487,7 +489,7 @@ const groupedData = useMemo(() => {
 }, [viewMode, processedData, kanbanStatuses]);
 
 const handleDragStart = (e: React.DragEvent, row: any) => {
-  if (loggedInUserId && row.userId !== loggedInUserId && row.assignedUserId !== loggedInUserId) {
+  if ((loggedInUserId && row.userId !== loggedInUserId && row.assignedUserId !== loggedInUserId) && userRank !== ranks.TOTALACCESS) {
     e.preventDefault(); // No permite arrastrar si no es owner
     return;
   }
@@ -522,7 +524,7 @@ const handleCardClick = (e: React.MouseEvent, row: any) => {
       }
       return newSet;
     });
-  } else if (onRowClick && loggedInUserId && row.userId === loggedInUserId || row.assignedUserId === loggedInUserId) {
+  } else if (onRowClick && (loggedInUserId && row.userId === loggedInUserId || row.assignedUserId === loggedInUserId) || userRank === ranks.TOTALACCESS) {
     onRowClick(row);
   } else {
     e.preventDefault()
@@ -580,7 +582,7 @@ const renderKanbanView = () => (
     <div
       key={row._id}
       className={`${styles.kanbanCard} ${isExpanded ? styles.expandedCard : ''}`}
-      draggable={loggedInUserId && (row.userId === loggedInUserId || row.assignedUserId === loggedInUserId )}
+      draggable={loggedInUserId && (row.userId === loggedInUserId || row.assignedUserId === loggedInUserId ) || userRank === ranks.TOTALACCESS}
       onDragStart={(e) => handleDragStart(e, row)}
       onClick={(e) => handleCardClick(e, row)}
     >

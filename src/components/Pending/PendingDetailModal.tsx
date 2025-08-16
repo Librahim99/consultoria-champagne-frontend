@@ -4,8 +4,8 @@ import axios from 'axios';
 import { FaUserPlus, FaTag, FaCalendar, FaCheckSquare, FaPaperclip, FaTrash, FaCommentDots } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import styles from './PendingDetailModal.module.css';
-import { Pending, User } from '../../utils/interfaces';
-import { priority } from '../../utils/enums'; // Asumiendo enums
+import { Client, Pending, User } from '../../utils/interfaces';
+import { priority, ranks } from '../../utils/enums'; // Asumiendo enums
 
 interface PendingDetailModalProps {
   isOpen: boolean;
@@ -14,9 +14,11 @@ interface PendingDetailModalProps {
   users: User[];
   onUpdate: (updatedPending: Pending) => void;
   loggedInUserId: string;
+  client: string;
+  userRank: string;
 }
 
-const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose, pending, users, onUpdate, loggedInUserId }) => {
+const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose, pending, users, onUpdate, loggedInUserId, client, userRank }) => {
   const [localPending, setLocalPending] = useState<Pending>({ ...pending });
   const [newComment, setNewComment] = useState('');
   const [newChecklistItem, setNewChecklistItem] = useState('');
@@ -24,7 +26,6 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
   const modalRef = useRef<HTMLDivElement>(null);
 
   const token = localStorage.getItem('token');
-//   console.log(pending)
 
   useEffect(() => {
     setLocalPending(pending)
@@ -33,7 +34,7 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
   const saveChanges = useCallback(async (field: string, value: any) => {
     setIsSaving(true);
     try {
-      const res = await axios.patch(`${process.env.REACT_APP_API_URL}/api/pendings/${localPending?._id}`, { [field]: value }, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.patch(`${process.env.REACT_APP_API_URL}/api/pending/${localPending?._id}`, { [field]: value }, { headers: { Authorization: `Bearer ${token}` } });
       setLocalPending(res.data);
       onUpdate(res.data);
       toast.success('Cambios guardados');
@@ -48,12 +49,17 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
     if (!newComment) return;
     const updatedComments = [...(localPending?.comments || []), { text: newComment, userId: loggedInUserId, date: new Date() }];
     saveChanges('comments', updatedComments);
-    setNewComment('');
+    setNewComment('')
   };
+
+  const handleDeleteCheck = (index: number) => {
+    const updatedChecklist = localPending?.checklist?.filter((c, i) => i !== index)
+    saveChanges('checklist', updatedChecklist);
+  }
 
   const handleAddChecklistItem = () => {
     if (!newChecklistItem) return;
-    const updatedChecklist = [...(localPending?.checklist || []), { action: newChecklistItem, completed: false }];
+    const updatedChecklist = [...(localPending?.checklist || []), { action: newChecklistItem, completed: false, creationDate: new Date().toString(), createdBy: loggedInUserId }];
     saveChanges('checklist', updatedChecklist);
     setNewChecklistItem('');
   };
@@ -68,8 +74,6 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
 
   const getUserName = (userId: string) => users.find(u => u._id === userId)?.name || 'Desconocido';
   const getUserPicture = (userId: string) => users.find(u => u._id === userId)?.picture || null;
-
-  const getPriorityLabel = (pri: number) => Object.entries(priority)[pri -1]?.[1] || 'SIN PRIORIDAD';
 
   // Memo para optimización
   const checklistMemo = useMemo(() => localPending?.checklist || [], [localPending?.checklist]);
@@ -99,53 +103,43 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
       <div className={styles.modalWrapper} ref={modalRef}>
         <div className={styles.modalContent}>
           <div className={styles.leftColumn}>
-            {/* Título editable */}
-            <input
-              type="text"
-              value={localPending?.detail}
-              onChange={(e) => setLocalPending({ ...localPending, detail: e.target.value })}
-              onBlur={() => saveChanges('detail', localPending?.detail)}
-              className={styles.titleInput}
-              disabled={isSaving}
-            />
-
+            {/* titulo(cliente) */}
+            <h1
+              className={styles.titleClient}
+              >{client}</h1>
             {/* Botones superiores */}
             <div className={styles.buttonBar}>
-              <button title="Añadir miembro"><FaUserPlus /> + Añadir</button>
-              <button title="Añadir fechas"><FaCalendar /> Fechas</button>
-              <button title="Añadir checklist" onClick={() => setNewChecklistItem('Nuevo item')}><FaCheckSquare /> Checklist</button>
-              <button title="Añadir adjunto"><FaPaperclip /> Adjunto</button>
-            </div>
-
-            {/* Miembros */}
-            <div className={styles.section}>
-              <h4>Miembros</h4>
               <div className={styles.members}>
                 {localPending?.userId && <img className={styles.avatar} title={getUserName(localPending?.userId)} src={getUserPicture(localPending?.userId)}/>}
-                {localPending?.assignedUserId && <div className={styles.avatar} title={getUserName(localPending?.assignedUserId)}>{getUserName(localPending?.assignedUserId)[0]}</div>}
-                {!localPending?.assignedUserId ? (<button onClick={() => {/* Lógica assign */}}>+</button>): null}
+                {localPending?.assignedUserId && <img className={styles.avatar} title={getUserName(localPending?.assignedUserId)} src={getUserPicture(localPending?.assignedUserId)} />}
+                {!localPending?.assignedUserId ? (<button title="Asignar Pendiente"><FaUserPlus />Asignar</button>): null}
               </div>
-            </div>
+              <button title="Añadir fechas"><FaCalendar /> Fechas</button>
+              <button disabled={true} title="Añadir adjunto"><FaPaperclip /> Adjunto</button>
 
-            {/* Etiquetas (Prioridad) */}
-            <div className={styles.section}>
-              <h4>Prioridad</h4>
-              <div className={`${styles.tag} ${styles[`priority${localPending?.priority}`]}`}>
-                {getPriorityLabel(localPending?.priority)}
-              </div>
-              <select onChange={(e) => saveChanges('priority', parseInt(e.target.value))}>
+              <select value={(Object.entries(priority)[localPending?.priority - 1] ? Object.entries(priority)[localPending?.priority - 1][0] : 5) || 5} className={`${styles.tag} ${styles[`priority${localPending?.priority}`]}`} onChange={(e) => saveChanges('priority', parseInt(e.target.value))}>
                 {Object.entries(priority).map(([key, val]) => <option  key={key} value={key}>{val}</option>)}
               </select>
             </div>
 
             {/* Descripción */}
             <div className={styles.section}>
-              <h4>Descripción</h4>
+              <h4>Detalle</h4>
+              <textarea
+                value={localPending?.detail || ''}
+                onChange={(e) => setLocalPending({ ...localPending, detail: e.target.value })}
+                onBlur={() => saveChanges('detail', localPending?.detail)}
+                placeholder="Añadir un detalle..."
+              />
+            </div>
+
+            <div className={styles.section}>
+              <h4>Observación</h4>
               <textarea
                 value={localPending?.observation || ''}
                 onChange={(e) => setLocalPending({ ...localPending, observation: e.target.value })}
                 onBlur={() => saveChanges('observation', localPending?.observation)}
-                placeholder="Añadir una descripción más detallada..."
+                placeholder="Añadir una obsrvación más detallada..."
               />
             </div>
 
@@ -157,7 +151,9 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
                 <div key={idx} className={styles.checklistItem}>
                   <input type="checkbox" checked={item.completed} onChange={() => handleToggleChecklist(idx)} />
                   {item.action}
+                  {!item.completed && item.createdBy && item.creationDate && `(Creado por ${getUserName(item.createdBy)} el ${new Date(item.creationDate).toLocaleString()})`}
                   {item.completed && ` (Completado por ${getUserName(item.completedBy)} el ${new Date(item.completionDate).toLocaleString()})`}
+                  { userRank === ranks.TOTALACCESS && <button className={styles.deteleButton} onClick={()=> {handleDeleteCheck(idx)}}><FaTrash/></button>}
                 </div>
               ))}
               <input
@@ -166,17 +162,15 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
                 onChange={(e) => setNewChecklistItem(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddChecklistItem()}
                 placeholder="Añadir item..."
+                className={styles.commentInput}
               />
-            </div>
-
-            {/* Botón eliminar */}
-            <button className={styles.deleteButton} onClick={() => {/* Lógica delete con confirm */}}><FaTrash /> Eliminar</button>
+            </div>    
           </div>
 
           <div className={styles.rightColumn}>
-            {/* Comentarios y Actividad */}
-            <h4>Comentarios y Actividad</h4>
+            <h4>Comentarios</h4>
             <input
+            className={styles.commentInput}
               type="text"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
@@ -185,10 +179,17 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
             />
             <div className={styles.comments}>
               {commentsMemo.map((comm, idx) => (
+                ( comm.userId !== loggedInUserId ? 
                 <div key={idx} className={styles.comment}>
-                  <div className={styles.avatar}>{getUserName(comm.userId)[0]}</div>
+                  <img className={styles.avatar} src={getUserPicture(comm.userId)} />
                   <div>{comm.text} - {new Date(comm.date).toLocaleString()}</div>
+                </div> 
+                : 
+              <div key={idx} className={styles.comment}>
+                  <div>{comm.text} - {new Date(comm.date).toLocaleString()}</div>
+                  <img className={styles.avatar} src={getUserPicture(comm.userId)} />
                 </div>
+              )
               ))}
             </div>
           </div>
