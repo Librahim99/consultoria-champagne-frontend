@@ -13,6 +13,7 @@ import Modal from '../Modal/Modal';
 import styles2 from '../CustomContextMenu/CustomContextMenu.module.css';
 import ImportCSVModal from '../ImportacionCSV/ImportarCSV';
 import Spinner from '../Spinner/Spinner';
+import PendingDetailModal from './PendingDetailModal';
 
 // Función para mapear valores legibles a claves del enum
 const mapStatusToKey = (value: string): keyof typeof pending_status | '' => {
@@ -50,6 +51,8 @@ const [dateFilter, setDateFilter] = useState('month');
 const [statusFilter, setStatusFilter] = useState('pending_inprogress');
 const [isLoading, setIsLoading] = useState(false);
 const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
+const [selectedPending, setSelectedPending] = useState<Pending | null>(null);
+const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
   const token = localStorage.getItem('token');
@@ -117,9 +120,20 @@ const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
     completionDate: pending.completionDate || null,
     priority: pending.priority || 5
   });
+  
   setEditingPending(pending);
   setShowAddForm(true);
 }, [userRank, loggedInUserId]);
+
+const handleRowClick = (pending: Pending) => {
+  if (viewMode === 'kanban') {
+    setSelectedPending(pending);
+    setShowDetailModal(true);
+  } else {
+    setEditingPending(pending);
+    setShowAddForm(true);
+  }
+};
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -618,7 +632,6 @@ const handleFilterChange = (type: 'user' | 'date' | 'status', value: string) => 
   filterable: true,
   valueFormatter: (value) => {
     const levels = Object.entries(priority);
-    console.log(levels)
     return levels[value - 1][1] || 'SIN PRIORIDAD';
   },
 }
@@ -637,7 +650,7 @@ onFilterChange={handleFilterChange}
 enableKanbanView={true}
 kanbanStatuses= {Object.entries(pending_status).map(([key, label]) => ({ key, label }))}
 onStatusChange={handleChangeStatus}
-onRowClick={handleEdit}
+onRowClick={handleRowClick}
 loggedInUserId={loggedInUserId}
 userPictures={getUserPictures()}
         />
@@ -693,6 +706,16 @@ userPictures={getUserPictures()}
   onSuccess={fetchPendings}
 />
 </Modal>
+<PendingDetailModal
+  isOpen={showDetailModal}
+  onClose={() => setShowDetailModal(false)}
+  pending={selectedPending!}
+  users={users}
+  onUpdate={(updated) => {
+    setPendings(pendings.map(p => p._id === updated._id ? updated : p));
+  }}
+  loggedInUserId={loggedInUserId}
+/>
     </div>
   );
 }

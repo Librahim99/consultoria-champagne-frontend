@@ -1,0 +1,245 @@
+/* Estilos para PendingDetailModal: Match Trello con dual-column, compacto sin scroll, maximizando espacio */
+/* Usa vars de index.css para themes, focus en no-scroll con flex */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modalWrapper {
+  background: var(--card-background);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 80vw;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* No scroll en wrapper */
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: row;
+  height: 100%; /* Full height para maximizar espacio */
+  overflow: hidden;
+}
+
+.leftColumn {
+  flex: 7;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  overflow-y: auto; /* Scroll solo si content excede, pero compacto para evitar */
+  scrollbar-width: thin;
+}
+
+.rightColumn {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-left: 1px solid var(--border-color);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.titleInput {
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  outline: none;
+  width: 100%;
+}
+
+.buttonBar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.buttonBar button {
+  background: var(--button-background);
+  color: var(--button-color);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.buttonBar button:hover {
+  background: var(--button-hover);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.section h4 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--secondary-text-color);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.members {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--button-background);
+  color: var(--ag-header-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.tag {
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+}
+
+/* Colores priority como en foto (verde para importante, etc.) */
+.priority0 { background: #eb5a46; color: white; } /* URGENTE E IMPORTANTE - Rojo */
+.priority1 { background: #f2d600; color: #172b4d; } /* URGENTE - Amarillo */
+.priority2 { background: #61bd4f; color: white; } /* IMPORTANTE - Verde */
+.priority4 { background: #b3bac5; color: white; } /* NO URGENTE NI IMPORTANTE - Gris */
+.priority5 { background: #5e6c84; color: white; } /* SIN PRIORIDAD - Azul gris */
+
+.section textarea {
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  min-height: 4rem;
+  resize: vertical;
+  color: var(--text-color);
+}
+
+.section textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+}
+
+.checklistItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.section progress {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border-color);
+}
+
+.section progress::-webkit-progress-value {
+  background: var(--success);
+}
+
+.comments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1; /* Maximiza espacio en sidebar */
+}
+
+.comment {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.section input {
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-color);
+}
+
+.section input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+}
+
+.deleteButton {
+  background: var(--button-background);
+  color: var(--button-color);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: background 0.2s;
+}
+
+.deleteButton:hover {
+  background: var(--button-hover);
+}
+
+/* Responsive: Stack en mobile, full height */
+@media (max-width: 768px) {
+  .modalContent {
+    flex-direction: column;
+  }
+  .leftColumn, .rightColumn {
+    overflow-y: visible;
+    height: auto;
+  }
+  .rightColumn {
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+  }
+}
+
+/* Anim fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modalWrapper {
+  animation: fadeIn 0.3s ease;
+}

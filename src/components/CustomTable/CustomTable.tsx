@@ -284,7 +284,6 @@ data.sort((a, b) => {
   });
 
     if (globalSearch) {
-      console.log(data)
       const searchLower = globalSearch.toLowerCase();
       data = data.filter((row) =>
         processedColumns.some((col) => {
@@ -574,7 +573,6 @@ const renderKanbanView = () => (
   const detail = detailFormatter ? detailFormatter(row.detail) : row.detail;
   const observation = row.observation || ''; // Asumiendo field 'observation' en row
   const titleTextClient = clientName.split(' ').slice(1).join(' ')
-  console.log(titleTextClient)
   const titleTextDetail = detail
   const truncatedTitleClient = titleTextClient.length > 19 ? `${titleTextClient.substring(0, 19)}` : titleTextClient;
   const truncatedTitleDetail = titleTextDetail;
