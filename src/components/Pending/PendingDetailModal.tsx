@@ -151,7 +151,7 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
                 <div key={idx} className={styles.checklistItem}>
                   <input type="checkbox" checked={item.completed} onChange={() => handleToggleChecklist(idx)} />
                   {item.action}
-                  {!item.completed && item.createdBy && item.creationDate && `(Creado por ${getUserName(item.createdBy)} el ${new Date(item.creationDate).toLocaleString()})`}
+                  {!item.completed && item.createdBy && item.creationDate && ` (Creado por ${getUserName(item.createdBy)} el ${new Date(item.creationDate).toLocaleString()})`}
                   {item.completed && ` (Completado por ${getUserName(item.completedBy)} el ${new Date(item.completionDate).toLocaleString()})`}
                   { userRank === ranks.TOTALACCESS && <button className={styles.deteleButton} onClick={()=> {handleDeleteCheck(idx)}}><FaTrash/></button>}
                 </div>
