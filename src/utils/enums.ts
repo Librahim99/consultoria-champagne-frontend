@@ -38,4 +38,12 @@ export const incident_types = {
   DEV_NEW: 'Nueva opción'
 } as const;
 
+export const priority = {
+  1: 'Urgente e importante',
+  2: 'Urgente',
+  3: 'Importante',
+  4: 'Ni urgente ni importante',
+  5: 'Sin prioridad'
+}
+
 export type UserRank = typeof ranks[keyof typeof ranks];
