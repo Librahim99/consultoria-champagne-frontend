@@ -86,6 +86,21 @@ export interface AssistanceMetricsResponse {
   end: string;
 }
 
+export interface Checklist {
+  action: string;
+  completed: boolean;
+  creationDate: string
+  createdBy: string;
+  completionDate: string;
+  completedBy: string
+}
+
+export interface Comment {
+  text: string
+  userId: string
+  date: string
+}
+
 // Interfaz para pendiente
 export interface Pending {
   _id: string;
@@ -98,8 +113,10 @@ export interface Pending {
   userId: string;
   assignedUserId: string | null;
   completionDate: string | null;
-  sequenceNumber?: number
+  sequenceNumber: number
   priority: number;
+  checklist?: Checklist[]
+  comments?: Comment[]
 }
 
 

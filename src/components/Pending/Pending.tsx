@@ -13,6 +13,7 @@ import Modal from '../Modal/Modal';
 import styles2 from '../CustomContextMenu/CustomContextMenu.module.css';
 import ImportCSVModal from '../ImportacionCSV/ImportarCSV';
 import Spinner from '../Spinner/Spinner';
+import PendingDetailModal from './PendingDetailModal';
 
 // Función para mapear valores legibles a claves del enum
 const mapStatusToKey = (value: string): keyof typeof pending_status | '' => {
@@ -36,7 +37,8 @@ const PendingTask: React.FC = () => {
     userId: '',
     assignedUserId: null,
     completionDate: null,
-    priority: 5
+    priority: 5,
+    sequenceNumber: pendings.length + 1
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [userRank, setUserRank] = useState<string>('');
@@ -50,6 +52,8 @@ const [dateFilter, setDateFilter] = useState('month');
 const [statusFilter, setStatusFilter] = useState('pending_inprogress');
 const [isLoading, setIsLoading] = useState(false);
 const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
+const [selectedPending, setSelectedPending] = useState<Pending | null>(null);
+const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
   const token = localStorage.getItem('token');
@@ -115,11 +119,23 @@ const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
     incidentId: pending.incidentId || null,
     assignedUserId: pending.assignedUserId || null,
     completionDate: pending.completionDate || null,
-    priority: pending.priority || 5
+    priority: pending.priority || 5,
+    sequenceNumber: pendings.length + 1
   });
+  
   setEditingPending(pending);
   setShowAddForm(true);
 }, [userRank, loggedInUserId]);
+
+const handleRowClick = (pending: Pending) => {
+  if (viewMode === 'kanban') {
+    setSelectedPending(pending);
+    setShowDetailModal(true);
+  } else {
+    setEditingPending(pending);
+    setShowAddForm(true);
+  }
+};
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -205,7 +221,8 @@ const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
     userId: loggedInUserId,
     assignedUserId: null,
     completionDate: null,
-    priority: 5
+    priority: 5,
+    sequenceNumber: pendings.length + 1
   });
 } catch (err: any) {
   setError(err.response?.data?.message || 'Error al guardar pendiente');
@@ -257,7 +274,8 @@ const getUserPictures = () => {
       userId: loggedInUserId,
       assignedUserId: null,
       completionDate: null,
-      priority: 5
+      priority: 5,
+      sequenceNumber: pendings.length + 1
     });
     setShowAddForm(true);
   }, [userRank, loggedInUserId]);
@@ -426,7 +444,7 @@ const toggleViewMode = () => {
       label: ' Cambiar Estado',
       icon: <FaCheckCircle />,
       onClick: () => {},
-      hide: loggedInUserId !== row.userId && loggedInUserId !== row.assignedUserId,
+      hide: (loggedInUserId !== row.userId && loggedInUserId !== row.assignedUserId) && userRank !== ranks.TOTALACCESS,
       children: Object.entries(pending_status).map((status) => ({
         label: `${status[1]}`,
         onClick: () => handleChangeStatus(row._id, status[1], true)
@@ -436,7 +454,7 @@ const toggleViewMode = () => {
       label: ' Asignar',
       icon: <FaPeopleArrows />,
       onClick: () => {},
-      hide: loggedInUserId !== row.userId,
+      hide: loggedInUserId !== row.userId && userRank !== ranks.TOTALACCESS,
       children: users.filter(u => u._id !== row.userId).map((user) => ({
         icon: <img   src={user.picture} alt="profile" className={styles2.userIcon}/>,
   label: ` ${user.name}`,
@@ -447,7 +465,7 @@ const toggleViewMode = () => {
       label: ' Cambiar Prioridad',
       icon: <FaEdit/>,
       onClick: () => {},
-      hide: loggedInUserId !== row.userId && loggedInUserId !== row.assignedUserId,
+      hide: (loggedInUserId !== row.userId && loggedInUserId !== row.assignedUserId) && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF,
       children: Object.entries(priority).map((pr) => ({
         label: `${pr[1]}`,
         onClick: () => handleChangePriority(row._id, pr[0])
@@ -486,7 +504,7 @@ const toggleViewMode = () => {
       label: ' Modificar',
       icon: <FaEdit />,
       onClick: () => handleEdit(row),
-      hide: loggedInUserId !== row.userId 
+      hide: loggedInUserId !== row.userId && userRank !== ranks.TOTALACCESS 
     },
     {
       label: ' Eliminar',
@@ -618,7 +636,6 @@ const handleFilterChange = (type: 'user' | 'date' | 'status', value: string) => 
   filterable: true,
   valueFormatter: (value) => {
     const levels = Object.entries(priority);
-    console.log(levels)
     return levels[value - 1][1] || 'SIN PRIORIDAD';
   },
 }
@@ -637,9 +654,10 @@ onFilterChange={handleFilterChange}
 enableKanbanView={true}
 kanbanStatuses= {Object.entries(pending_status).map(([key, label]) => ({ key, label }))}
 onStatusChange={handleChangeStatus}
-onRowClick={handleEdit}
+onRowClick={handleRowClick}
 loggedInUserId={loggedInUserId}
 userPictures={getUserPictures()}
+userRank={userRank}
         />
       </div>
       <Modal
@@ -693,6 +711,18 @@ userPictures={getUserPictures()}
   onSuccess={fetchPendings}
 />
 </Modal>
+<PendingDetailModal
+  isOpen={showDetailModal}
+  onClose={() => setShowDetailModal(false)}
+  pending={selectedPending!}
+  users={users}
+  client={getClientName(selectedPending?.clientId)}
+  onUpdate={(updated) => {
+    setPendings(pendings.map(p => p._id === updated._id ? updated : p));
+  }}
+  loggedInUserId={loggedInUserId}
+  userRank={userRank}
+/>
     </div>
   );
 }
