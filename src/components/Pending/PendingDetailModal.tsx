@@ -182,11 +182,17 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
                 ( comm.userId !== loggedInUserId ? 
                 <div key={idx} className={styles.comment}>
                   <img className={styles.avatar} src={getUserPicture(comm.userId)} />
-                  <div>{comm.text} - {new Date(comm.date).toLocaleString()}</div>
+                <div className={styles.CommentTextAndDate}>
+                  <div className={styles.dateText}>{new Date(comm.date).toLocaleString()}</div>
+                  <div className={styles.commentText} >{comm.text}</div>
+                  </div>
                 </div> 
                 : 
               <div key={idx} className={styles.comment}>
-                  <div>{comm.text} - {new Date(comm.date).toLocaleString()}</div>
+                <div className={styles.CommentTextAndDate}>
+                  <div className={styles.dateText}>{new Date(comm.date).toLocaleString()}</div>
+                  <div className={styles.commentText}>{comm.text}</div>
+                </div>
                   <img className={styles.avatar} src={getUserPicture(comm.userId)} />
                 </div>
               )

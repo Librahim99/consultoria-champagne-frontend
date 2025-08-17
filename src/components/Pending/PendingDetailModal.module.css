@@ -41,7 +41,7 @@
   flex-direction: column;
   gap: 0.75rem;
   padding: 1rem;
-  overflow: hidden; /* Scroll solo si content excede, pero compacto para evitar */
+  overflow: auto; /* Scroll solo si content excede, pero compacto para evitar */
   scrollbar-width: thin;
 }
 
@@ -53,7 +53,7 @@
   gap: 0.75rem;
   padding: 1rem;
   border-left: 1px solid var(--border-color);
-  overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: thin;
 }
 
@@ -227,6 +227,7 @@
   flex-direction: column;
   gap: 0.5rem;
   flex-grow: 1; /* Maximiza espacio en sidebar */
+  position: relative;
 }
 
 .comment {
@@ -236,7 +237,20 @@
   border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 0.5rem;
+  overflow: hidden;
+  position: relative;
+  justify-content: space-between;
   font-size: 0.875rem;
+}
+
+.commentText {
+  padding-top: 10px;
+}
+
+.dateText{
+  position: absolute;
+  font-size: xx-small;
+  top: 0px;
 }
 
 .commentInput {
