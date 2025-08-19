@@ -7,7 +7,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,7 +17,7 @@
 
 
 .modalWrapper {
-  background: var(--card-background);
+  background: var(--modal-backgroud);
   border-radius: 15px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   width: 65vw;
@@ -62,13 +62,19 @@
   max-width: 50%;
 }
 
+.checklistDates{
+  font-size: 0.7rem;
+  position: absolute;
+  right: 27.5px;
+}
+
 .deteleButton{
   position: absolute;
   border: none;
   color: red;
   background: none;
   cursor: pointer;  
-  right: 50px;
+  left: 0px;
 }
 
 .deteleButton:hover{
@@ -188,7 +194,7 @@
 }
 
 .section textarea {
-  background: var(--card-background);
+  background: var(--modal-background);
   border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 0.5rem;
@@ -209,7 +215,19 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
+  max-width:100%;
 }
+
+
+.checklistItem .checklistText {
+  max-width: 75%;
+  overflow: hidden;
+}
+
+.completed {
+  text-decoration:line-through;
+}
+
 
 .section progress {
   width: 97.4%;
@@ -233,7 +251,7 @@
 .comment {
   display: flex;
   gap: 0.5rem;
-  background: var(--hover-bg);
+  /* background: var(--table-background); */
   border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 0.5rem;
@@ -260,7 +278,7 @@
   padding: 0.5rem;
   border: 1px solid var(--border-color);
   border-radius: 5px;
-  background-color: var(--card-background);
+  background-color: transparent;
   color: var(--text-color);
   font-size: 0.85rem;
   transition: border-color 0.3s ease;

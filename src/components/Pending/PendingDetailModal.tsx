@@ -32,12 +32,21 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
   }, [isOpen]);
 
   const saveChanges = useCallback(async (field: string, value: any) => {
-    setIsSaving(true);
+    setIsSaving(true)
     try {
       const res = await axios.patch(`${process.env.REACT_APP_API_URL}/api/pending/${localPending?._id}`, { [field]: value }, { headers: { Authorization: `Bearer ${token}` } });
       setLocalPending(res.data);
       onUpdate(res.data);
-      toast.success('Cambios guardados');
+
+      switch (field) {
+        case 'checklist': toast.success('Checklist actualizada')
+        break
+        case 'comments': toast.success('Comentario enviado');
+        break
+        case 'priority': toast.success('Prioridad cambiada');
+      }
+      
+      
     } catch (err) {
       toast.error('Error al guardar');
     } finally {
@@ -106,7 +115,7 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
             {/* titulo(cliente) */}
             <h1
               className={styles.titleClient}
-              >{client}</h1>
+              >{client} - N° {pending.sequenceNumber} </h1>
             {/* Botones superiores */}
             <div className={styles.buttonBar}>
               <div className={styles.members}>
@@ -117,7 +126,7 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
               <button title="Añadir fechas"><FaCalendar /> Fechas</button>
               <button disabled={true} title="Añadir adjunto"><FaPaperclip /> Adjunto</button>
 
-              <select value={(Object.entries(priority)[localPending?.priority - 1] ? Object.entries(priority)[localPending?.priority - 1][0] : 5) || 5} className={`${styles.tag} ${styles[`priority${localPending?.priority}`]}`} onChange={(e) => saveChanges('priority', parseInt(e.target.value))}>
+              <select disabled={pending.userId !== loggedInUserId && pending.assignedUserId !== loggedInUserId && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF} value={(Object.entries(priority)[localPending?.priority - 1] ? Object.entries(priority)[localPending?.priority - 1][0] : 5) || 5} className={`${styles.tag} ${styles[`priority${localPending?.priority}`]}`} onChange={(e) => saveChanges('priority', parseInt(e.target.value))}>
                 {Object.entries(priority).map(([key, val]) => <option  key={key} value={key}>{val}</option>)}
               </select>
             </div>
@@ -126,6 +135,7 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
             <div className={styles.section}>
               <h4>Detalle</h4>
               <textarea
+              disabled={pending.userId !== loggedInUserId && pending.assignedUserId !== loggedInUserId && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF}
                 value={localPending?.detail || ''}
                 onChange={(e) => setLocalPending({ ...localPending, detail: e.target.value })}
                 onBlur={() => saveChanges('detail', localPending?.detail)}
@@ -136,10 +146,11 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
             <div className={styles.section}>
               <h4>Observación</h4>
               <textarea
+              disabled={pending.userId !== loggedInUserId && pending.assignedUserId !== loggedInUserId && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF}
                 value={localPending?.observation || ''}
                 onChange={(e) => setLocalPending({ ...localPending, observation: e.target.value })}
                 onBlur={() => saveChanges('observation', localPending?.observation)}
-                placeholder="Añadir una obsrvación más detallada..."
+                placeholder="Añadir una observación..."
               />
             </div>
 
@@ -149,15 +160,21 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
               <progress value={checklistMemo.filter(c => c.completed).length / checklistMemo.length || 0} max={1} />
               {checklistMemo.map((item, idx) => (
                 <div key={idx} className={styles.checklistItem}>
-                  <input type="checkbox" checked={item.completed} onChange={() => handleToggleChecklist(idx)} />
-                  {item.action}
-                  {!item.completed && item.createdBy && item.creationDate && ` (Creado por ${getUserName(item.createdBy)} el ${new Date(item.creationDate).toLocaleString()})`}
-                  {item.completed && ` (Completado por ${getUserName(item.completedBy)} el ${new Date(item.completionDate).toLocaleString()})`}
+                  <input 
+              disabled={pending.userId !== loggedInUserId && pending.assignedUserId !== loggedInUserId && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF}
+                  type="checkbox" checked={item.completed} onChange={() => handleToggleChecklist(idx)} />
+                  <span className={`${styles.checklistText} ${item.completed ? styles.completed : ''}`}>{item.action}</span>
+                  <div className={styles.checklistDates}>
+
+                  {item.createdBy && item.creationDate && <span title={`Creado por ${getUserName(item?.createdBy)}`}>{new Date(item.creationDate).toLocaleString().split(',')[0]}</span>}
+                  {item.completed && <span title={`Completado por ${getUserName(item?.completedBy)}`}> | {new Date(item.completionDate).toLocaleString().split(',')[0]}</span>}
+                  </div>
                   { userRank === ranks.TOTALACCESS && <button className={styles.deteleButton} onClick={()=> {handleDeleteCheck(idx)}}><FaTrash/></button>}
                 </div>
               ))}
               <input
                 type="text"
+              disabled={pending.userId !== loggedInUserId && pending.assignedUserId !== loggedInUserId && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF}
                 value={newChecklistItem}
                 onChange={(e) => setNewChecklistItem(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddChecklistItem()}
@@ -181,7 +198,7 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
               {commentsMemo.map((comm, idx) => (
                 ( comm.userId !== loggedInUserId ? 
                 <div key={idx} className={styles.comment}>
-                  <img className={styles.avatar} src={getUserPicture(comm.userId)} />
+                  <img className={styles.avatar} title={getUserName(comm?.userId)} src={getUserPicture(comm.userId)} />
                 <div className={styles.CommentTextAndDate}>
                   <div className={styles.dateText}>{new Date(comm.date).toLocaleString()}</div>
                   <div className={styles.commentText} >{comm.text}</div>
@@ -193,7 +210,7 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
                   <div className={styles.dateText}>{new Date(comm.date).toLocaleString()}</div>
                   <div className={styles.commentText}>{comm.text}</div>
                 </div>
-                  <img className={styles.avatar} src={getUserPicture(comm.userId)} />
+                  <img className={styles.avatar} title={getUserName(comm?.userId)} src={getUserPicture(comm.userId)} />
                 </div>
               )
               ))}

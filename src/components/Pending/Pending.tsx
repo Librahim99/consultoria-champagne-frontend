@@ -128,13 +128,8 @@ const [showDetailModal, setShowDetailModal] = useState(false);
 }, [userRank, loggedInUserId]);
 
 const handleRowClick = (pending: Pending) => {
-  if (viewMode === 'kanban') {
-    setSelectedPending(pending);
+  setSelectedPending(pending);
     setShowDetailModal(true);
-  } else {
-    setEditingPending(pending);
-    setShowAddForm(true);
-  }
 };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -436,6 +431,18 @@ const toggleViewMode = () => {
 
   const getRowContextMenu = useCallback((row: Pending) => [
     {
+      label: ' Modificar',
+      icon: <FaEdit />,
+      onClick: () => handleRowClick(row),
+      hide: loggedInUserId !== row.userId && loggedInUserId !== row.assignedUserId && userRank !== ranks.TOTALACCESS 
+    },
+    {
+      label: ' Ver',
+      icon: <FaEye />,
+      onClick: () => handleRowClick(row),
+      hide: loggedInUserId === row.userId || loggedInUserId === row.assignedUserId || userRank === ranks.TOTALACCESS 
+    },
+    {
       label: ' Nuevo Pendiente',
       icon: <FaPlus />,
       onClick: handleNewPending
@@ -499,12 +506,6 @@ const toggleViewMode = () => {
       icon: <FaFileCsv/>,
       onClick: () => setShowImportModal(true),
       disabled: userRank  === ranks.GUEST
-    },
-    {
-      label: ' Modificar',
-      icon: <FaEdit />,
-      onClick: () => handleEdit(row),
-      hide: loggedInUserId !== row.userId && userRank !== ranks.TOTALACCESS 
     },
     {
       label: ' Eliminar',

@@ -4,7 +4,6 @@
   border-radius: 8px;
   max-width: 500px;
   margin: 20px auto;
-  background-color: var(--background-color);
   text-align: center;
   color: var(--text-color);
   box-shadow: 0 2px 4px var(--shadow-color); /* Nueva: shadow para profundidad */

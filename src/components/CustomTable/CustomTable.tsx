@@ -524,10 +524,8 @@ const handleCardClick = (e: React.MouseEvent, row: any) => {
       }
       return newSet;
     });
-  } else if (onRowClick && (loggedInUserId && row.userId === loggedInUserId || row.assignedUserId === loggedInUserId) || userRank === ranks.TOTALACCESS || userRank === ranks.CONSULTORCHIEF) {
-    onRowClick(row);
   } else {
-    e.preventDefault()
+    onRowClick(row)
   }
 };
 

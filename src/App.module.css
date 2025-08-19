@@ -5,6 +5,8 @@ html, body, #root {
   width: 100%;
   font-family: 'Segoe UI', 'Inter', sans-serif;
   background-color: var(--background-color);
+  /* background-image: url(https://images.alphacoders.com/134/1347144.png); */
+  background-size:cover;
   color: var(--text-color);
 }
 
@@ -12,7 +14,7 @@ html, body, #root {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  background-color: var(--background-color);
+
   display: flex;
   flex-direction: column;
 }

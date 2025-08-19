@@ -1,8 +1,6 @@
 .tableContainer {
   margin: 0.5rem 0;
   border-radius: 10px;
-  box-shadow: 0 3px 12px var(--shadow-color);
-  background-color: var(--card-background);
   padding: 0.75rem;
   position: relative;
 }
@@ -52,7 +50,7 @@
   min-width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
-  background-color: var(--card-background);
+  background-color: var(--table-background);
   table-layout: fixed;
   position: relative;
   z-index: 1;
@@ -160,7 +158,7 @@
   padding: 0.3rem 0.5rem;
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  background-color: var(--card-background);
+  background-color: var(--table-background);
   color: var(--text-color);
   font-size: 0.75rem;
   opacity: 0;
@@ -174,10 +172,14 @@
   padding: 0.5rem;
   border: 1px solid var(--border-color);
   border-radius: 5px;
-  background-color: var(--card-background);
+  background-color: transparent;
   color: var(--text-color);
   font-size: 0.85rem;
   transition: border-color 0.3s ease;
+}
+
+.searchInput::placeholder{
+  color: var(--text-color)
 }
 
 .searchInput:focus {
@@ -254,7 +256,7 @@
   padding: 0.5rem;
   border-radius: 5px;
   border: 1px solid var(--border-color);
-  background-color: var(--card-background);
+  background-color: var(--table-background);
   color: var(--text-color);
   font-size: 0.85rem;
   cursor: pointer;
@@ -290,7 +292,7 @@
   position: absolute;
   top: 3rem;
   right: 0.75rem;
-  background-color: var(--card-background);
+  background-color: var(--table-background);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 1rem;
@@ -500,10 +502,10 @@
 }
 
 .kanbanColumn {
-  background-color: var(--card-background);
-  border: 1px solid var(--border-color);
+  background-color: var(--table-background);
+  /* border: 1px solid var(--border-color); */
   border-radius: 6px;
-  box-shadow: 0 2px 8px var(--shadow-color);
+  /* box-shadow: 0 2px 8px var(--shadow-color); */
   display: flex;
   flex-direction: column;
   flex: 1; /* Todas columnas mismo tamaño */
@@ -541,8 +543,8 @@
 }
 
 .kanbanCard {
-  background-color: var(--hover-bg);
-  border: 1px solid var(--border-color);
+  background-color: var(--table-background);
+  /* border: 1px solid var(--border-color); */
   border-radius: 4px;
   /* padding: 0.5rem; */
   cursor: pointer;

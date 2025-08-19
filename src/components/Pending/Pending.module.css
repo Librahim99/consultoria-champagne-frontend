@@ -17,7 +17,6 @@
   min-height: calc(100vh - 2rem); /* ocupa alto total menos el padding */
   width: 100%; /* ancho completo */
   height: fit-content;
-  background-color: var(--background-color);
 
   /* Opcional: que crezca para ocupar espacio disponible */
   display: flex;

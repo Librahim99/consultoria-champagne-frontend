@@ -1,0 +1,2 @@
+// Deshabilitar para todos menos para el creador, asignado, CEO y Jefe de consultoria
+// pending.userId !== loggedInUserId && pending.assignedUserId !== loggedInUserId && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF

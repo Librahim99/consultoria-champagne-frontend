@@ -18,7 +18,6 @@ interface MetricsResponse {
 }
 
  const token = localStorage.getItem('token');
-      console.log(token)
 
 
 interface Props { 
