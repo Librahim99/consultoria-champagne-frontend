@@ -1,11 +1,15 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
-import { FaUserPlus, FaTag, FaCalendar, FaCheckSquare, FaPaperclip, FaTrash, FaCommentDots } from 'react-icons/fa';
+import { FaUserPlus, FaTag, FaCalendar, FaCheckSquare, FaPaperclip, FaTrash, FaCommentDots, FaBell } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import styles from './PendingDetailModal.module.css';
 import { Client, Pending, User } from '../../utils/interfaces';
 import { priority, ranks } from '../../utils/enums'; // Asumiendo enums
+import moment from 'moment-timezone';
+import { today } from '../../utils/functions';
 
 interface PendingDetailModalProps {
   isOpen: boolean;
@@ -16,14 +20,21 @@ interface PendingDetailModalProps {
   loggedInUserId: string;
   client: string;
   userRank: string;
+  onAssign: (pending: Pending, user: User) => void;
 }
 
-const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose, pending, users, onUpdate, loggedInUserId, client, userRank }) => {
+const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose, pending, users, onUpdate, loggedInUserId, client, userRank, onAssign }) => {
   const [localPending, setLocalPending] = useState<Pending>({ ...pending });
   const [newComment, setNewComment] = useState('');
   const [newChecklistItem, setNewChecklistItem] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+  const [showAssign, setShowAssign] = useState(false); // Nuevo: Toggle menu asignar
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const assignButtonRef = useRef<HTMLButtonElement>(null)
+  const [showDates, setShowDates] = useState(false); // Nuevo: Toggle menú fechas
+  const [estimatedDate, setEstimatedDate] = useState(localPending?.estimatedDate ? new Date(localPending?.estimatedDate).toISOString().split('T')[0] : ''); // Nuevo: Valor fecha
+  const datesButtonRef = useRef<HTMLButtonElement>(null); // Nuevo: Ref para anclar menú
 
   const token = localStorage.getItem('token');
 
@@ -31,6 +42,38 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
     setLocalPending(pending)
   }, [isOpen]);
 
+const handleAssignClick = () => {
+    setShowAssign(!showAssign); // Toggle menu
+    setSelectedUserId(''); // Reset selección
+  };
+
+  const confirmAssign = () => {
+    if (!selectedUserId) return toast.warning('Selecciona un usuario');
+    const user = users.find(u => u._id === selectedUserId);
+    if (user) {
+      onAssign(localPending, user); // Llama prop
+      // Nuevo: Actualiza localPending con nuevo assigned (para refresh UI inmediato)
+      setLocalPending(prev => ({ ...prev, assignedUserId: user._id }));
+      setShowAssign(false);
+    }
+  };
+
+
+  const handleDatesClick = () => {
+    setShowDates(!showDates); // Toggle menú
+    setEstimatedDate(localPending.estimatedDate ? new Date(localPending.estimatedDate).toISOString().split('T')[0] : ''); // Init con actual o vacío
+  };
+
+  const confirmDate = () => {
+    console.log('asd')
+    if (!estimatedDate) return toast.warning('Selecciona una fecha estimada');
+    const tzDate = moment.tz(estimatedDate, 'America/Argentina/Buenos_Aires').toDate(); // Usa TZ Argentina
+    saveChanges('estimatedDate', tzDate); // Guarda vía saveChanges
+    setLocalPending(prev => ({ ...prev, estimatedDate: tzDate.toString() })); // Actualiza local para UI
+    setShowDates(false); // Cierra menú
+  };
+
+  
   const saveChanges = useCallback(async (field: string, value: any) => {
     setIsSaving(true)
     try {
@@ -44,6 +87,10 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
         case 'comments': toast.success('Comentario enviado');
         break
         case 'priority': toast.success('Prioridad cambiada');
+        break
+        case 'estimatedDate': toast.success('Fecha estimada establecida')
+        break
+        case 'title': toast.success('Título cambiado')
       }
       
       
@@ -66,6 +113,10 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
     saveChanges('checklist', updatedChecklist);
   }
 
+  const handleClose = () => {
+    onClose()
+  }
+
   const handleAddChecklistItem = () => {
     if (!newChecklistItem) return;
     const updatedChecklist = [...(localPending?.checklist || []), { action: newChecklistItem, completed: false, creationDate: new Date().toString(), createdBy: loggedInUserId }];
@@ -81,6 +132,18 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
     saveChanges('checklist', updatedChecklist);
   };
 
+  const handleClickBell = (id: string) => {
+    if(localPending?.notifications && !localPending?.notifications?.includes(loggedInUserId)) {
+      //agregar
+      const updatedNotifications = [...(localPending?.notifications || []), loggedInUserId];
+    saveChanges('notifications', updatedNotifications);
+    } else {
+      //borrar
+      const updatedNotifications = localPending?.notifications?.filter((c) => c !== id)
+    saveChanges('notifications', updatedNotifications);
+    }
+  };
+
   const getUserName = (userId: string) => users.find(u => u._id === userId)?.name || 'Desconocido';
   const getUserPicture = (userId: string) => users.find(u => u._id === userId)?.picture || null;
 
@@ -92,6 +155,7 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      setShowAssign(false)
     };
 
     if (isOpen) {
@@ -115,21 +179,71 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
             {/* titulo(cliente) */}
             <h1
               className={styles.titleClient}
-              >{client} - N° {pending.sequenceNumber} </h1>
+              >{client}</h1>
+              <div className={styles.pendingNumber}>
+                {pending.sequenceNumber}
+              </div>
+              <FaBell title='Activar notificaciones para este pendiente' onClick={() => handleClickBell(loggedInUserId)} className={`${styles.bell} ${localPending?.notifications && localPending?.notifications?.includes(loggedInUserId) ? styles.bellOn : ''}`}/>
             {/* Botones superiores */}
             <div className={styles.buttonBar}>
               <div className={styles.members}>
-                {localPending?.userId && <img className={styles.avatar} title={getUserName(localPending?.userId)} src={getUserPicture(localPending?.userId)}/>}
-                {localPending?.assignedUserId && <img className={styles.avatar} title={getUserName(localPending?.assignedUserId)} src={getUserPicture(localPending?.assignedUserId)} />}
-                {!localPending?.assignedUserId ? (<button title="Asignar Pendiente"><FaUserPlus />Asignar</button>): null}
+                {localPending?.userId && <img className={styles.avatar} alt='user' title={getUserName(localPending?.userId)} src={getUserPicture(localPending?.userId)}/>}
+                {localPending?.assignedUserId && <img className={styles.avatar} alt='asignado' title={getUserName(localPending?.assignedUserId)} src={getUserPicture(localPending?.assignedUserId)} />}
+                {!localPending?.assignedUserId ? (<button ref={assignButtonRef} title="Asignar Pendiente" onClick={handleAssignClick}><FaUserPlus />Asignar</button>): null}
               </div>
-              <button title="Añadir fechas"><FaCalendar /> Fechas</button>
+              {showAssign && assignButtonRef.current && (
+      <div className={styles.assignMenu} style={{ 
+        position: 'absolute', 
+        top: `${assignButtonRef.current.offsetTop + assignButtonRef.current.offsetHeight}px`, // Bajo el botón
+        left: `${assignButtonRef.current.offsetLeft}px` // Alineado a izquierda del botón
+      }}>
+        <select disabled={pending.userId !== loggedInUserId && pending.assignedUserId !== loggedInUserId && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF} value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
+          <option value="">Selecciona usuario</option>
+          {users.filter(u => u._id !== localPending.userId).map(user => (
+            <option key={user._id} value={user._id}>{user.name}</option>
+          ))}
+        </select>
+        <button onClick={confirmAssign}>Confirmar</button>
+      </div>
+    )}
               <button disabled={true} title="Añadir adjunto"><FaPaperclip /> Adjunto</button>
 
               <select disabled={pending.userId !== loggedInUserId && pending.assignedUserId !== loggedInUserId && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF} value={(Object.entries(priority)[localPending?.priority - 1] ? Object.entries(priority)[localPending?.priority - 1][0] : 5) || 5} className={`${styles.tag} ${styles[`priority${localPending?.priority}`]}`} onChange={(e) => saveChanges('priority', parseInt(e.target.value))}>
                 {Object.entries(priority).map(([key, val]) => <option  key={key} value={key}>{val}</option>)}
               </select>
+              <button ref={datesButtonRef} title="Añadir fecha estimada" onClick={handleDatesClick}><FaCalendar/> Fecha</button>
+              { localPending?.estimatedDate && (<div className={styles.estimatedDate}>{new Date(localPending?.estimatedDate).toLocaleString().split(',')[0]}</div>)}
+             {/* Nuevo: Menú fechas si showDates */}
+  {showDates && datesButtonRef.current && (
+    <div className={styles.datesMenu} style={{ // Usa misma clase que assignMenu, o crea .datesMenu similar
+      position: 'absolute', 
+      top: `${datesButtonRef.current.offsetTop + datesButtonRef.current.offsetHeight}px`,
+      left: `${datesButtonRef.current.offsetLeft}px`
+    }}>
+      <input
+        disabled={pending.userId !== loggedInUserId && pending.assignedUserId !== loggedInUserId && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF}
+        type="date"
+        value={estimatedDate ? estimatedDate : today().toISOString().split('T')[0] }
+        onChange={(e) => setEstimatedDate(e.target.value)}
+        min={today().toISOString().split('T')[0]} // Min hoy para estimated futura
+      />
+      <button onClick={confirmDate}>Confirmar</button>
+    </div>
+  )}
             </div>
+           <br />
+           <div className={styles.section}>
+              <h4>Título</h4>
+            <input
+                type="text"
+              disabled={pending.userId !== loggedInUserId && pending.assignedUserId !== loggedInUserId && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF}
+                value={localPending?.title || ''}
+                onChange={(e) => setLocalPending({ ...localPending, title: e.target.value })}
+                onBlur={() => saveChanges('title', localPending?.title)}
+                placeholder="Añadir un titulo para el pendiente (Esto será visible para el cliente)..."
+                className={styles.commentInput}
+              />
+              </div>
 
             {/* Descripción */}
             <div className={styles.section}>
@@ -185,6 +299,7 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
           </div>
 
           <div className={styles.rightColumn}>
+        <button className={styles.closeButton} onClick={() => handleClose()}>X</button>
             <h4>Comentarios</h4>
             <input
             className={styles.commentInput}
@@ -198,7 +313,7 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
               {commentsMemo.map((comm, idx) => (
                 ( comm.userId !== loggedInUserId ? 
                 <div key={idx} className={styles.comment}>
-                  <img className={styles.avatar} title={getUserName(comm?.userId)} src={getUserPicture(comm.userId)} />
+                  <img className={styles.avatar} alt='user' title={getUserName(comm?.userId)} src={getUserPicture(comm.userId)} />
                 <div className={styles.CommentTextAndDate}>
                   <div className={styles.dateText}>{new Date(comm.date).toLocaleString()}</div>
                   <div className={styles.commentText} >{comm.text}</div>
@@ -210,7 +325,7 @@ const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose
                   <div className={styles.dateText}>{new Date(comm.date).toLocaleString()}</div>
                   <div className={styles.commentText}>{comm.text}</div>
                 </div>
-                  <img className={styles.avatar} title={getUserName(comm?.userId)} src={getUserPicture(comm.userId)} />
+                  <img className={styles.avatar} alt='user' title={getUserName(comm?.userId)} src={getUserPicture(comm.userId)} />
                 </div>
               )
               ))}

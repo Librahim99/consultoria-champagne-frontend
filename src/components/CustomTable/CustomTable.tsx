@@ -107,6 +107,8 @@ const [statusFilter, setStatusFilter] = useState('pending_inprogress');
 const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
 const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 const [allExpanded, setAllExpanded] = useState(false);
+const [amount, setAmount] = useState<number>(rowData.length);
+
 
 
 
@@ -322,8 +324,9 @@ data.sort((a, b) => {
     }
 
    
-
+    setAmount(data.length)
     return data;
+
   }, [rowData, globalSearch, filters, sortConfig, columnDefs, processedColumns]);
 
   const paginatedData = useMemo(() => {
@@ -486,7 +489,7 @@ const groupedData = useMemo(() => {
     }
   });
   return groups;
-}, [viewMode, processedData, kanbanStatuses]);
+}, [viewMode, processedData, kanbanStatuses, rowData]);
 
 const handleDragStart = (e: React.DragEvent, row: any) => {
   if ((loggedInUserId && row.userId !== loggedInUserId && row.assignedUserId !== loggedInUserId) && userRank !== ranks.TOTALACCESS) {
@@ -841,7 +844,7 @@ const renderKanbanView = () => (
             Anterior
           </button>
           <span className={styles.paginationInfo}>
-            Página {currentPage} de {totalPages} | Total: {rowData.length} líneas
+            Página {currentPage} de {totalPages} | Total: {amount} líneas
           </span>
           <button
             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}

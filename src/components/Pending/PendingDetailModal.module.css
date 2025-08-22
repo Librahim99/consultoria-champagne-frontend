@@ -1,6 +1,10 @@
 /* Estilos para PendingDetailModal: Match Trello con dual-column, compacto sin scroll, maximizando espacio */
 /* Usa vars de index.css para themes, focus en no-scroll con flex */
 
+.icon{
+  color: var(--button-color);
+}
+
 .overlay {
   position: fixed;
   top: 0;
@@ -17,6 +21,7 @@
 
 
 .modalWrapper {
+  position: relative;
   background: var(--modal-backgroud);
   border-radius: 15px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -65,7 +70,7 @@
 .checklistDates{
   font-size: 0.7rem;
   position: absolute;
-  right: 27.5px;
+  right: 4.75%;
 }
 
 .deteleButton{
@@ -77,12 +82,27 @@
   left: 0px;
 }
 
-.deteleButton:hover{
-
+.pendingNumber{
+  position: absolute;
+  border-radius: 50%;
+  border: solid 3px var(--button-background);
+  background-color: var(--button-background);
+  padding: 1% 1%;
 }
+
+.bellOn{
+  color: var(--button-background)
+}
+
+.bell{
+  position: absolute;
+  right: 1rem;
+  cursor: pointer;
+}
+
 .titleClient {
   position: relative;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 600;
   border: none;
   background: transparent;
@@ -109,7 +129,7 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.85rem;
-  margin-left: 10px;
+  /* margin-left: 10px; */
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
@@ -122,7 +142,24 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.85rem;
-  margin-left: 10px;
+  /* margin-left: 10px; */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.buttonBar input {
+  border: none;
+  padding: 0.5rem 0;
+  background-color: var(--button-background);
+  color: var(--button-color);
+  border-radius: 5px;
+  max-width: 93%;
+  padding-left: 7%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  /* margin-left: 10px; */
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
@@ -303,6 +340,17 @@
   transition: background 0.2s;
 }
 
+.closeButton {
+  position: absolute;
+  right: 3%;
+  top: 2%;
+  background: none;
+  color: var(--text-color);
+  border: none;
+  size: 5px;
+  cursor: pointer;
+}
+
 .deleteButton:hover {
   background: var(--button-hover);
 }
@@ -331,4 +379,42 @@
 
 .modalWrapper {
   animation: fadeIn 0.3s ease;
+}
+
+
+.assignMenu {
+  position: absolute;
+  background: var(--card-background);
+  padding: 0.5rem;
+  border-radius: 5px;
+  box-shadow: var(--shadow-soft);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 200px; /* Ancho fijo para evitar desplazamiento */
+}
+.assignMenu select, .assignMenu button {
+  width: 100%;
+}
+
+.assignMenu select{
+background-color: var(--button-background);
+color: var(--button-color);
+}
+
+.datesMenu {
+  position: absolute;
+  background: var(--card-background);
+  padding: 0.5rem;
+  border-radius: 5px;
+  box-shadow: var(--shadow-soft);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 200px;
+}
+.datesMenu input, .datesMenu button {
+  width: 100%;
 }

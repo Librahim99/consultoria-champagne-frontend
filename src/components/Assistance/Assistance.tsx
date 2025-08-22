@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { type Assistance, Client, User, DecodedToken } from '../../utils/interfaces';
@@ -34,6 +34,13 @@ const [isLoading, setIsLoading] = useState(false);
 const [userFilter, setUserFilter] = useState('me');
 const [dateFilter, setDateFilter] = useState('month');
 const [disableSubmit, setDisableSubmimt] = useState(false)
+const clientInputRef = useRef<HTMLInputElement>(null)
+
+useEffect(() => {
+  if (showAddForm && clientInputRef.current) {
+    clientInputRef.current.focus();
+  }
+}, [showAddForm]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -525,6 +532,7 @@ onFilterChange={handleFilterChange}
           <div className="formGroup">
   <label>Cliente *</label>
   <input
+    ref={clientInputRef}
     type="text"
     placeholder="Buscar cliente..."
     value={clientSearch}

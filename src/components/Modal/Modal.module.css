@@ -85,6 +85,7 @@
   margin-bottom: 1rem;
 }
 .modalForm label {
+  /* height: 40px; */
   display: block;
   margin-bottom: 6px;
   font-weight: 600;
@@ -196,5 +197,25 @@
   .modalContent {
     padding: 1rem;
     border-radius: 12px;
+  }
+}
+
+/* ------------------ FORM ROW HORIZONTAL ------------------ */
+.formRow {
+  display: flex;
+  gap: 1rem; /* Espacio entre columnas */
+  flex-wrap: wrap; /* Responsive: wrap en pantallas pequeñas */
+}
+
+.formRow .formGroup {
+  flex: 1; /* Cada grupo ocupa espacio igual */
+  min-width: 150px; /* Mínimo para evitar colapso en mobile */
+}
+
+/* Responsive: Stack vertical en mobile */
+@media (max-width: 400px) {
+  .formRow {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }

@@ -106,6 +106,7 @@ export interface Pending {
   _id: string;
   clientId: string;
   date: string;
+  title?: string | null;
   status: string;
   detail: string;
   observation: string | null;
@@ -113,10 +114,12 @@ export interface Pending {
   userId: string;
   assignedUserId: string | null;
   completionDate: string | null;
+  estimatedDate: string | null;
   sequenceNumber: number
   priority: number;
   checklist?: Checklist[]
   comments?: Comment[]
+  notifications?: string[]
 }
 
 
