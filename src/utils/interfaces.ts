@@ -101,6 +101,11 @@ export interface Comment {
   date: string
 }
 
+export interface statusDetail {
+  text: string
+  date: string
+}
+
 // Interfaz para pendiente
 export interface Pending {
   _id: string;
@@ -117,6 +122,7 @@ export interface Pending {
   estimatedDate: string | null;
   sequenceNumber: number
   priority: number;
+  statusDetail?: string;
   checklist?: Checklist[]
   comments?: Comment[]
   notifications?: string[]

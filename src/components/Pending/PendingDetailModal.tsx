@@ -26,6 +26,7 @@ interface PendingDetailModalProps {
 const PendingDetailModal: React.FC<PendingDetailModalProps> = ({ isOpen, onClose, pending, users, onUpdate, loggedInUserId, client, userRank, onAssign }) => {
   const [localPending, setLocalPending] = useState<Pending>({ ...pending });
   const [newComment, setNewComment] = useState('');
+  const [statusDetail, setStatusDetail] = useState('');
   const [newChecklistItem, setNewChecklistItem] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -91,6 +92,8 @@ const handleAssignClick = () => {
         case 'estimatedDate': toast.success('Fecha estimada establecida')
         break
         case 'title': toast.success('Título cambiado')
+        break
+        case 'statusDetail': toast.success('Detalle de estado actualizado')
       }
       
       
@@ -106,6 +109,13 @@ const handleAssignClick = () => {
     const updatedComments = [...(localPending?.comments || []), { text: newComment, userId: loggedInUserId, date: new Date() }];
     saveChanges('comments', updatedComments);
     setNewComment('')
+  };
+
+
+  const handleChangeStatusDetail = () => {
+    if (!statusDetail) return;
+    const updatedStatusDetail = { text: statusDetail, date: new Date() };
+    saveChanges('comments', updatedStatusDetail);
   };
 
   const handleDeleteCheck = (index: number) => {
@@ -240,10 +250,23 @@ const handleAssignClick = () => {
                 value={localPending?.title || ''}
                 onChange={(e) => setLocalPending({ ...localPending, title: e.target.value })}
                 onBlur={() => saveChanges('title', localPending?.title)}
-                placeholder="Añadir un titulo para el pendiente (Esto será visible para el cliente)..."
+                placeholder="Añadir un titulo para el pendiente (Esto será visible para el cliente)"
                 className={styles.commentInput}
               />
               </div>
+              <div className={styles.section}>
+              <h4>Detalle de Estado</h4>
+            <input
+                type="text"
+              disabled={pending.userId !== loggedInUserId && pending.assignedUserId !== loggedInUserId && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF}
+                value={localPending?.statusDetail || ''}
+                onChange={(e) => setLocalPending({ ...localPending, statusDetail: e.target.value })}
+                onBlur={() => saveChanges('statusDetail', localPending?.statusDetail)}
+                placeholder="Añadir un detalle del estado del pendiente (Esto será visible para el cliente)"
+                className={styles.commentInput}
+              />
+              </div>
+              
 
             {/* Descripción */}
             <div className={styles.section}>

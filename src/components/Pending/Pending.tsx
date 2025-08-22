@@ -839,7 +839,19 @@ const PendingTask: React.FC = () => {
               headerName: "Fecha Estimada",
               sortable: true,
               filterable: true,
-              valueFormatter: (value) => new Date(value).toLocaleDateString(),
+              valueFormatter: (value) => value ? new Date(value).toLocaleDateString() : '',
+            },
+            {
+              field: "title",
+              headerName: "Titulo",
+              sortable: true,
+              filterable: true
+            },
+            {
+              field: "statusDetail",
+              headerName: "Detalle de estado",
+              sortable: true,
+              filterable: true
             },
           ]}
           pagination={true}
