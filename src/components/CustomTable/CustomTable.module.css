@@ -172,7 +172,7 @@
   padding: 0.5rem;
   border: 1px solid var(--border-color);
   border-radius: 5px;
-  background-color: transparent;
+  background-color: var(--table-background);
   color: var(--text-color);
   font-size: 0.85rem;
   transition: border-color 0.3s ease;
@@ -247,17 +247,21 @@
 }
 
 .paginationInfo {
-  color: var(--text-color);
+    color: var(--button-color);
   font-size: 0.85rem;
   font-weight: 500;
+  background-color: var(--button-background);
+  padding: 0.5rem;
+  border-radius: 5px;
 }
 
 .pageSizeSelect {
   padding: 0.5rem;
   border-radius: 5px;
   border: 1px solid var(--border-color);
-  background-color: var(--table-background);
-  color: var(--text-color);
+  background-color: var(--button-background);
+    color: var(--button-color);
+
   font-size: 0.85rem;
   cursor: pointer;
   transition: border-color 0.3s ease;
@@ -292,7 +296,7 @@
   position: absolute;
   top: 3rem;
   right: 0.75rem;
-  background-color: var(--table-background);
+  background-color: var(--card-background);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 1rem;

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback, useContext } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import { AccessInterface, Client } from '../../utils/interfaces';
@@ -325,7 +324,7 @@ const Clients: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}> ⭐🧑‍💼 Clientes 👩🏻‍💼⭐ </h1>
+      <span className={styles.title}> ⭐🧑‍💼 Clientes 👩🏻‍💼⭐ </span>
       {error && <p className={styles.error}>{error}</p>}
       <div onContextMenu={(e) => getContextMenu(e)} style={{ height: 'auto', width: '100%' }}>
         <CustomTable

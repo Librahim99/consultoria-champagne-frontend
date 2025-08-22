@@ -18,7 +18,13 @@
   font-weight: 600;
   text-align: center;
   margin-bottom: 2rem;
+  margin-top: 1.35rem;
+  width: 25%;
+  border-radius: 5px;
+  margin-left: auto;
+  margin-right: auto;
   color: var(--text-color);
+  background-color: var(--table-background);
 }
 
 .title::after {

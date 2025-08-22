@@ -2,8 +2,9 @@ import React, { createContext, useState, useCallback, useEffect, useContext, use
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeContext } from '../contexts/ThemeContext';
 import styles from '../components/CustomContextMenu/CustomContextMenu.module.css';
-import { FaSyncAlt, FaQuestionCircle, FaSignOutAlt, FaMoon, FaSun, FaAngleRight } from 'react-icons/fa';
+import { FaSyncAlt, FaQuestionCircle, FaSignOutAlt, FaMoon, FaSun, FaAngleRight, FaImage } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 interface MenuItem {
   label: string;
@@ -33,7 +34,7 @@ const RenderMenuItems: React.FC<{ items: MenuItem[]; isSubmenu?: boolean; positi
   const subRefs = useRef<(HTMLDivElement | null)[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-
+  
   const handleToggleSubmenu = (index: number) => {
     setActiveSub(activeSub === index ? null : index);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -156,6 +157,48 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const { theme, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const menuRef = useRef<HTMLDivElement>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [tempUrl, setTempUrl] = useState('');
+  const [previewError, setPreviewError] = useState(false);
+    const [loggedInUserId, setLoggedInUserId] = useState<string>("");
+
+
+  // Función para abrir el modal (llámalo desde tu menú de click derecho)
+  const handleOpenBackgroundModal = () => {
+    setIsModalOpen(true);
+    setTempUrl(localStorage.getItem('backgroundUrl') || ''); // Precarga la URL actual si existe
+    setPreviewError(false);
+  };
+
+  // Función para confirmar y guardar
+  const handleConfirmBackground = async () => {
+    if (!tempUrl || previewError) return; // Valida que sea válida
+
+    // Guardar en localStorage para carga rápida
+    localStorage.setItem('backgroundUrl', tempUrl);
+
+    // Aplicar inmediatamente
+    applyBackground(tempUrl);
+    setIsModalOpen(false);
+    toast.success('Fondo actualizado')
+  };
+
+  // Función para aplicar el background (usa en confirm y en load)
+  const applyBackground = (url: string) => {
+    document.body.style.backgroundImage = `url(${url})`;
+    document.body.style.backgroundSize = 'cover'; // Mejora: Cubre toda la pantalla
+    document.body.style.backgroundPosition = 'center'; // Centrado
+    document.body.style.backgroundRepeat = 'no-repeat'; // No repetir
+  };
+
+  // Cargar al mounting: Primero localStorage, luego fetch from user si difiere (para sync)
+  useEffect(() => {
+    const storedUrl = localStorage.getItem('backgroundUrl');
+    if (storedUrl) {
+      applyBackground(storedUrl);
+    }
+  }, []);
+
 
   const showMenu = useCallback((x: number, y: number, items: MenuItem[]) => {
     setPosition({ x, y });
@@ -197,10 +240,15 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
         },
       },
       {
+        label: ' Cambiar fondo',
+        icon: <FaImage/>,
+        onClick: () => handleOpenBackgroundModal()
+      },
+      {
         label: theme === 'light' ? ' Modo oscuro' : ' Modo claro',
         icon: theme === 'light' ? <FaMoon /> : <FaSun />,
         onClick: toggleTheme,
-      },
+      }
     ];
     showMenu(e.clientX, e.clientY, generalItems);
   }, [showMenu, navigate, theme, toggleTheme]);
@@ -269,6 +317,68 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
             <RenderMenuItems items={menuItems} isSubmenu={false} position={adjustedPosition} hideMenu={hideMenu} />
           </motion.div>
         )}
+        {isModalOpen && (
+  <div className={styles.overlay}
+    
+  >
+    <div className={styles.backgroundContainer} 
+    >
+      <h2>Establecer fondo personalizado</h2>
+      <input 
+        type="text" 
+        value={tempUrl}
+        onChange={(e) => {
+          setTempUrl(e.target.value);
+          setPreviewError(false); // Reset error al cambiar
+        }}
+        placeholder="Ingresa la URL de la imagen (ej: https://example.com/imagen.jpg)"
+        className={styles.inputBackground}
+      />
+      {tempUrl && (
+        <div style={{ marginBottom: '10px' }}>
+          <img 
+            src={tempUrl} 
+            alt="Previsualización" 
+            style={{ maxWidth: '200px', height: 'auto' }} // Pequeña
+            onError={() => setPreviewError(true)}
+          />
+          {previewError && <p style={{ color: 'red' }}>URL inválida o no es una imagen.</p>}
+        </div>
+      )}
+      <div className={styles.buttonsContainer}>
+      <button 
+        onClick={handleConfirmBackground} 
+        disabled={!tempUrl || previewError}
+        className={styles.button}
+      >
+        Confirmar
+      </button>
+      <button 
+        onClick={() => setIsModalOpen(false)}
+        className={styles.button}
+      >
+        Cancelar
+      </button>
+      {/* Opcional: Botón para remover fondo */}
+      <button 
+        onClick={() => {
+          setTempUrl('');
+          localStorage.removeItem('backgroundUrl');
+          applyBackground(''); // O fallback a default
+          // Update backend similarly
+          setIsModalOpen(false);
+    toast.success('Fondo eliminado')
+
+        }}
+        disabled={tempUrl ? false : true}
+        className={`${styles.button} ${styles.red}`}
+      >
+        Eliminar
+      </button>
+      </div>
+    </div>
+  </div>
+)}
       </AnimatePresence>
     </ContextMenuContext.Provider>
   );
