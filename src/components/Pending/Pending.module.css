@@ -208,6 +208,9 @@
 
 
 .resume{
+  background-color: var(--table-background);
+  width: fit-content;
+  margin-inline: auto;
   position: relative;
   display: flex;
   font-size: 15px;

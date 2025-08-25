@@ -770,7 +770,7 @@ const PendingTask: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}> 📚 Tareas Pendientes 📚<h4 className={styles.resume}>Total: {resume.total} <FaCheckSquare style={{"color":"gray"} }/>|    Resuelto: {resume.solved} <FaCheckSquare style={{"color":"green"} }/></h4></h1>
+      <h1 className={styles.title}> 📚 Tareas Pendientes 📚<h4 className={styles.resume}>Total: {resume.total} <FaCheckSquare style={{"color":"gray", "backgroundColor": "black"} }/>|    Resuelto: {resume.solved} <FaCheckSquare style={{"color":"green", "backgroundColor": "black"} }/></h4></h1>
       {error && <p className={styles.error}>{error}</p>}
       <div
         onContextMenu={(e) => getRowContextMenu2(e)}
