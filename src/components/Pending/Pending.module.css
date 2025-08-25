@@ -12,6 +12,8 @@
   --shadow-med: 0 12px 34px rgba(0,0,0,0.22);
 }
 
+
+
 .container {
   padding: 1rem;
   min-height: calc(100vh - 2rem); /* ocupa alto total menos el padding */
@@ -202,4 +204,15 @@
 @media (prefers-reduced-motion: reduce) {
   .button, .importButton { transition: none; }
   .title { transition: none; }
+}
+
+
+.resume{
+  position: relative;
+  display: flex;
+  font-size: 15px;
+  line-height: 1px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }

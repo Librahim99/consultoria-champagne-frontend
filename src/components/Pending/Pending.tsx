@@ -23,6 +23,8 @@ import {
   FaFileCsv,
   FaCheckCircle,
   FaPeopleArrows,
+  FaCheck,
+  FaCheckSquare,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Modal from "../Modal/Modal";
@@ -38,6 +40,11 @@ const mapStatusToKey = (value: string): keyof typeof pending_status | "" => {
   );
   return entry ? (entry[0] as keyof typeof pending_status) : "";
 };
+
+interface Resume {
+  total: number,
+  solved: number
+}  
 
 const PendingTask: React.FC = () => {
   const [pendings, setPendings] = useState<Pending[]>([]);
@@ -77,6 +84,8 @@ const PendingTask: React.FC = () => {
   const [clientSearch, setClientSearch] = useState("");
   const [filteredClient, setFilteredClient] = useState<Client | null>(null);
   const clientInputRef = useRef<HTMLInputElement>(null);
+  const [resume, setResume] = useState<Resume>({total: 0, solved: 0});
+
 
   useEffect(() => {
     if (showAddForm && clientInputRef.current) {
@@ -726,6 +735,14 @@ const PendingTask: React.FC = () => {
           params: { userFilter, dateFilter, statusFilter },
         }
       );
+      const resume = await axios.get<Resume>(
+        `${process.env.REACT_APP_API_URL}/api/pending/resume`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { userFilter},
+        }
+      );
+      setResume(resume.data)
       setPendings(res.data);
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || "Error fetching pendings";
@@ -753,7 +770,7 @@ const PendingTask: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}> 📚 Tareas Pendientes 📚</h1>
+      <h1 className={styles.title}> 📚 Tareas Pendientes 📚<h4 className={styles.resume}>Total: {resume.total} <FaCheckSquare style={{"color":"gray"} }/>|    Resuelto: {resume.solved} <FaCheckSquare style={{"color":"green"} }/></h4></h1>
       {error && <p className={styles.error}>{error}</p>}
       <div
         onContextMenu={(e) => getRowContextMenu2(e)}
