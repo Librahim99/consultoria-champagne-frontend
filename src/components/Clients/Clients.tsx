@@ -12,9 +12,10 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import CustomTable from '../CustomTable/CustomTable';
 import { ranks } from '../../utils/enums';
 import { useContextMenu } from '../../contexts/UseContextMenu';
-import { FaClock, FaEdit, FaExclamationTriangle, FaHeadset, FaLaptopHouse, FaPlus, FaTasks, FaTrash, FaKey, FaCopy, FaChevronUp, FaChevronDown } from 'react-icons/fa';
+import { FaClock, FaEdit, FaExclamationTriangle, FaHeadset, FaLaptopHouse, FaPlus, FaTasks, FaTrash, FaKey, FaCopy, FaChevronUp, FaChevronDown, FaWhatsapp } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import moment from 'moment-timezone';
+
 
 // Esquema para validar el formulario de cliente
 const schema = yup.object({
@@ -146,6 +147,20 @@ const Clients: React.FC = () => {
     setShowDateModal(true);
   }, []);
 
+  const handleSendLicenseReminderToGroup = useCallback(async (client: Client) => {
+  try {
+    const token = localStorage.getItem('token');
+    await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/licenses/send-reminder/${client._id}`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    toast.success(`Recordatorio enviado al grupo para ${client.name}`);
+  } catch (err: any) {
+    toast.error(err?.response?.data?.message || 'Error al enviar recordatorio');
+  }
+}, []);
+
   const handleCustomDateSubmit = useCallback(() => {
     if (selectedClient && customDate) {
       handleUpdateLicense(selectedClient, customDate);
@@ -231,6 +246,13 @@ const Clients: React.FC = () => {
       onClick: handleNewClient,
       disabled: userRank === ranks.GUEST,
     },
+    {
+  label: ' Enviar recordatorio de licencia (grupo)',
+  icon: <FaWhatsapp />,
+  onClick: () => handleSendLicenseReminderToGroup(row),
+  // opcional: permitir sólo si tiene lastUpdate
+  disabled: !row.lastUpdate,
+},
     {
       label: ' Actualizar fecha de licencia',
       icon: <FaClock />,
