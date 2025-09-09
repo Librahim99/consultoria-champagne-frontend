@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   // === Licencias (≤15 días) ===
-  const MAX_DAYS = 16;                // “≤ 15 días”
+  const MAX_DAYS = 15;                // “≤ 15 días”
   const VISIBLE_ROWS = 30;            // cuántas filas mostrar en mini grilla
   const [licenseCandidates, setLicenseCandidates] = useState<LicenseReminderCandidate[]>([]);
   const [loadingLicenses, setLoadingLicenses] = useState<boolean>(false);
