@@ -242,6 +242,73 @@
 }
 
 
+/* ===== Mini grilla compacta ===== */
+.miniTable {
+  width: 25%;
+  border-collapse: collapse;
+  table-layout: fixed;               /* columnas más estables */
+  font-size: 12.5px;
+  padding: 2px 8px;
+  display: contents
+}
+/* Header fijo + tabla “dense” (compacta) */
+.miniTable thead th{
+  position: sticky;        /* header pegado arriba */
+  top: 0;
+  z-index: 1;
+  background: rgba(0,0,0,.25); /* o usa var(--background-color) de tu tema */
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  padding: 6px 8px;        /* compacto */
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.miniTable tbody td{
+  padding: 4px 8px;        /* ↓ altura de fila */
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.miniTable tbody tr:hover{ background: rgba(255,255,255,.04); }
+
+/* anchos consistentes */
+.miniTable th:nth-child(1), .miniTable td:nth-child(1){ width:72px; }          /* Común */
+.miniTable th:nth-child(2), .miniTable td:nth-child(2){ width:48%; }           /* Cliente */
+.miniTable th:nth-child(3), .miniTable td:nth-child(3){ width:64px; text-align:right; } /* Días */
+.miniTable th:nth-child(4), .miniTable td:nth-child(4){ width:100px; }         /* Vence */
+
+
+/* === WRAPPER: alto fijo + scroll interno === */
+.miniTableWrap{
+  /* ajustá este alto hasta que encaje en tu “box de abajo” */
+  --mini-h: 300px;         /* probá 200–260px según tu pantalla */
+  max-height: var(--mini-h);
+  overflow: auto;
+  border-radius: 10px;
+  scrollbar-gutter: stable;
+}
+
+/* scrollbars sutiles (dark) */
+.miniTableWrap::-webkit-scrollbar{height:8px;width:8px;}
+.miniTableWrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:8px;}
+.miniTableWrap::-webkit-scrollbar-track{background:transparent;}
+
+
+
+/* Column widths (evita “dientes de sierra”) */
+.miniTable th:nth-child(1),
+.miniTable td:nth-child(1) { width: 72px; }   /* Común */
+.miniTable th:nth-child(2),
+.miniTable td:nth-child(2) { width: 48%; }    /* Cliente */
+.miniTable th:nth-child(3),
+.miniTable td:nth-child(3) { width: 64px; text-align: right; } /* Días */
+.miniTable th:nth-child(4),
+.miniTable td:nth-child(4) { width: 100px; }  /* Vence */
+
+
 
 /* ============================== */
 /* 📅 BOTÓN CREAR REUNIÓN       */
