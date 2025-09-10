@@ -114,7 +114,7 @@ const Clients: React.FC = () => {
     }
   }, [clients, userRank]);
 
-  const handleUpdateLicense = async (client: Client, newDate: string) => {
+  const handleUpdateLicense = async (client: Client, newDate: string, source: 'hoy'|'ayer'|'custom'='custom') => {
     if (userRank === ranks.GUEST) {
       toast.error('No tienes permisos para actualizar');
       return;
@@ -128,8 +128,9 @@ const Clients: React.FC = () => {
       const updatedClient = { ...client, lastUpdate: adjustedDate };
       setClients(clients.map(c => c._id === client._id ? updatedClient : c));
 
-      const res = await axios.patch(`${process.env.REACT_APP_API_URL}/api/clients/${client._id}/update-license`, 
-        { lastUpdate: newDate },
+      const res = await axios.patch(
+      `${process.env.REACT_APP_API_URL}/api/clients/${client._id}/update-license?source=${source}`,
+      { lastUpdate: newDate },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setClients(clients.map(c => c._id === client._id ? res.data : c));
@@ -163,7 +164,7 @@ const Clients: React.FC = () => {
 
   const handleCustomDateSubmit = useCallback(() => {
     if (selectedClient && customDate) {
-      handleUpdateLicense(selectedClient, customDate);
+      handleUpdateLicense(selectedClient, customDate, 'custom');
       setShowDateModal(false);
     }
   }, [selectedClient, customDate, handleUpdateLicense]);
@@ -262,14 +263,14 @@ const Clients: React.FC = () => {
           label: 'Hoy',
           onClick: () => {
             const today = moment.tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DD');
-            handleUpdateLicense(row, today);
+            handleUpdateLicense(row, today, 'hoy');
           },
         },
         {
           label: 'Ayer',
           onClick: () => {
             const yesterday = moment.tz('America/Argentina/Buenos_Aires').subtract(1, 'days').format('YYYY-MM-DD');
-            handleUpdateLicense(row, yesterday);
+            handleUpdateLicense(row, yesterday, 'ayer');
           },
         },
         {
