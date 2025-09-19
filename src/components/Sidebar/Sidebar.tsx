@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
 import {
   FaUsers,
   FaBuilding,
@@ -8,12 +7,13 @@ import {
   FaHeadset,
   FaExclamationTriangle,
   FaRobot,
+  FaFileInvoiceDollar,
   FaBars 
 } from 'react-icons/fa';
 import styles from './Sidebar.module.css';
 import { UserContext } from '../../contexts/UserContext';
-import { ranks } from '../../utils/enums';
-import { NavLink } from 'react-router-dom';
+import { ranks, type UserRank } from '../../utils/enums';
+import { NavLink, Link } from 'react-router-dom';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -41,6 +41,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         <li><Link to="/pending-tasks" onClick={window.innerWidth <= 768 ? () => setIsOpen(false) : undefined}><FaTasks /> Pendientes</Link></li>
         <li><Link to="/assistances" onClick={window.innerWidth <= 768 ? () => setIsOpen(false) : undefined}><FaHeadset /> Asistencias</Link></li>
         {userRank === ranks.TOTALACCESS &&(<li><Link to="/admin/bot" onClick={window.innerWidth <= 768 ? () => setIsOpen(false) : undefined}><FaRobot /> Admin Bot</Link></li>)}
+        {([ranks.TOTALACCESS, ranks.CONSULTORCHIEF, ranks.ADMIN] as readonly UserRank[]).includes(userRank) && (
+  <li><NavLink
+      to="/budgets"
+      className={({ isActive }) => (isActive ? styles.active : undefined)}
+      onClick={window.innerWidth <= 768 ? () => setIsOpen(false) : undefined}>
+      <FaFileInvoiceDollar /> Presupuestos </NavLink></li>
+)}
       </ul>
       {/* Nueva solapa indicadora */}
       <div className={styles.sidebarHintContainer} onMouseEnter={window.innerWidth > 768 ? () => setIsOpen(true) : undefined} title="Abrir menú lateral">

@@ -241,9 +241,9 @@ const Dashboard: React.FC = () => {
     <div className={styles.container} data-theme={theme}>
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <h1 className={styles.title}>📊 Consultoría Mantis 📊</h1>
+          <h1 className={styles.title}>📊 Consultoría / Administración / Customer Care Mantis IT📊</h1>
           <p className={styles.subtitle}>
-            Accedé a tus herramientas de control en un solo lugar.
+            Gestioná todo desde una sola web.
           </p>
         </div>
         {userRank === ranks.TOTALACCESS && (

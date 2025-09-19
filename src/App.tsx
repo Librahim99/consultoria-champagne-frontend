@@ -9,6 +9,8 @@ import Assistance from './components/Assistance/Assistance';
 import Pending from './components/Pending/Pending';
 import Register from './components/Register/Register';
 import AdminBot from './components/AdminBot/AdminBot';
+import Budgets from './components/Budgets/Budgets';         
+import { BudgetsProvider } from './contexts/BudgetsContext'; 
 import Layout from './components/Layout/Layout';
 import { UserContextProvider } from './contexts/UserContext';
 import { ThemeContextProvider } from './contexts/ThemeContext';
@@ -55,6 +57,14 @@ const AppContent: React.FC = () => {
                 <Route path="/pending-tasks" element={<Pending />} />
                 <Route path="/assistances" element={<Assistance />} />
                 <Route path="/admin/bot" element={<AdminBot />} />
+                <Route
+                 path="/budgets"
+                 element={
+                   <BudgetsProvider>
+                     <Budgets />
+                   </BudgetsProvider>
+                 }
+               />
               </Route>
             </Routes>
           </div>
