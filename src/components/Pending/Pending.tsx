@@ -501,6 +501,57 @@ const PendingTask: React.FC = () => {
     [pendings, navigate]
   );
 
+const handleTransfer = useCallback(
+  async (pending: Pending, user: User) => {
+    if (!pending || !user) {
+      toast.warning("No se seleccionó pendiente o usuario");
+      return;
+    }
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/");
+          return;
+        }
+        const id = pending._id;
+        const userid = user._id;
+        const res = await axios.patch(
+          `${process.env.REACT_APP_API_URL}/api/pending/${id}/changeUser/${userid}`
+        );
+        setPendings(
+          pendings.map((p) => (p._id === res.data._id ? res.data : p))
+        );
+        toast.success("Pendiente asignado");
+
+        try {
+          const message = `Hola ${user.name}, ${getUserName(
+            loggedInUserId
+          )} te transfirió el pendiente N° ${
+            pending?.sequenceNumber
+          } de ${getClientName(pending.clientId)}:\n\n-${pending.detail}.`;
+
+          const number = user.number;
+          if (number) {
+            const token = localStorage.getItem("token");
+            await axios.post(
+              `${process.env.REACT_APP_API_URL}/api/bot/sendMessage`,
+              { number, message },
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            toast.success("Mensaje enviado correctamente.");
+          }
+        } catch (err) {}
+      } catch (err) {
+        console.log("Error al transferir pendiente", err);
+        toast.success("Error al transferir pendiente");
+      }
+    },
+    [pendings, navigate]
+  );
+
+
   const handleAssign = useCallback(
     async (pending: Pending, user: User) => {
       if (!pending || !user) {
@@ -631,6 +682,26 @@ const PendingTask: React.FC = () => {
             ),
             label: ` ${user.name}`,
             onClick: () => handleAssign(row, user),
+          })),
+      },
+      ,
+      {
+        label: " Transferir",
+        icon: <FaPeopleArrows />,
+        onClick: () => {},
+        hide: loggedInUserId !== row.userId && userRank !== ranks.TOTALACCESS && userRank !== ranks.CONSULTORCHIEF,
+        children: users
+          .filter((u) => u._id !== row.userId)
+          .map((user) => ({
+            icon: (
+              <img
+                src={user.picture}
+                alt="profile"
+                className={styles2.userIcon}
+              />
+            ),
+            label: ` ${user.name}`,
+            onClick: () => handleTransfer(row, user),
           })),
       },
       {
