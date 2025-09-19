@@ -10,12 +10,19 @@ import { useForm, useFieldArray, SubmitHandler } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import CustomTable from '../CustomTable/CustomTable';
-import { ranks } from '../../utils/enums';
+import { pending_status, ranks } from '../../utils/enums';
 import { useContextMenu } from '../../contexts/UseContextMenu';
 import { FaClock, FaEdit, FaExclamationTriangle, FaHeadset, FaLaptopHouse, FaPlus, FaTasks, FaTrash, FaKey, FaCopy, FaChevronUp, FaChevronDown, FaWhatsapp } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import moment from 'moment-timezone';
+import * as XLSX from 'xlsx'; // Para exportar a Excel
 
+const mapStatusToKey = (value: string): keyof typeof pending_status | "" => {
+  const entry = Object.entries(pending_status).find(
+    ([val, _]) => val === value
+  );
+  return entry ? (entry[1] as keyof typeof pending_status) : "";
+};
 
 // Esquema para validar el formulario de cliente
 const schema = yup.object({
@@ -39,6 +46,14 @@ const accessSchema = yup.object().shape({
 // Tipo para los datos del formulario de accesos
 interface AccessFormData {
   access: AccessInterface[];
+}
+
+interface Schedule {
+  title: string,
+  status: string,
+  id: string,
+  statusDetail: string,
+  estimatedDate: string
 }
 
 const Clients: React.FC = () => {
@@ -228,6 +243,82 @@ const Clients: React.FC = () => {
     }
   }, []);
 
+  const handleExportExcel = useCallback((pendings: Schedule[], clientName: string) => {
+    if (pendings.length === 0) {
+      toast.info('El cliente no posee una agenda');
+      return;
+    }
+  
+  
+    const excelData = pendings.map((a: Schedule) => ({
+      Detalle: a.title,
+      Estado: mapStatusToKey(a.status),
+      DetalleDeEstado: a.statusDetail,
+      Fecha: a.estimatedDate ? moment(a.estimatedDate).format('DD-MM-YYYY') : '',
+    }));
+
+  
+  // Crear worksheet vacío
+  const worksheet = XLSX.utils.aoa_to_sheet([]);
+  
+  // Agregar título en A1, fusionado A1:G1
+  XLSX.utils.sheet_add_aoa(worksheet, [[`AGENDA: ${clientName}`]], { origin: 'A1' });
+  worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3} }]; // Fusiona A1 a G1
+  
+  // Agregar encabezados en A2
+  XLSX.utils.sheet_add_aoa(worksheet, [['Detalle', 'Estado', 'Detalle de estado', 'Fecha estimada']], { origin: -1 });
+  
+  ['A2', 'B2', 'C2', 'D2'].forEach(cell => {
+    worksheet[cell] = { ...worksheet[cell], s: { font: { bold: true } } };
+  });
+  
+  // Agregar datos en A3 (json_to_sheet sin origin, datos se escriben después de las filas existentes)
+  // const excelDataWithOffset = excelData.map((row, index) => ({ ...row, __rowNum__: index + 3 })); // Añadimos offset para debug
+  XLSX.utils.sheet_add_json(worksheet, excelData, { origin: -1, skipHeader: true });
+  
+  // Congelar encabezado (título y encabezados) hasta fila 2
+  worksheet['!freeze'] = { xSplit: 0, ySplit: 2 };
+  
+  // Auto-ancho de columnas
+  const maxWidths = [
+    85, // Detalle
+    15, // Estado
+    40, // Detalle de estado
+    13, // Fecha estimada
+  ];
+  worksheet['!cols'] = maxWidths.map(w => ({ wch: w }));
+  
+  
+  
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Asistencias');
+  
+    const todayFormatted = moment().format('DD-MM-YY');
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Agenda_${clientName}_${todayFormatted}.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  
+    toast.success(`Exportados ${pendings.length} pendientes en la agenda`);
+  }, []);
+
+  const handleGetSchedule = useCallback(async (client: Client) => {
+    if (client._id) {
+    const token = localStorage.getItem('token');
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/clients/${client._id}/getSchedule`, { headers: { Authorization: `Bearer ${token}` } })
+      if(res.data.length){
+        handleExportExcel(res.data, client.name)
+      }
+    }
+    
+  }, []);
+
   const toggleAccessExpansion = useCallback((index: string) => {
     setExpandedAccess(prev => ({
       // ...prev,
@@ -302,6 +393,11 @@ const Clients: React.FC = () => {
       icon: <FaTasks />,
       onClick: () => {},
       hide: true,
+    },
+    {
+      label: ' Descargar Agenda',
+      icon: <FaTasks />,
+      onClick: () => {handleGetSchedule(row)}
     },
     {
       label: ' Ver Incidencias',
