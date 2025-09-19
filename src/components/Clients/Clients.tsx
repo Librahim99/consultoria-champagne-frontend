@@ -339,7 +339,7 @@ const Clients: React.FC = () => {
       disabled: userRank === ranks.GUEST,
     },
     {
-  label: ' Enviar recordatorio de licencia (grupo)',
+  label: ' Enviar recordatorio',
   icon: <FaWhatsapp />,
   onClick: () => handleSendLicenseReminderToGroup(row),
   // opcional: permitir sólo si tiene lastUpdate
