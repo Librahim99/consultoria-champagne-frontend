@@ -107,11 +107,6 @@
   text-align:right; font-variant-numeric:tabular-nums;
   font-feature-settings:"tnum" 1;
 }
-
-/* Quitar flechas de inputs numéricos (WebKit/Firefox) */
-.content input[type="number"]::-webkit-inner-spin-button,
-.content input[type="number"]::-webkit-outer-spin-button{ -webkit-appearance:none; margin:0 }
-
 /* labels y forms */
 .content label{ display:grid; gap:6px; font-size:.92rem; color:var(--bdm-muted) }
 .content form{ display:grid; gap:calc(var(--bdm-space)+4px) }
