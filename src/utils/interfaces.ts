@@ -128,4 +128,44 @@ export interface Pending {
   notifications?: string[]
 }
 
+export type BudgetStatus =
+  | 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED'
+  | 'SENT' | 'ACCEPTED' | 'LOST' | 'EXPIRED';
+
+export interface BudgetItem {
+  description: string;
+  qty: number;
+  unitPrice: number;
+  unit?: string;
+  taxRate?: number; // 0..1
+}
+
+export interface Budget {
+  _id: string;
+  code: number;
+  clientId: string;
+  clientName: string;
+  currency: 'ARS' | 'USD';
+  items: BudgetItem[];
+  subtotal: number;
+  tax: number;
+  total: number;
+  validUntil?: string;
+  terms?: string;
+  notes?: string;
+  status: BudgetStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const BUDGET_STATUS_LABELS: Record<BudgetStatus, string> = {
+  DRAFT: 'Borrador',
+  IN_REVIEW: 'En Revisión',
+  APPROVED: 'Aprobado',
+  REJECTED: 'Rechazado',
+  SENT: 'Enviado',
+  ACCEPTED: 'Aceptado',
+  LOST: 'Perdido',
+  EXPIRED: 'Vencido',
+};
 

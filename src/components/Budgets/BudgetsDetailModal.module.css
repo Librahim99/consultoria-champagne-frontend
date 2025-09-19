@@ -1,0 +1,230 @@
+/* ===== Overlay ===== */
+.overlay{
+  position: fixed; inset:0; z-index:1000;
+  display:grid; place-items:center; padding:24px;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(4px) saturate(120%);
+}
+
+/* ===== Tokens ===== */
+:root{
+  --bdm-surface: color-mix(in oklab, var(--card-background,#0b0b0b) 90%, transparent);
+  --bdm-surface-2: color-mix(in oklab, var(--card-background,#0b0b0b) 94%, transparent);
+  --bdm-fg: var(--text-color,#e8e8e8);
+  --bdm-muted: color-mix(in oklab, var(--text-color,#e8e8e8) 60%, transparent);
+  --bdm-border: color-mix(in oklab, var(--text-color,#e8e8e8) 18%, transparent);
+  --bdm-ring: color-mix(in oklab, var(--button-background,#2b6cb0) 65%, transparent);
+  --bdm-radius: 12px;
+  --bdm-space: 14px;
+}
+
+/* ===== Caja ===== */
+.modalWrapper{
+  width:min(96vw,1080px);
+  max-height:86vh;
+  background: linear-gradient(to br,
+              color-mix(in oklab, var(--bdm-surface) 92%, transparent),
+              color-mix(in oklab, var(--bdm-surface-2) 92%, transparent));
+  border:1px solid var(--bdm-border);
+  border-radius:16px;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
+  overflow:hidden; display:flex; flex-direction:column;
+  transform-origin:50% 46%;
+  animation:bdm-pop .16s ease;
+}
+
+/* Tamaños opcionales */
+.md{ width:min(96vw,760px) }
+.lg{ width:min(96vw,920px) }
+.xl{ width:min(96vw,1200px) }
+.full{ width:min(98vw,1320px) }
+
+/* ===== Header ===== */
+.header{
+  position:sticky; top:0; z-index:2;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 18px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--bdm-surface-2) 96%, transparent) 0%,
+    color-mix(in oklab, var(--bdm-surface) 92%, transparent) 100%);
+  border-bottom:1px solid var(--bdm-border);
+}
+.titles{ display:flex; flex-direction:column; gap:2px; min-width:0 }
+.title{ margin:0; font-size:1.28rem; color:var(--bdm-fg); line-height:1.2 }
+.subtitle{ opacity:.8; font-size:.9rem; color:var(--bdm-fg) }
+.headerActions{ display:inline-flex; align-items:center; gap:8px }
+
+.closeButton{
+  appearance:none; border:0; border-radius:10px;
+  width:36px; height:36px; font-size:1.6rem;
+  display:grid; place-items:center;
+  background:transparent; color:var(--bdm-fg); cursor:pointer;
+  transition:background .15s ease, transform .08s ease;
+}
+.closeButton:hover{ background:color-mix(in oklab, var(--button-background,#2b6cb0) 18%, transparent) }
+.closeButton:active{ transform:scale(.96) }
+
+/* ===== Contenido ===== */
+.content{
+  position:relative; padding:18px 20px; overflow:auto;
+  color:var(--bdm-fg);
+  display:grid; gap:calc(var(--bdm-space) + 2px);
+}
+
+/* fades de scroll */
+.fadeTop,.fadeBottom{ position:sticky; left:0; right:0; height:16px; z-index:1; pointer-events:none }
+.fadeTop{ top:0; margin-top:-18px; background:linear-gradient(to bottom, rgba(0,0,0,.28), transparent) }
+.fadeBottom{ bottom:0; margin-bottom:-18px; background:linear-gradient(to top, rgba(0,0,0,.28), transparent) }
+
+/* ===== Footer (opcional) ===== */
+.footer{
+  position:sticky; bottom:0; z-index:2; padding:12px 18px;
+  background: linear-gradient(
+    to top,
+    color-mix(in oklab, var(--bdm-surface-2) 96%, transparent) 0%,
+    color-mix(in oklab, var(--bdm-surface) 92%, transparent) 100%);
+  border-top:1px solid var(--bdm-border);
+  display:flex; gap:10px; justify-content:flex-end;
+}
+
+/* ===== Controles base ===== */
+.content :where(input,select,textarea){
+  appearance:none; width:100%; padding:10px 12px;
+  border-radius:var(--bdm-radius);
+  border:1px solid var(--bdm-border);
+  background:color-mix(in oklab, var(--bdm-surface) 60%, transparent);
+  color:var(--bdm-fg); outline:none;
+  transition:border-color .15s ease, box-shadow .15s ease, background .15s ease, transform .08s ease;
+}
+.content :where(input,select,textarea)::placeholder{ color:var(--bdm-muted) }
+.content :where(input,select,textarea):focus{
+  border-color:var(--bdm-ring);
+  box-shadow:0 0 0 3px color-mix(in oklab, var(--bdm-ring) 32%, transparent);
+  background:color-mix(in oklab, var(--bdm-surface-2) 74%, transparent);
+}
+.content input[type="number"]{
+  text-align:right; font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+}
+
+/* Quitar flechas de inputs numéricos (WebKit/Firefox) */
+.content input[type="number"]::-webkit-inner-spin-button,
+.content input[type="number"]::-webkit-outer-spin-button{ -webkit-appearance:none; margin:0 }
+
+/* labels y forms */
+.content label{ display:grid; gap:6px; font-size:.92rem; color:var(--bdm-muted) }
+.content form{ display:grid; gap:calc(var(--bdm-space)+4px) }
+
+/* ===== Tabla de ítems ===== */
+.itemsTable{
+  width:100%;
+  table-layout:fixed;                 /* necesario para colgroup */
+  border-collapse:separate;
+  border-spacing:6px 6px;             /* aire entre controles */
+  background:transparent;
+}
+.itemsTable thead th{
+  position:sticky; top:0; z-index:1;
+  text-align:left; padding:8px 6px;
+  font-size:.78rem; letter-spacing:.3px; text-transform:uppercase;
+  color:var(--bdm-muted);
+  background:color-mix(in oklab, var(--bdm-surface-2) 98%, transparent);
+  border-bottom:1px solid var(--bdm-border);
+}
+.itemsTable tbody td{ padding:4px 6px }
+
+/* Inputs más compactos dentro de la tabla */
+.itemsTable td :where(input,select){
+  height:30px;            /* accesible (touch) pero compacto */
+  padding:6px 8px;
+  border-radius:10px;
+  box-sizing:border-box;
+}
+.itemsTable td :where(input[type="number"]){ padding-right:6px }
+
+/* Col widths (usa <colgroup>) */
+.cDetail{   width:44% }   /* Detalle */
+.cHours{    width:8ch }   /* Horas */
+.cRate{     width:10ch }  /* Valor hora */
+.cTax{      width:6ch }   /* Impuesto */
+.cSubtotal{ width:10ch }  /* Subtotal */
+.cActions{  width:44px }  /* Borrar */
+
+/* botón borrar alineado a inputs */
+.itemsTable .iconBtn{ width:36px; height:30px; border-radius:10px }
+
+/* ===== Utilidades ===== */
+.sectionTitle{ margin:6px 0 10px; font-size:1.05rem; font-weight:700; color:var(--bdm-fg) }
+.sectionDivider{
+  height:1px;
+  background:linear-gradient(to right, color-mix(in oklab, var(--bdm-fg) 16%, transparent), transparent 35%);
+  margin:8px 0 14px;
+}
+.row{ display:grid; gap:12px }
+@media (min-width:860px){
+  .row.cols-2{ grid-template-columns:1fr 1fr }
+  .row.cols-3{ grid-template-columns:2fr 1fr 1fr }
+}
+
+/* Botones */
+.btn,
+.content button[type="submit"],
+.content button[type="button"]{
+  appearance:none; border:1px solid var(--bdm-border);
+  border-radius:10px; padding:10px 14px; font-weight:600;
+  background:color-mix(in oklab, var(--button-background,#2b6cb0) 76%, transparent);
+  color:var(--button-color,#fff); cursor:pointer;
+  transition:transform .08s ease, filter .12s ease, background .12s ease, border-color .12s ease;
+}
+.content button[type="button"].ghost{
+  background:transparent; color:var(--bdm-fg); border-color:var(--bdm-border)
+}
+.btn:hover,
+.content button[type="submit"]:hover,
+.content button[type="button"]:hover{ filter:brightness(1.05) }
+.btn:active,
+.content button[type="submit"]:active,
+.content button[type="button"]:active{ transform:translateY(1px) scale(.99) }
+
+/* Ayudas / errores */
+.help{ margin-top:6px; font-size:.86rem; color:color-mix(in oklab, var(--bdm-fg) 70%, transparent) }
+.invalid{
+  border-color:color-mix(in oklab,#ff5858 70%, transparent) !important;
+  box-shadow:0 0 0 3px color-mix(in oklab,#ff5858 30%, transparent) !important;
+}
+
+/* Totales “chips” */
+.totalsBar{
+  position:sticky; bottom:8px; z-index:1;
+  display:flex; flex-wrap:wrap; gap:8px; padding:10px 12px;
+  border:1px solid var(--bdm-border);
+  background:linear-gradient(to top,
+    color-mix(in oklab, var(--bdm-surface-2) 96%, transparent) 0%,
+    color-mix(in oklab, var(--bdm-surface) 92%, transparent) 100%);
+  border-radius:12px;
+}
+.pill{
+  padding:8px 10px; border-radius:10px;
+  border:1px solid color-mix(in oklab, var(--bdm-fg) 18%, transparent);
+  background:color-mix(in oklab, var(--card-background,#111) 70%, transparent);
+  font-variant-numeric:tabular-nums;
+}
+.pill strong{ margin-left:6px }
+
+/* Animación */
+@keyframes bdm-pop{
+  from{ transform:scale(.985) translateY(2px); opacity:.98 }
+  to{   transform:scale(1) translateY(0);   opacity:1 }
+}
+
+/* ===== Responsive tweaks ===== */
+@media (max-width:720px){
+  .modalWrapper{ width:min(98vw,720px) }
+  .itemsTable{ border-spacing:4px 6px }
+  .cDetail{ width:42% }
+  .cRate{ width:9ch }
+  .cSubtotal{ width:9ch }
+  .iconBtn{ width:32px; height:28px }
+  .itemsTable td :where(input,select){ height:28px; padding:6px 6px }
+}
