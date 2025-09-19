@@ -8,12 +8,13 @@
 
 /* ===== Tokens ===== */
 :root{
-  --bdm-surface: color-mix(in oklab, var(--card-background,#0b0b0b) 90%, transparent);
-  --bdm-surface-2: color-mix(in oklab, var(--card-background,#0b0b0b) 94%, transparent);
+  /* Reemplazo de color-mix por rgba compatibles */
+  --bdm-surface: rgba(11,11,11,.90);
+  --bdm-surface-2: rgba(11,11,11,.94);
   --bdm-fg: var(--text-color,#e8e8e8);
-  --bdm-muted: color-mix(in oklab, var(--text-color,#e8e8e8) 60%, transparent);
-  --bdm-border: color-mix(in oklab, var(--text-color,#e8e8e8) 18%, transparent);
-  --bdm-ring: color-mix(in oklab, var(--button-background,#2b6cb0) 65%, transparent);
+  --bdm-muted: rgba(232,232,232,.6);
+  --bdm-border: rgba(232,232,232,.18);
+  --bdm-ring: rgba(43,108,176,.65);
   --bdm-radius: 12px;
   --bdm-space: 14px;
 }
@@ -22,9 +23,8 @@
 .modalWrapper{
   width:min(96vw,1080px);
   max-height:86vh;
-  background: linear-gradient(to br,
-              color-mix(in oklab, var(--bdm-surface) 92%, transparent),
-              color-mix(in oklab, var(--bdm-surface-2) 92%, transparent));
+  /* Antes: linear-gradient(to br, color-mix(... */
+  background: linear-gradient(to bottom right, var(--bdm-surface), var(--bdm-surface-2));
   border:1px solid var(--bdm-border);
   border-radius:16px;
   box-shadow:0 24px 60px rgba(0,0,0,.45);
@@ -44,10 +44,7 @@
   position:sticky; top:0; z-index:2;
   display:flex; align-items:center; justify-content:space-between; gap:12px;
   padding:14px 18px;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in oklab, var(--bdm-surface-2) 96%, transparent) 0%,
-    color-mix(in oklab, var(--bdm-surface) 92%, transparent) 100%);
+  background: linear-gradient(to bottom, rgba(11,11,11,.94), rgba(11,11,11,.90));
   border-bottom:1px solid var(--bdm-border);
 }
 .titles{ display:flex; flex-direction:column; gap:2px; min-width:0 }
@@ -62,7 +59,7 @@
   background:transparent; color:var(--bdm-fg); cursor:pointer;
   transition:background .15s ease, transform .08s ease;
 }
-.closeButton:hover{ background:color-mix(in oklab, var(--button-background,#2b6cb0) 18%, transparent) }
+.closeButton:hover{ background: rgba(43,108,176,.18); }
 .closeButton:active{ transform:scale(.96) }
 
 /* ===== Contenido ===== */
@@ -80,10 +77,7 @@
 /* ===== Footer (opcional) ===== */
 .footer{
   position:sticky; bottom:0; z-index:2; padding:12px 18px;
-  background: linear-gradient(
-    to top,
-    color-mix(in oklab, var(--bdm-surface-2) 96%, transparent) 0%,
-    color-mix(in oklab, var(--bdm-surface) 92%, transparent) 100%);
+  background: linear-gradient(to top, rgba(11,11,11,.94), rgba(11,11,11,.90));
   border-top:1px solid var(--bdm-border);
   display:flex; gap:10px; justify-content:flex-end;
 }
@@ -93,24 +87,20 @@
   appearance:none; width:100%; padding:10px 12px;
   border-radius:var(--bdm-radius);
   border:1px solid var(--bdm-border);
-  background:color-mix(in oklab, var(--bdm-surface) 60%, transparent);
+  background:rgba(11,11,11,.60);
   color:var(--bdm-fg); outline:none;
   transition:border-color .15s ease, box-shadow .15s ease, background .15s ease, transform .08s ease;
 }
 .content :where(input,select,textarea)::placeholder{ color:var(--bdm-muted) }
 .content :where(input,select,textarea):focus{
   border-color:var(--bdm-ring);
-  box-shadow:0 0 0 3px color-mix(in oklab, var(--bdm-ring) 32%, transparent);
-  background:color-mix(in oklab, var(--bdm-surface-2) 74%, transparent);
+  box-shadow:0 0 0 3px rgba(43,108,176,.32);
+  background:rgba(11,11,11,.74);
 }
 .content input[type="number"]{
   text-align:right; font-variant-numeric:tabular-nums;
   font-feature-settings:"tnum" 1;
 }
-
-/* Quitar flechas de inputs numéricos (WebKit/Firefox) */
-.content input[type="number"]::-webkit-inner-spin-button,
-.content input[type="number"]::-webkit-outer-spin-button{ -webkit-appearance:none; margin:0 }
 
 /* labels y forms */
 .content label{ display:grid; gap:6px; font-size:.92rem; color:var(--bdm-muted) }
@@ -119,9 +109,9 @@
 /* ===== Tabla de ítems ===== */
 .itemsTable{
   width:100%;
-  table-layout:fixed;                 /* necesario para colgroup */
+  table-layout:fixed;
   border-collapse:separate;
-  border-spacing:6px 6px;             /* aire entre controles */
+  border-spacing:6px 6px;
   background:transparent;
 }
 .itemsTable thead th{
@@ -129,14 +119,14 @@
   text-align:left; padding:8px 6px;
   font-size:.78rem; letter-spacing:.3px; text-transform:uppercase;
   color:var(--bdm-muted);
-  background:color-mix(in oklab, var(--bdm-surface-2) 98%, transparent);
+  background:rgba(11,11,11,.98);
   border-bottom:1px solid var(--bdm-border);
 }
 .itemsTable tbody td{ padding:4px 6px }
 
-/* Inputs más compactos dentro de la tabla */
+/* Inputs compactos dentro de la tabla */
 .itemsTable td :where(input,select){
-  height:30px;            /* accesible (touch) pero compacto */
+  height:30px;
   padding:6px 8px;
   border-radius:10px;
   box-sizing:border-box;
@@ -144,12 +134,12 @@
 .itemsTable td :where(input[type="number"]){ padding-right:6px }
 
 /* Col widths (usa <colgroup>) */
-.cDetail{   width:44% }   /* Detalle */
-.cHours{    width:8ch }   /* Horas */
-.cRate{     width:10ch }  /* Valor hora */
-.cTax{      width:6ch }   /* Impuesto */
-.cSubtotal{ width:10ch }  /* Subtotal */
-.cActions{  width:44px }  /* Borrar */
+.cDetail{   width:44% }
+.cHours{    width:8ch }
+.cRate{     width:10ch }
+.cTax{      width:6ch }
+.cSubtotal{ width:10ch }
+.cActions{  width:44px }
 
 /* botón borrar alineado a inputs */
 .itemsTable .iconBtn{ width:36px; height:30px; border-radius:10px }
@@ -158,7 +148,7 @@
 .sectionTitle{ margin:6px 0 10px; font-size:1.05rem; font-weight:700; color:var(--bdm-fg) }
 .sectionDivider{
   height:1px;
-  background:linear-gradient(to right, color-mix(in oklab, var(--bdm-fg) 16%, transparent), transparent 35%);
+  background:linear-gradient(to right, rgba(232,232,232,.16), transparent 35%);
   margin:8px 0 14px;
 }
 .row{ display:grid; gap:12px }
@@ -173,7 +163,7 @@
 .content button[type="button"]{
   appearance:none; border:1px solid var(--bdm-border);
   border-radius:10px; padding:10px 14px; font-weight:600;
-  background:color-mix(in oklab, var(--button-background,#2b6cb0) 76%, transparent);
+  background:rgba(43,108,176,.76);
   color:var(--button-color,#fff); cursor:pointer;
   transition:transform .08s ease, filter .12s ease, background .12s ease, border-color .12s ease;
 }
@@ -188,10 +178,10 @@
 .content button[type="button"]:active{ transform:translateY(1px) scale(.99) }
 
 /* Ayudas / errores */
-.help{ margin-top:6px; font-size:.86rem; color:color-mix(in oklab, var(--bdm-fg) 70%, transparent) }
+.help{ margin-top:6px; font-size:.86rem; color:rgba(232,232,232,.7) }
 .invalid{
-  border-color:color-mix(in oklab,#ff5858 70%, transparent) !important;
-  box-shadow:0 0 0 3px color-mix(in oklab,#ff5858 30%, transparent) !important;
+  border-color:rgba(255,88,88,.7) !important;
+  box-shadow:0 0 0 3px rgba(255,88,88,.3) !important;
 }
 
 /* Totales “chips” */
@@ -199,15 +189,13 @@
   position:sticky; bottom:8px; z-index:1;
   display:flex; flex-wrap:wrap; gap:8px; padding:10px 12px;
   border:1px solid var(--bdm-border);
-  background:linear-gradient(to top,
-    color-mix(in oklab, var(--bdm-surface-2) 96%, transparent) 0%,
-    color-mix(in oklab, var(--bdm-surface) 92%, transparent) 100%);
+  background:linear-gradient(to top, rgba(11,11,11,.94), rgba(11,11,11,.90));
   border-radius:12px;
 }
 .pill{
   padding:8px 10px; border-radius:10px;
-  border:1px solid color-mix(in oklab, var(--bdm-fg) 18%, transparent);
-  background:color-mix(in oklab, var(--card-background,#111) 70%, transparent);
+  border:1px solid rgba(232,232,232,.18);
+  background:rgba(17,17,17,.70);
   font-variant-numeric:tabular-nums;
 }
 .pill strong{ margin-left:6px }
