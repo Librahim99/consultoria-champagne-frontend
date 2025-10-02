@@ -1,13 +1,261 @@
-.readonly { user-select: none; background: rgba(255,255,255,.04); }
-.form h3 { margin: .25rem 0 .5rem; color: var(--text-color); letter-spacing: .2px; }
-.taWrap { position: relative; }
-.taList {
-  position: absolute; z-index: 20; top: calc(100% + 4px); left: 0; right: 0;
-  background: var(--card-background);
-  border: 1px solid var(--border-color);
-  border-radius: 8px; padding: .25rem; max-height: 240px; overflow: auto;
-  box-shadow: var(--shadow-soft);
+/* ───────────── Tokens (fallbacks, respetan tus vars globales) ───────────── */
+:root{
+  --bf-surface: var(--card-background, #0f1114);
+  --bf-surface-2: color-mix(in oklab, var(--bf-surface) 92%, transparent);
+  --bf-fg: var(--text-color, #e7e7e7);
+  --bf-fg-muted: color-mix(in oklab, var(--bf-fg) 68%, transparent);
+  --bf-border: var(--border-color, rgba(255,255,255,.12));
+  --bf-primary: var(--button-background, #2b6cb0);
+  --bf-on-primary: var(--button-color, #fff);
+  --bf-radius: 12px;
+  --bf-shadow: 0 10px 26px rgba(0,0,0,.28);
+  --bf-ring: color-mix(in oklab, var(--bf-primary) 35%, transparent);
 }
-.taItem { display:flex; justify-content:space-between; gap:.5rem; padding:.45rem .6rem; border-radius:6px; cursor:pointer; }
-.taItem:hover { background: var(--button-background); color: var(--button-color); }
-.taMain { font-weight:600; } .taSec { opacity:.75; font-size:.85rem; }
+
+/* ───────────── Base layout ───────────── */
+.form{
+  display:grid;
+  gap:16px;
+  color:var(--bf-fg);
+  min-width:0;
+}
+.form *{ min-width:0; } /* evita overflow/solapes en grid */
+
+.grid{ display:grid; gap:12px; align-items:start; }
+.cols2{ grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+.full{ grid-column: 1 / -1; }
+
+/* ───────────── Field / Input ───────────── */
+.field{ display:grid; gap:6px; }
+.label{
+  font-size:.92rem;
+  color: var(--bf-fg-muted);
+  letter-spacing:.2px;
+}
+.input{
+  appearance:none;
+  width:100%;
+  padding:10px 12px;
+  border-radius:var(--bf-radius);
+  border:1px solid var(--bf-border);
+  background: color-mix(in oklab, var(--bf-surface) 62%, transparent);
+  color: var(--bf-fg);
+  outline:none;
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,.02);
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease, transform .08s ease;
+}
+.input::placeholder{ color: color-mix(in oklab, var(--bf-fg) 55%, transparent); }
+.input:focus{
+  border-color: color-mix(in oklab, var(--bf-primary) 66%, transparent);
+  box-shadow: 0 0 0 3px var(--bf-ring), inset 0 -1px 0 rgba(255,255,255,.03);
+  background: color-mix(in oklab, var(--bf-surface-2) 74%, transparent);
+}
+.input:disabled{
+  opacity:.7;
+  cursor:not-allowed;
+}
+
+/* ───────────── Sección Ítems / Toolbar ───────────── */
+.sectionHeader{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px;
+}
+.itemsTitle{ margin:0; font-size:1.06rem; letter-spacing:.2px; }
+.itemsBar{ display:flex; gap:10px; flex-wrap:wrap; }
+
+/* ───────────── Botones (fade + sombras) ───────────── */
+.btn{
+  --_bg: color-mix(in oklab, var(--bf-primary) 78%, transparent);
+  position:relative;
+  appearance:none;
+  border:1px solid var(--bf-border);
+  border-radius:10px;
+  padding:10px 14px;
+  font-weight:600;
+  color: var(--bf-on-primary);
+  background: linear-gradient(180deg,
+              color-mix(in oklab, var(--_bg) 92%, transparent),
+              color-mix(in oklab, var(--_bg) 80%, transparent));
+  cursor:pointer;
+  box-shadow: var(--bf-shadow);
+  transition: transform .08s ease, filter .14s ease, box-shadow .14s ease;
+  overflow:hidden;
+}
+.btn::after{             /* fade sutil al hover */
+  content:"";
+  position:absolute; inset:0;
+  background: radial-gradient(120% 220% at 50% 100%,
+              rgba(255,255,255,.14), transparent 55%);
+  opacity:0; transition: opacity .18s ease;
+}
+.btn:hover{ filter:brightness(1.04); box-shadow: 0 12px 28px rgba(0,0,0,.35); }
+.btn:hover::after{ opacity:.7; }
+.btn:active{ transform: translateY(1px) scale(.995); }
+
+.ghost{
+  --_bg: transparent;
+  background: transparent;
+  color: var(--bf-fg);
+  border-color: var(--bf-border);
+  box-shadow: none;
+}
+.ghost:hover{
+  background: color-mix(in oklab, var(--bf-primary) 16%, transparent);
+  color: var(--bf-on-primary);
+}
+
+/* Botón/icono compacto */
+.iconBtn{
+  width:36px; height:30px; border-radius:10px;
+  border:1px solid var(--bf-border);
+  background: color-mix(in oklab, var(--bf-surface) 65%, transparent);
+  color: var(--bf-fg);
+  display:grid; place-items:center;
+  cursor:pointer;
+  transition: background .15s, transform .08s, box-shadow .15s;
+  box-shadow: var(--bf-shadow);
+}
+.iconBtn:hover{ background: color-mix(in oklab, var(--bf-primary) 22%, transparent); }
+.iconBtn:active{ transform: translateY(1px); }
+
+/* Botones con ícono (usa <span class="icon">…) */
+.btn .icon{
+  display:inline-grid; place-items:center;
+  width:1.1em; height:1.1em; margin-right:.45rem;
+}
+
+/* ───────────── Typeahead Cliente ───────────── */
+.taWrap{ position:relative; }
+.taList{
+  position:absolute; z-index:30; top:calc(100% + 6px); left:0; right:0;
+  background: var(--bf-surface-2);
+  border:1px solid var(--bf-border);
+  border-radius:12px;
+  padding:4px;
+  max-height:240px; overflow:auto;
+  box-shadow: var(--bf-shadow);
+  backdrop-filter: blur(2px);
+}
+.taItem{
+  display:flex; justify-content:space-between; gap:.5rem;
+  padding:.58rem .7rem; border-radius:10px; cursor:pointer;
+  transition: background .14s, color .14s, transform .08s;
+}
+.taItem:hover{
+  background: color-mix(in oklab, var(--bf-primary) 22%, transparent);
+  color: var(--bf-on-primary);
+}
+.taMain{ font-weight:600; }
+.taSec{ opacity:.75; font-size:.85rem; }
+
+/* ───────────── Tabla Ítems ───────────── */
+.itemsTable{
+  width:100%;
+  table-layout: fixed;        /* evita solapes */
+  border-collapse: separate;
+  border-spacing: 6px 6px;    /* respiración */
+  background: transparent;
+}
+.itemsTable thead th{
+  position: sticky; top: 0; z-index: 1;
+  text-align:left; padding:8px 6px;
+  font-size:.78rem; letter-spacing:.3px;
+  text-transform:uppercase;
+  color: var(--bf-fg-muted);
+  background: color-mix(in oklab, var(--bf-surface-2) 98%, transparent);
+  border-bottom:1px solid var(--bf-border);
+  backdrop-filter: blur(2px);
+}
+.itemsTable tbody td{
+  padding:4px 6px;
+  min-width:0;               /* importante para no romper layout */
+}
+.itemsTable td :where(input,select){
+  height:30px;
+  padding:6px 8px;
+  border-radius:10px;
+  box-sizing:border-box;
+  width:100%;
+  background: color-mix(in oklab, var(--bf-surface) 64%, transparent);
+  border:1px solid var(--bf-border);
+  color:var(--bf-fg);
+}
+.itemsTable td :where(input[type="number"]){
+  text-align:right;
+  font-variant-numeric: tabular-nums;
+  padding-right:6px;
+}
+.subcell{
+  font-variant-numeric: tabular-nums;
+  text-align:right;
+  padding-right:6px;
+}
+
+/* Anchos (coinciden con <colgroup>) */
+.cDetail{   width:44% }
+.cHours{    width:8ch }
+.cRate{     width:10ch }
+.cTax{      width:6ch }
+.cSubtotal{ width:12ch }
+.cActions{  width:44px }
+
+/* ───────────── Notas / Errores ───────────── */
+.notes{ display:grid; gap:12px; }
+.error{ color:#ff7a7a; font-size:.85rem; }
+
+/* ───────────── Totales (chips con sombra) ───────────── */
+.totals{
+  position:sticky; bottom:8px; z-index:1;
+  display:flex; flex-wrap:wrap; gap:8px;
+  padding:10px 12px;
+  border:1px solid var(--bf-border);
+  background: linear-gradient(
+    to top,
+    color-mix(in oklab, var(--bf-surface-2) 96%, transparent) 0%,
+    color-mix(in oklab, var(--bf-surface) 90%, transparent) 100%);
+  border-radius:12px;
+  box-shadow: var(--bf-shadow);
+}
+.pill{
+  padding:8px 10px; border-radius:10px;
+  border:1px solid var(--bf-border);
+  background: color-mix(in oklab, var(--bf-surface) 74%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+.pill strong{ margin-left:6px }
+
+/* ───────────── Footer ───────────── */
+.footer{
+  display:flex; justify-content:flex-end; gap:8px;
+}
+
+/* ───────────── Responsive ───────────── */
+@media (max-width: 880px){
+  .cols2{ grid-template-columns: 1fr; }
+}
+@media (max-width: 720px){
+  .itemsTable{ border-spacing:4px 6px }
+  .cDetail{ width:42% }
+  .cRate{ width:9ch }
+  .cSubtotal{ width:10ch }
+  .iconBtn{ width:32px; height:28px }
+  .itemsTable td :where(input,select){ height:28px; padding:6px 6px }
+}
+
+/* Respeto a usuarios con reducción de movimiento */
+@media (prefers-reduced-motion: reduce){
+  .btn, .iconBtn{ transition:none; }
+  .btn::after{ display:none; }
+}
+
+.colsHeader{ grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); }
+
+@media (max-width: 880px){
+  .colsHeader{ grid-template-columns: 1fr; }
+}
+
+/* Typeahead: opción activa */
+.taActive {
+  background: color-mix(in oklab, var(--bf-surface, #222) 85%, white 15%);
+}
+.taActive .taMain { font-weight: 600; }
